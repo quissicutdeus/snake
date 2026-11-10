@@ -39,6 +39,7 @@ class GameSim(
     val rng = Random(seed)
     val world = World(options.width, options.height)
     internal val grid = SpatialGrid(options.width, options.height)
+    private val heads = HeadGrid(options.width, options.height)
     private val spawner = Spawner(options.aiCount)
     private val contacts = ArrayList<Contact>()
     private val headPairs = HashSet<Long>()
@@ -214,6 +215,7 @@ class GameSim(
     }
 
     private fun eatFood(dt: Float) {
+        heads.build(world.snakes, foodReach(dt))
         val pellets = world.pellets
         for (i in pellets.indices) {
             val p = pellets[i]
@@ -239,11 +241,37 @@ class GameSim(
         return t.gone
     }
 
-    /** True if a snake's head reaches [food] and eats it; snakes close by pull it nearer. */
+    /**
+     * True if a snake's head reaches [food] and eats it; snakes close by pull it
+     * nearer. Snakes are tried in list order (the first one to reach it eats
+     * it), skipping only those too far away for [tryEat] to do anything.
+     */
     private fun eatenNow(
         food: Food,
         dt: Float,
-    ): Boolean = world.snakes.any { it.alive && tryEat(it, food, dt) }
+    ): Boolean {
+        val cell = heads.cellAt(food.x, food.y)
+        for (e in heads.startOf(cell) until heads.startOf(cell + 1)) {
+            val s = world.snakes[heads.snakeIndexAt(e)]
+            if (s.alive && tryEat(s, food, dt)) return true
+        }
+        return false
+    }
+
+    /**
+     * Beyond this distance from a head, [tryEat] can neither eat nor pull any
+     * food this step: the furthest any snake reaches for the biggest food,
+     * plus how far food may already have been pulled by the snakes tried
+     * before it (each pull moves it at most SUCTION_SPEED * dt).
+     */
+    private fun foodReach(dt: Float): Float {
+        var foodR = 0f
+        for (p in world.pellets) foodR = maxOf(foodR, p.radius)
+        for (t in world.tailPieces) foodR = maxOf(foodR, t.radius)
+        val grab = maxOf(GameConfig.MAX_RADIUS + GameConfig.EAT_MARGIN, 2f * GameConfig.MAX_RADIUS + GameConfig.SUCTION_RANGE)
+        val drift = world.snakes.size * GameConfig.SUCTION_SPEED * dt
+        return grab + foodR + drift + 1f // + 1: slack for float rounding
+    }
 
     /** Eats the food if the head touches it; otherwise pulls nearby food a little closer. */
     private fun tryEat(

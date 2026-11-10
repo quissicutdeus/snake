@@ -60,8 +60,7 @@ object Movement {
         if (hitWall) s.steerLock = max(s.steerLock, GameConfig.WALL_BOUNCE_SECONDS)
 
         s.moveHeadTo(nx, ny)
-        s.trimTrail()
-        s.updateSegments()
+        s.trimTrailAndUpdateSegments()
         return hitWall
     }
 

@@ -29,7 +29,19 @@ class Snake(
         private set
     var heading = heading
     var length = length
+        private set(value) {
+            field = value
+            radius = GameConfig.radiusFor(value)
+            baseSpeed = baseSpeedFor(value)
+        }
+
+    // Derived from [length] and kept up to date by its setter: both curves use
+    // pow(), and radius is read for every body circle and every food item.
+    var radius = GameConfig.radiusFor(length)
         private set
+    private var baseSpeed = baseSpeedFor(length)
+
+    private fun baseSpeedFor(length: Float) = GameConfig.speedFor(length) * (if (isPlayer) 1f else GameConfig.AI_SPEED_FACTOR)
 
     /** Longest length ever reached (the player's score). */
     private var bestLength = length
@@ -86,13 +98,8 @@ class Snake(
     var drawY = FloatArray(32)
         private set
 
-    val radius: Float get() = GameConfig.radiusFor(length)
-
     val speed: Float
-        get() {
-            val base = GameConfig.speedFor(length) * (if (isPlayer) 1f else GameConfig.AI_SPEED_FACTOR)
-            return if (hasPower(PowerType.SPEED)) base * GameConfig.SPEED_POWER_FACTOR else base
-        }
+        get() = if (hasPower(PowerType.SPEED)) baseSpeed * GameConfig.SPEED_POWER_FACTOR else baseSpeed
 
     fun hasPower(type: PowerType): Boolean = powerTime[type.ordinal] > 0f
 
@@ -202,7 +209,7 @@ class Snake(
     }
 
     /** Drops trail points that lie beyond the body length (keeps one extra for interpolation). */
-    fun trimTrail() {
+    private fun trimTrail() {
         var acc = dist(x, y, trail.x(0), trail.y(0))
         for (i in 1 until trail.size) {
             acc += dist(trail.x(i - 1), trail.y(i - 1), trail.x(i), trail.y(i))
@@ -234,6 +241,19 @@ class Snake(
      * along the polyline head -> trail[0] -> trail[1] -> ... up to [length].
      */
     fun updateSegments() {
+        resample(trim = false)
+    }
+
+    /**
+     * After the head has moved: [trimTrail] and [updateSegments] in a single
+     * walk along the trail. The walk adds up exactly the same distances in the
+     * same order as [trimTrail], so it drops exactly the same points.
+     */
+    fun trimTrailAndUpdateSegments() {
+        resample(trim = true)
+    }
+
+    private fun resample(trim: Boolean) {
         val spacing = max(2f, radius * GameConfig.SEGMENT_SPACING_FACTOR)
         var count = 0
         addSegment(count++, x, y, 0f)
@@ -253,7 +273,11 @@ class Snake(
                 }
             }
             walked += segLen
-            if (walked >= length) break
+            if (walked >= length) {
+                // trimTrail() only looks from point 1 on, so it always keeps at least two.
+                if (trim) trail.truncate(max(i, 1) + 1)
+                break
+            }
             px = qx
             py = qy
         }

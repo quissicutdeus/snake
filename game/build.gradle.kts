@@ -72,3 +72,13 @@ tasks.register<JavaExec>("balanceReport") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("com.quissicutdeus.snake.game.preview.BalanceReportKt")
 }
+
+// Times the simulation step and the renderer's own work, and prints a checksum
+// of the final world (unchanged by a pure optimisation):
+//   ./gradlew :game:benchmark
+tasks.register<JavaExec>("benchmark") {
+    group = "verification"
+    description = "Times GameSim.step() and SceneRenderer.draw() on the JVM."
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.quissicutdeus.snake.game.preview.BenchmarkKt")
+}

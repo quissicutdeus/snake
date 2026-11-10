@@ -81,6 +81,7 @@ Handy extras that need no phone:
 ```sh
 ./gradlew :game:renderPreviews   # PNGs of the real game art -> game/build/previews/
 ./gradlew :game:balanceReport    # bot-played games: survival time, score, size mix
+./gradlew :game:benchmark        # time per sim step and per frame, plus a checksum of the final world
 ```
 
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
