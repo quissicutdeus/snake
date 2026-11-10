@@ -26,6 +26,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -59,6 +61,7 @@ import com.quissicutdeus.snake.game.render.Haptics
 import com.quissicutdeus.snake.game.render.HudInsets
 import com.quissicutdeus.snake.game.render.SceneRenderer
 import com.quissicutdeus.snake.game.sim.GameSim
+import com.quissicutdeus.snake.game.sim.SavedRun
 import com.quissicutdeus.snake.game.sim.SteerInput
 import com.quissicutdeus.snake.game.sim.Thumbstick
 
@@ -66,8 +69,9 @@ import com.quissicutdeus.snake.game.sim.Thumbstick
 private class GameHolder(
     style: SnakeStyle,
     val stick: Thumbstick,
+    resume: SavedRun? = null,
 ) {
-    val sim = GameSim(playerStyle = style)
+    val sim = GameSim(playerStyle = style, resume = resume)
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()
@@ -105,12 +109,16 @@ fun GameScreen(
     onSound: (Sound) -> Unit = {},
 ) {
     val density = LocalDensity.current
-    val game =
-        remember(key) {
-            val stick = with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) }
-            GameHolder(style, stick)
-        }
-    var paused by remember(key) { mutableStateOf(false) }
+    val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
+    // If Android closes the app in the background, the player's snake is saved
+    // with the screen and comes back (paused) in a fresh world. See SavedRun.
+    val saver =
+        Saver<GameHolder, String>(
+            save = { it.sim.snapshot()?.encode() },
+            restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it) } },
+        )
+    val game = rememberSaveable(key, saver = saver) { GameHolder(style, newStick()) }
+    var paused by rememberSaveable(key) { mutableStateOf(false) }
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val currentOnSound by rememberUpdatedState(onSound)

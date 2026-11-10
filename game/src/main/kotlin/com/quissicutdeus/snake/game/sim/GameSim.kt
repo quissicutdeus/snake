@@ -35,6 +35,8 @@ class GameSim(
     playerStyle: SnakeStyle = SnakeStyle.DEFAULT,
     playerName: String = "You",
     internal val options: SimOptions = SimOptions(),
+    /** Carry on a saved game: the player comes back as saved, in a freshly made world. */
+    resume: SavedRun? = null,
 ) {
     val rng = Random(seed)
     val world = World(options.width, options.height)
@@ -61,7 +63,9 @@ class GameSim(
 
     init {
         repeat(options.pelletCount) { world.pellets.add(randomPellet()) }
-        if (options.spawnPlayer) {
+        if (resume != null) {
+            comeBack(resume)
+        } else if (options.spawnPlayer) {
             addSnake(
                 name = playerName,
                 style = playerStyle,
@@ -75,6 +79,30 @@ class GameSim(
         spawner.fill(this)
         placeStartingPowerUps()
         grid.build(world.snakes)
+    }
+
+    /** The player's game so far, or null once it is over (nothing left to carry on). */
+    fun snapshot(): SavedRun? {
+        val p = player ?: return null
+        if (gameOver || !p.alive) return null
+        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList())
+    }
+
+    /**
+     * Brings the saved player back in the middle of the arena, coiled up so even
+     * a very long snake fits, and briefly protected (it was paused a moment ago).
+     */
+    private fun comeBack(run: SavedRun) {
+        val cx = world.width / 2f
+        val cy = world.height / 2f
+        val s = addSnake(run.name, run.style, isPlayer = true, x = cx, y = cy, heading = 0f, length = run.length)
+        s.bestLength = maxOf(run.bestLength, s.length)
+        run.powers.forEachIndexed { i, t -> s.powerTime[i] = t }
+        s.hearts = run.hearts
+        s.snakesEaten = run.snakesEaten
+        s.invulnerable = GameConfig.RESUME_INVULNERABLE_SECONDS
+        val coil = Coil.around(cx, cy, s.radius, s.length + GameConfig.TRAIL_SPACING * 2)
+        s.setPose(coil.xs, coil.ys, coil.count, coil.heading)
     }
 
     /** Advances by [elapsedSeconds] of real time. Returns the number of steps run. */

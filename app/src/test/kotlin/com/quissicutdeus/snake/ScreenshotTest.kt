@@ -8,8 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -24,6 +26,7 @@ import com.quissicutdeus.snake.ui.GameScreen
 import com.quissicutdeus.snake.ui.HighScoresScreen
 import com.quissicutdeus.snake.ui.MySnakeScreen
 import com.quissicutdeus.snake.ui.Settings
+import com.quissicutdeus.snake.ui.SniddleApp
 import com.quissicutdeus.snake.ui.SniddleTheme
 import com.quissicutdeus.snake.ui.TitleScreen
 import org.junit.Assert.assertEquals
@@ -114,6 +117,30 @@ class ScreenshotTest {
         compose.onNodeWithContentDescription("Sound off. Tap to turn it on.").assertExists()
         assertEquals(Settings(soundOn = false, buzzOn = true), storage.loadSettings())
         snap(name)
+    }
+
+    /**
+     * Android closes the app while a game is paused in the background: on
+     * return the kid is back in the game, still paused, not on the title screen.
+     */
+    @Test fun aPausedGameSurvivesTheAppBeingClosed() {
+        val restore = StateRestorationTester(compose)
+        restore.setContent { SniddleApp(storage, playSound = {}) }
+        advance(100)
+        compose.onNodeWithText("Play!").performClick()
+        advance(1000)
+        compose.onNodeWithContentDescription("Pause").performClick()
+        advance(100)
+
+        restore.emulateSavedInstanceStateRestore()
+        advance(500)
+
+        compose.onNodeWithText("Paused").assertExists()
+        compose.onNodeWithText("Play!").assertDoesNotExist()
+        snap("paused_after_restore")
+        compose.onNodeWithText("Keep playing").performClick()
+        advance(500)
+        compose.onNodeWithText("Paused").assertDoesNotExist()
     }
 
     private fun mySnakeScene(

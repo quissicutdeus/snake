@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.Storage
 import com.quissicutdeus.snake.game.audio.Sound
@@ -37,16 +39,69 @@ sealed interface Screen {
     ) : Screen
 }
 
+/** Saves the current [Screen] as a short text (see [SniddleApp]). */
+private val ScreenSaver: Saver<Screen, String> =
+    Saver(
+        save = { screen ->
+            when (screen) {
+                Screen.Title -> "title"
+                is Screen.Play -> "play|${screen.round}"
+                is Screen.GameOver -> with(screen.result) { "over|$score|$snakesEaten|$timestamp|${style.encode()}" }
+                Screen.MySnake -> "mysnake"
+                is Screen.HighScores -> "scores|${screen.highlight ?: ""}"
+            }
+        },
+        restore = { text -> decodeScreen(text) },
+    )
+
+private fun decodeScreen(text: String): Screen? {
+    val p = text.split('|')
+    return when (p[0]) {
+        "title" -> {
+            Screen.Title
+        }
+
+        "play" -> {
+            p.getOrNull(1)?.toIntOrNull()?.let { Screen.Play(it) }
+        }
+
+        "over" -> {
+            val score = p.getOrNull(1)?.toIntOrNull()
+            val eaten = p.getOrNull(2)?.toIntOrNull()
+            val time = p.getOrNull(3)?.toLongOrNull()
+            if (score == null || eaten == null || time == null) {
+                null
+            } else {
+                Screen.GameOver(GameResult(score, eaten, SnakeStyle.decode(p.getOrNull(4)), time))
+            }
+        }
+
+        "mysnake" -> {
+            Screen.MySnake
+        }
+
+        "scores" -> {
+            Screen.HighScores(p.getOrNull(1)?.toLongOrNull())
+        }
+
+        else -> {
+            null
+        }
+    }
+}
+
 /** Top level: a tiny screen switcher (no navigation library needed). [playSound] plays an effect. */
 @Composable
 fun SniddleApp(
     storage: Storage,
     playSound: (Sound) -> Unit,
 ) {
-    var screen by remember { mutableStateOf<Screen>(Screen.Title) }
+    // Saved with the activity, so after Android closes the app in the background
+    // the kid comes back to the same screen (a game comes back paused).
+    var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     var settings by remember { mutableStateOf(storage.loadSettings()) }
     var style by remember { mutableStateOf(storage.loadStyle()) }
-    var round by remember { mutableIntStateOf(0) }
+    var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun changeSettings(new: Settings) {
         settings = new

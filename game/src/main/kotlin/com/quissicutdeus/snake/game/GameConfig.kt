@@ -101,6 +101,9 @@ object GameConfig {
     /** Blinking invulnerability after losing a heart. */
     const val HURT_INVULNERABLE_SECONDS = 1.5f
 
+    /** Protection after a saved game comes back, so nothing can bite before the kid has their bearings. */
+    const val RESUME_INVULNERABLE_SECONDS = 3f
+
     /** Short protection after losing your tail, so one bite can't chew through the whole snake. */
     const val CUT_PROTECT_SECONDS = 0.8f
 

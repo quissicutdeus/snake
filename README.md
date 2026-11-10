@@ -45,6 +45,11 @@ screen and the pause screen, turn the buzz and the sound off and on. The
 phone's media volume sets how loud, and its own *Vibration & haptics* setting
 can switch the buzz off too.
 
+Switching to another app pauses the game. If the phone closes Sniddle in the
+background while you're away, the game is still there when you come back:
+paused, with your snake just as long, the same score and hearts. The other
+snakes and food are new, and you blink safe for a few seconds.
+
 **My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
 rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 
@@ -142,7 +147,8 @@ After a change, run `./gradlew :game:test :game:balanceReport` to see how games 
 game/   pure Kotlin, no Android: all rules, AI and drawing code
   model/   Snake (body follows the head's trail), food, SnakeStyle, scores
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
-           Rules, PowerUps, Ai, Spawner, Scoreboard
+           Rules, PowerUps, Ai, Spawner, Scoreboard, SavedRun (a game to carry
+           on after Android closes the app)
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
            FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),

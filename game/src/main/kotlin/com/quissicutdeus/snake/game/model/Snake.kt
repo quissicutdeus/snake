@@ -43,8 +43,9 @@ class Snake(
 
     private fun baseSpeedFor(length: Float) = GameConfig.speedFor(length) * (if (isPlayer) 1f else GameConfig.AI_SPEED_FACTOR)
 
-    /** Longest length ever reached (the player's score). */
-    private var bestLength = length
+    /** Longest length ever reached (the player's score). Set directly only to bring back a saved game. */
+    var bestLength = length
+        internal set
 
     var hearts = if (isPlayer) GameConfig.PLAYER_HEARTS else GameConfig.AI_HEARTS
     var alive = true
@@ -63,7 +64,7 @@ class Snake(
     var sinceAte = 10f
 
     /** Seconds left of each power (indexed by [PowerType.ordinal]). */
-    private val powerTime = FloatArray(PowerType.entries.size)
+    internal val powerTime = FloatArray(PowerType.entries.size)
 
     /** Seconds since spawned. */
     var age = 0f
