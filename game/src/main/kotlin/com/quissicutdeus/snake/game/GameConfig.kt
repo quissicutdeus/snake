@@ -44,17 +44,17 @@ object GameConfig {
     // ---- Movement ----------------------------------------------------------
 
     /** Speed at [MIN_LENGTH]. */
-    const val MAX_SPEED = 300f
+    const val MAX_SPEED = 400f
 
     /** Speed never drops below MAX_SPEED * this, however long a snake gets. */
     const val SPEED_FLOOR_FRACTION = 0.5f
     const val SPEED_FALLOFF_EXPONENT = 0.5f
 
     /** AI snakes move a little slower than the player at the same size (kid-friendly). */
-    const val AI_SPEED_FACTOR = 0.92f
+    const val AI_SPEED_FACTOR = 0.88f
 
     /** Maximum turning speed. */
-    const val TURN_RATE = 4.2f
+    const val TURN_RATE = 6.5f
 
     /** A new trail point is recorded whenever the head has moved this far. */
     const val TRAIL_SPACING = 3f
@@ -79,7 +79,7 @@ object GameConfig {
 
     /** Food within head radius * 2 + this drifts towards the head. */
     const val SUCTION_RANGE = 36f
-    const val SUCTION_SPEED = 260f
+    const val SUCTION_SPEED = 340f
 
     /** Dropped tail pieces lie on the ground this long before fading away. */
     const val TAIL_PIECE_LIFETIME = 60f

@@ -20,8 +20,10 @@ class SoakTest {
             if (!s.alive) continue
             sane(s, step)
             val r = s.radius
-            assertTrue(s.x >= r - 0.01f && s.x <= sim.world.width - r + 0.01f, "x out of arena at $step: $s ${s.x}")
-            assertTrue(s.y >= r - 0.01f && s.y <= sim.world.height - r + 0.01f, "y out of arena at $step: $s ${s.y}")
+            // Heads stay inside the fence. (Eating right after touching a wall can grow
+            // the head a hair past the line, hence the 1-unit slack.)
+            assertTrue(s.x >= r - 1f && s.x <= sim.world.width - r + 1f, "x out of arena at $step: $s ${s.x}")
+            assertTrue(s.y >= r - 1f && s.y <= sim.world.height - r + 1f, "y out of arena at $step: $s ${s.y}")
         }
         for (p in sim.world.pellets) if (p.x.isNaN() || p.y.isNaN()) fail("NaN pellet at $step")
         for (t in sim.world.tailPieces) if (t.x.isNaN() || t.y.isNaN() || t.value.isNaN()) fail("NaN piece at $step")

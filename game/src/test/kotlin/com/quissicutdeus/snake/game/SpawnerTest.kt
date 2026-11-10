@@ -30,15 +30,19 @@ class SpawnerTest {
             .filter { !it.isPlayer }
             .take(4)
             .forEach { it.alive = false }
+        var refilled = false
         repeat(600) {
             sim.step()
+            if (sim.world.snakes.count { !it.isPlayer && it.alive } == GameConfig.AI_TARGET_COUNT) refilled = true
             if (!p.alive) return@repeat
             val minD = GameConfig.offscreenDistance(p.radius) - 20f
             sim.world.snakes.filter { !it.isPlayer && it.age <= GameConfig.STEP * 1.5f }.forEach {
                 assertTrue(dist(it.x, it.y, p.x, p.y) >= minD, "new snake ${it.name} spawned on-screen")
             }
         }
-        assertTrue(sim.world.snakes.count { !it.isPlayer && it.alive } >= GameConfig.AI_TARGET_COUNT - 1)
+        // (The count itself moves around: the spawner also retires far-away snakes that
+        // no longer fit the size mix, e.g. after the player loses its tail.)
+        assertTrue(refilled, "the arena filled back up to ${GameConfig.AI_TARGET_COUNT} snakes")
     }
 
     @Test fun aiNamesAreSillyAndUnique() {

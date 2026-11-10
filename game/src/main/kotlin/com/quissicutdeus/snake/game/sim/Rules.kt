@@ -184,7 +184,9 @@ internal fun GameSim.bounce(
     s.heading = atan2(dy, dx)
     // Push the head out of the overlap so the same contact doesn't repeat next step.
     val push = max(2f, s.radius + other.radius - d + 2f)
-    s.moveHeadTo(s.x + dx / d * push, s.y + dy / d * push)
+    // Never push a head through the fence.
+    val r = s.radius
+    s.moveHeadTo((s.x + dx / d * push).coerceIn(r, world.width - r), (s.y + dy / d * push).coerceIn(r, world.height - r))
     s.updateSegments()
     s.steerLock = GameConfig.BOUNCE_SECONDS
     s.knockback = GameConfig.BOUNCE_SECONDS
