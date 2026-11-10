@@ -44,9 +44,14 @@ fun SniddleApp(
     playSound: (Sound) -> Unit,
 ) {
     var screen by remember { mutableStateOf<Screen>(Screen.Title) }
-    var soundOn by remember { mutableStateOf(storage.loadSoundOn()) }
+    var settings by remember { mutableStateOf(storage.loadSettings()) }
     var style by remember { mutableStateOf(storage.loadStyle()) }
     var round by remember { mutableIntStateOf(0) }
+
+    fun changeSettings(new: Settings) {
+        settings = new
+        storage.saveSettings(new)
+    }
 
     fun play() {
         round++
@@ -61,11 +66,8 @@ fun SniddleApp(
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onHighScores = { screen = Screen.HighScores() },
-                    soundOn = soundOn,
-                    onSoundOnChange = {
-                        soundOn = it
-                        storage.saveSoundOn(it)
-                    },
+                    settings = settings,
+                    onSettingsChange = ::changeSettings,
                 )
             }
 
@@ -75,7 +77,9 @@ fun SniddleApp(
                     style = style,
                     onGameOver = { screen = Screen.GameOver(it) },
                     onQuit = { screen = Screen.Title },
-                    onSound = { if (soundOn) playSound(it) },
+                    settings = settings,
+                    onSettingsChange = ::changeSettings,
+                    onSound = { if (settings.soundOn) playSound(it) },
                 )
             }
 

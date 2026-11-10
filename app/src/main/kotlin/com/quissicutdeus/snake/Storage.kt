@@ -5,8 +5,9 @@ import androidx.core.content.edit
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.sim.Scoreboard
+import com.quissicutdeus.snake.ui.Settings
 
-/** Everything saved on the device: the player's snake look, high scores, player names and the sound switch. */
+/** Everything saved on the device: the player's snake look, high scores, player names and the settings. */
 class Storage(
     context: Context,
 ) {
@@ -23,9 +24,17 @@ class Storage(
 
     fun resetScores() = prefs.edit { remove(KEY_SCORES) }
 
-    fun loadSoundOn(): Boolean = prefs.getBoolean(KEY_SOUND, true)
+    fun loadSettings(): Settings =
+        Settings(
+            soundOn = prefs.getBoolean(KEY_SOUND, true),
+            buzzOn = prefs.getBoolean(KEY_BUZZ, true),
+        )
 
-    fun saveSoundOn(on: Boolean) = prefs.edit { putBoolean(KEY_SOUND, on) }
+    fun saveSettings(settings: Settings) =
+        prefs.edit {
+            putBoolean(KEY_SOUND, settings.soundOn)
+            putBoolean(KEY_BUZZ, settings.buzzOn)
+        }
 
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
@@ -42,5 +51,6 @@ class Storage(
         const val KEY_SCORES = "scores"
         const val KEY_NAMES = "names"
         const val KEY_SOUND = "sound"
+        const val KEY_BUZZ = "buzz"
     }
 }

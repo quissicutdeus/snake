@@ -39,10 +39,11 @@ your score:
 
 Sound effects go with the big moments (*nom-nom*, *boing*, *clang*, a
 power-up jingle, a sad *wah-wah* when you're gobbled) and a little pop for
-every food dot, rising in pitch when you gobble a row of them. The speaker
-button on the title screen turns sound off and on; the phone's media volume
-sets how loud. The phone also gives a little buzz for the big moments (it
-follows the phone's own *Vibration & haptics* setting).
+every food dot, rising in pitch when you gobble a row of them. The phone also
+gives a little buzz for the big moments. Two round buttons, on the title
+screen and the pause screen, turn the buzz and the sound off and on. The
+phone's media volume sets how loud, and its own *Vibration & haptics* setting
+can switch the buzz off too.
 
 **My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
 rainbow, checker), eyes and a hat. Everything is unlocked from the start.
@@ -153,7 +154,7 @@ app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
   ui/               Title, Game (frame loop + thumbstick + pause),
                     Game over ("Who played?"), High scores, My Snake
-  Storage           snake look, top-10 scores, names, sound on/off
+  Storage           snake look, top-10 scores, names, settings (sound, buzz)
                     (SharedPreferences)
   SoundPlayer       plays the effects (one preloaded AudioTrack each)
 ```
@@ -167,5 +168,5 @@ one day.
 ahead of time at install (profileinstaller does this for sideloaded APKs too),
 so the first rounds after an update don't stutter.
 
-The original design notes are in [`PLAN.md`](PLAN.md). Ideas for later: sound
-effects, a joystick option, levels, iOS, Play Store.
+The original design notes are in [`PLAN.md`](PLAN.md). Ideas for later: levels,
+iOS, Play Store.

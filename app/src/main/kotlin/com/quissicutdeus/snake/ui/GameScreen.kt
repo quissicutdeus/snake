@@ -100,6 +100,8 @@ fun GameScreen(
     onGameOver: (GameResult) -> Unit,
     onQuit: () -> Unit,
     modifier: Modifier = Modifier,
+    settings: Settings = Settings(),
+    onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
 ) {
     val density = LocalDensity.current
@@ -112,6 +114,7 @@ fun GameScreen(
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val currentOnSound by rememberUpdatedState(onSound)
+    val buzzOn by rememberUpdatedState(settings.buzzOn)
     val view = LocalView.current
 
     // Pause when the app goes to the background; back button pauses / resumes.
@@ -124,7 +127,8 @@ fun GameScreen(
             withFrameNanos { now ->
                 val dt = if (last == 0L) 0f else ((now - last) / 1_000_000_000f).coerceAtMost(0.1f)
                 last = now
-                step(game, dt, paused, currentOnSound)?.let { view.performHapticFeedback(hapticFor(it)) }
+                val buzz = step(game, dt, paused, currentOnSound)
+                if (buzz != null && buzzOn) view.performHapticFeedback(hapticFor(buzz))
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     val p = game.sim.player!!
@@ -148,7 +152,7 @@ fun GameScreen(
             )
         }
         if (paused) {
-            PauseOverlay(onResume = { paused = false }, onQuit = onQuit)
+            PauseOverlay(settings, onSettingsChange, onResume = { paused = false }, onQuit = onQuit)
         }
     }
 }
@@ -267,7 +271,8 @@ private fun step(
 
 /**
  * System haptics: no permission needed, and they follow the phone's own
- * "vibration & haptics" setting, so turning that off silences the game too.
+ * "vibration & haptics" setting, so turning that off silences the game too
+ * (as does the game's own buzz switch).
  */
 private fun hapticFor(buzz: Buzz): Int =
     when (buzz) {
@@ -301,6 +306,8 @@ private fun PauseButton(
 
 @Composable
 private fun PauseOverlay(
+    settings: Settings,
+    onSettingsChange: (Settings) -> Unit,
     onResume: () -> Unit,
     onQuit: () -> Unit,
     modifier: Modifier = Modifier,
@@ -318,6 +325,8 @@ private fun PauseOverlay(
             KidButton("Keep playing", onResume)
             Spacer(Modifier.height(14.dp))
             KidButton("Quit to menu", onQuit, color = KidColors.Grape, big = false)
+            Spacer(Modifier.height(20.dp))
+            SettingsButtons(settings, onSettingsChange)
         }
     }
 }

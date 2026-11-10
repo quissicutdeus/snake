@@ -1,11 +1,17 @@
 package com.quissicutdeus.snake
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
@@ -17,8 +23,10 @@ import com.quissicutdeus.snake.ui.GameResult
 import com.quissicutdeus.snake.ui.GameScreen
 import com.quissicutdeus.snake.ui.HighScoresScreen
 import com.quissicutdeus.snake.ui.MySnakeScreen
+import com.quissicutdeus.snake.ui.Settings
 import com.quissicutdeus.snake.ui.SniddleTheme
 import com.quissicutdeus.snake.ui.TitleScreen
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -63,9 +71,9 @@ class ScreenshotTest {
 
     private fun titleScene(
         name: String,
-        soundOn: Boolean = true,
+        settings: Settings = Settings(),
     ) {
-        show { TitleScreen(style, {}, {}, {}, soundOn = soundOn, onSoundOnChange = {}) }
+        show { TitleScreen(style, {}, {}, {}, settings = settings, onSettingsChange = {}) }
         advance(1500)
         snap(name)
     }
@@ -80,6 +88,32 @@ class ScreenshotTest {
         advance(1500)
         snap(name)
         compose.onRoot().performTouchInput { up() }
+    }
+
+    /** Pauses a game and flips the sound switch there; the change must stick and be saved. */
+    private fun pausedScene(name: String) {
+        show {
+            var settings by remember { mutableStateOf(storage.loadSettings()) }
+            GameScreen(
+                key = 1,
+                style = style,
+                onGameOver = {},
+                onQuit = {},
+                settings = settings,
+                onSettingsChange = {
+                    settings = it
+                    storage.saveSettings(it)
+                },
+            )
+        }
+        advance(300)
+        compose.onNodeWithContentDescription("Pause").performClick()
+        advance(100)
+        compose.onNodeWithContentDescription("Sound on. Tap to turn it off.").performClick()
+        advance(100)
+        compose.onNodeWithContentDescription("Sound off. Tap to turn it on.").assertExists()
+        assertEquals(Settings(soundOn = false, buzzOn = true), storage.loadSettings())
+        snap(name)
     }
 
     private fun mySnakeScene(
@@ -114,6 +148,8 @@ class ScreenshotTest {
 
     @Test fun playingLandscape() = playScene("game_landscape")
 
+    @Test fun pausedLandscape() = pausedScene("paused_landscape")
+
     @Test fun mySnakeLandscape() = mySnakeScene("my_snake_landscape")
 
     @Test fun gameOverLandscape() = gameOverScene("game_over_landscape")
@@ -124,11 +160,15 @@ class ScreenshotTest {
 
     @Config(qualifiers = PORTRAIT)
     @Test
-    fun titlePortrait() = titleScene("title_portrait", soundOn = false)
+    fun titlePortrait() = titleScene("title_portrait", Settings(soundOn = false, buzzOn = false))
 
     @Config(qualifiers = PORTRAIT)
     @Test
     fun playingPortrait() = playScene("game_portrait")
+
+    @Config(qualifiers = PORTRAIT)
+    @Test
+    fun pausedPortrait() = pausedScene("paused_portrait")
 
     @Config(qualifiers = PORTRAIT)
     @Test

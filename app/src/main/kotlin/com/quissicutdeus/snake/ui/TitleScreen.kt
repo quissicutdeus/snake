@@ -90,15 +90,15 @@ fun TitleScreen(
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
     onHighScores: () -> Unit,
-    soundOn: Boolean,
-    onSoundOnChange: (Boolean) -> Unit,
+    settings: Settings,
+    onSettingsChange: (Settings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
         ArenaBackground(Modifier.fillMaxSize())
-        SoundButton(
-            soundOn,
-            onSoundOnChange,
+        SettingsButtons(
+            settings,
+            onSettingsChange,
             Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
@@ -137,59 +137,6 @@ fun TitleScreen(
                     Spacer(Modifier.height(28.dp))
                     buttons()
                 }
-            }
-        }
-    }
-}
-
-/** Round speaker button: sound on (waves) or off (a cross). */
-@Composable
-private fun SoundButton(
-    soundOn: Boolean,
-    onSoundOnChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        onClick = { onSoundOnChange(!soundOn) },
-        modifier =
-            modifier
-                .size(56.dp)
-                .semantics {
-                    contentDescription = if (soundOn) "Sound on. Tap to turn it off." else "Sound off. Tap to turn it on."
-                },
-        shape = CircleShape,
-        color = Color(0x662B2B3A),
-    ) {
-        Canvas(Modifier.padding(14.dp)) {
-            val w = size.width
-            val h = size.height
-            val speaker =
-                Path().apply {
-                    moveTo(0f, h * 0.35f)
-                    lineTo(w * 0.22f, h * 0.35f)
-                    lineTo(w * 0.5f, h * 0.08f)
-                    lineTo(w * 0.5f, h * 0.92f)
-                    lineTo(w * 0.22f, h * 0.65f)
-                    lineTo(0f, h * 0.65f)
-                    close()
-                }
-            drawPath(speaker, Color.White)
-            val stroke = Stroke(w * 0.09f, cap = StrokeCap.Round)
-            if (soundOn) {
-                for (r in floatArrayOf(0.22f, 0.4f)) {
-                    drawArc(
-                        Color.White,
-                        startAngle = -45f,
-                        sweepAngle = 90f,
-                        useCenter = false,
-                        topLeft = Offset(w * (0.5f - r), h * (0.5f - r)),
-                        size = Size(w * 2 * r, h * 2 * r),
-                        style = stroke,
-                    )
-                }
-            } else {
-                drawLine(Color.White, Offset(w * 0.66f, h * 0.32f), Offset(w * 0.98f, h * 0.68f), stroke.width, StrokeCap.Round)
-                drawLine(Color.White, Offset(w * 0.98f, h * 0.32f), Offset(w * 0.66f, h * 0.68f), stroke.width, StrokeCap.Round)
             }
         }
     }
