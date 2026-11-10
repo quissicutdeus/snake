@@ -35,6 +35,9 @@ your score:
 | **Super Speed** | flickering yellow ball with a lightning bolt | Much faster and turns quicker, with a sparkle trail. |
 | **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
 
+The phone gives a little buzz when you chomp a snake, grab a power-up, get hurt
+or get gobbled (it follows the phone's own *Vibration & haptics* setting).
+
 **My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
 rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 
@@ -133,7 +136,8 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
            Rules, PowerUps, Ai, Spawner, Scoreboard
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
            FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
-           Fx (particles, comic words, shake), PosedSnake
+           Fx (particles, comic words, shake), Haptics (which buzz when),
+           PosedSnake
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas

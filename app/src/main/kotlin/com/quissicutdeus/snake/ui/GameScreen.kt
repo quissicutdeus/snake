@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake.ui
 
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -34,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +45,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.quissicutdeus.snake.ComposeCanvas2D
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.render.Buzz
 import com.quissicutdeus.snake.game.render.Camera
 import com.quissicutdeus.snake.game.render.Fx
+import com.quissicutdeus.snake.game.render.Haptics
 import com.quissicutdeus.snake.game.render.HudInsets
 import com.quissicutdeus.snake.game.render.SceneRenderer
 import com.quissicutdeus.snake.game.sim.GameSim
@@ -58,6 +62,7 @@ private class GameHolder(
     val sim = GameSim(playerStyle = style)
     val camera = Camera()
     val fx = Fx()
+    val haptics = Haptics()
     val input = SteerInput()
     val adapter = ComposeCanvas2D()
     var time = 0f
@@ -86,6 +91,7 @@ fun GameScreen(
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val deadZone = with(LocalDensity.current) { 14.dp.toPx() }
+    val view = LocalView.current
 
     // Pause when the app goes to the background; back button pauses / resumes.
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { paused = true }
@@ -97,7 +103,7 @@ fun GameScreen(
             withFrameNanos { now ->
                 val dt = if (last == 0L) 0f else ((now - last) / 1_000_000_000f).coerceAtMost(0.1f)
                 last = now
-                step(game, dt, paused, deadZone)
+                step(game, dt, paused, deadZone)?.let { view.performHapticFeedback(hapticFor(it)) }
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     val p = game.sim.player!!
@@ -179,15 +185,19 @@ private fun ArenaCanvas(
     }
 }
 
-/** One frame: steer from the finger, advance the world, effects and camera. */
+/**
+ * One frame: steer from the finger, advance the world, effects and camera.
+ * Returns the buzz to play for this frame, if any.
+ */
 private fun step(
     game: GameHolder,
     dt: Float,
     paused: Boolean,
     deadZone: Float,
-) {
+): Buzz? {
     val sim = game.sim
-    val p = sim.player ?: return
+    val p = sim.player ?: return null
+    var buzz: Buzz? = null
     if (!paused) {
         game.time += dt
         if (game.fingerDown && p.alive && game.width > 0f) {
@@ -202,13 +212,28 @@ private fun step(
         }
         sim.update(dt, game.input)
         game.fx.onEvents(sim, sim.events)
+        buzz = game.haptics.onEvents(sim.events, p.id, dt)
         game.fx.update(dt)
         if (sim.gameOver) game.overTimer += dt
     }
     if (game.width > 0f) {
         game.camera.followSnake(p, sim.renderAlpha, game.width, game.height, if (paused) 0f else dt)
     }
+    return buzz
 }
+
+/**
+ * System haptics: no permission needed, and they follow the phone's own
+ * "vibration & haptics" setting, so turning that off silences the game too.
+ */
+private fun hapticFor(buzz: Buzz): Int =
+    when (buzz) {
+        Buzz.TAP -> HapticFeedbackConstants.CLOCK_TICK
+        Buzz.THUD -> HapticFeedbackConstants.VIRTUAL_KEY
+        Buzz.CHEER -> HapticFeedbackConstants.CONFIRM
+        Buzz.OUCH -> HapticFeedbackConstants.LONG_PRESS
+        Buzz.GOBBLED -> HapticFeedbackConstants.REJECT
+    }
 
 @Composable
 private fun PauseButton(
