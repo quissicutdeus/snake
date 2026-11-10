@@ -141,7 +141,7 @@ fun GameScreen(
 
     Box(modifier.fillMaxSize()) {
         ArenaCanvas(game, { frame }, rememberHudInsets(), Modifier.fillMaxSize())
-        if (!game.sim.gameOver) {
+        if (!game.sim.gameOver && !paused) {
             PauseButton(
                 onClick = { paused = true },
                 modifier =
