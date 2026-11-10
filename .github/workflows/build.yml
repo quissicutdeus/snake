@@ -25,14 +25,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+      # v6 caches through gradle-actions-caching, a proprietary component:
+      # using it accepts https://gradle.com/legal/terms-of-use/ (agreed
+      # 2026-11-10). cache-provider: basic switches to the open-source cache.
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Install Android SDK packages
         run: |
@@ -55,7 +58,7 @@ jobs:
 
       - name: Upload reports (tests, lint, detekt)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports
           path: |
@@ -63,20 +66,20 @@ jobs:
             app/build/reports
 
       - name: Upload APK (optimized, install this one)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snake-arena-apk
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snake-arena-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: screenshots
           path: app/build/screenshots
@@ -90,7 +93,7 @@ jobs:
     permissions:
       contents: write # create the tag and the release
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: snake-arena-apk
 
