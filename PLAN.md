@@ -94,7 +94,7 @@ app/    Android application, Jetpack Compose
   withFrameNanos loop + pointer input), Camera, Hud, Title / MySnake /
   HighScores / GameOver screens, storage via DataStore or SharedPreferences.
   MainActivity: immersive, keep screen on. Manifest with NO permissions.
-.github/workflows/build.yml – run game tests, build debug APK, upload artifact
+.github/workflows/build.yml – lint, test, build; publish a GitHub release with the APK
 README.md – how to build, install on a phone, tune the game
 ```
 

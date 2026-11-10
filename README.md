@@ -32,20 +32,22 @@ rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 
 Needs **Android 16 or newer** (Pixel 6 and later).
 
-1. Open the [Build workflow runs](../../actions/workflows/build.yml) and pick the
-   latest green one.
-2. Download the **`snake-arena-apk`** artifact (a zip) and unzip it to get
-   `app-release.apk`.
-3. Get the APK onto the phone (Google Drive, USB, email to yourself…) and tap it.
-   Android will ask to allow installing apps from that source — allow it once.
+1. On the phone, open the **[latest release](../../releases/latest)** and tap
+   **`snake-arena.apk`** (or use the direct link:
+   [`releases/latest/download/snake-arena.apk`](../../releases/latest/download/snake-arena.apk)).
+2. Open the download. Android asks to allow installing apps from that source —
+   allow it once.
 
-Or with a cable and `adb`: `adb install -r app-release.apk`.
+Or with a cable and `adb`: `adb install -r snake-arena.apk`.
 
-Every build is signed with the same key ([`app/debug.keystore`](app/debug.keystore),
-committed on purpose; it is not secret and not for the Play Store), so a new APK
-**installs over the old one and keeps the high scores**.
-Use `app-release.apk` (optimized, ~2 MB, smoother); `snake-arena-debug-apk` is
-only for debugging.
+Every push that passes [CI](.github/workflows/build.yml) publishes a new
+[release](../../releases) `v1.0.<build number>`; **Run workflow** on the
+[Build workflow page](../../actions/workflows/build.yml) makes one on demand.
+The build number is also the app's version code, and every build is signed
+with the same key ([`app/debug.keystore`](app/debug.keystore), committed on
+purpose; it is not secret and not for the Play Store), so a new release
+**installs over the old one and keeps the high scores**. (A local `1.0-dev`
+build can't replace a newer release; uninstall first.)
 
 ## Build it yourself
 
@@ -60,8 +62,8 @@ You need JDK 21 and the Android SDK with **platform 37.2** (Android 17).
 ./gradlew :app:assembleDebug         # -> app/build/outputs/apk/debug/app-debug.apk
 ```
 
-[CI](.github/workflows/build.yml) runs all of these on every push and keeps the
-APKs and screenshots as downloadable artifacts.
+[CI](.github/workflows/build.yml) runs all of these on every push, keeps the
+screenshots as a downloadable artifact and publishes the APK as a release.
 
 Handy extras that need no phone:
 
