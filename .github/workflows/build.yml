@@ -1,9 +1,10 @@
 name: Build
 
-# Every push: lint, test and build. If all of that passes, a GitHub release
-# "v1.0.<build number>" is published with snake-arena.apk attached, so the
-# newest APK is always at  releases/latest/download/snake-arena.apk
-# (pull requests only build). "Run workflow" in the Actions tab does the same.
+# Every push and pull request: lint, test and build. On main, if all of that
+# passes, a GitHub release "v0.0.<build number>" is published with
+# snake-arena.apk attached, so the newest APK is always at
+#   releases/latest/download/snake-arena.apk
+# "Run workflow" in the Actions tab publishes one from any branch.
 on:
   push:
     branches: ['**']
@@ -14,7 +15,10 @@ permissions:
   contents: read
 
 env:
-  VERSION_NAME: 1.0.${{ github.run_number }}
+  # Still a beta: 0.0.<build number>. Change the "0.0" to 0.1 / 1.0 when it's
+  # ready. Android only compares the build number (versionCode), which always
+  # goes up, so every release still installs over the previous one.
+  VERSION_NAME: 0.0.${{ github.run_number }}
 
 jobs:
   build:
@@ -80,7 +84,7 @@ jobs:
   release:
     name: Publish GitHub release
     needs: build
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -96,7 +100,7 @@ jobs:
         run: |
           mv app-release.apk snake-arena.apk
           cat > notes.md <<NOTES
-          Snake Arena $VERSION_NAME for Android 16+ (Pixel 6 and newer).
+          Snake Arena $VERSION_NAME (beta) for Android 16+ (Pixel 6 and newer).
 
           **Install:** open this page on the phone, tap **snake-arena.apk**, then open
           the download and allow installing apps from that source when Android asks.
@@ -107,6 +111,6 @@ jobs:
           gh release create "v$VERSION_NAME" snake-arena.apk \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Snake Arena $VERSION_NAME" \
+            --title "Snake Arena $VERSION_NAME (beta)" \
             --notes-file notes.md \
             --latest

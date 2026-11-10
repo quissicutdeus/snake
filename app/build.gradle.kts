@@ -22,9 +22,9 @@ android {
         minSdk = 36
         targetSdk = 37
         // CI passes the build number (-PversionCode=... -PversionName=...) so every
-        // release installs over the previous one. Local builds are 1 / "1.0-dev".
+        // release installs over the previous one. Local builds are 1 / "0.0-dev".
         versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 1
-        versionName = providers.gradleProperty("versionName").orNull ?: "1.0-dev"
+        versionName = providers.gradleProperty("versionName").orNull ?: "0.0-dev"
     }
 
     signingConfigs {

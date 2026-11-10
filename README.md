@@ -50,14 +50,15 @@ Needs **Android 16 or newer** (Pixel 6 and later).
 
 Or with a cable and `adb`: `adb install -r snake-arena.apk`.
 
-Every push that passes [CI](.github/workflows/build.yml) publishes a new
-[release](../../releases) `v1.0.<build number>`; **Run workflow** on the
-[Build workflow page](../../actions/workflows/build.yml) makes one on demand.
-The build number is also the app's version code, and every build is signed
-with the same key ([`app/debug.keystore`](app/debug.keystore), committed on
-purpose; it is not secret and not for the Play Store), so a new release
-**installs over the old one and keeps the high scores**. (A local `1.0-dev`
-build can't replace a newer release; uninstall first.)
+Snake Arena is still a **beta**: every push to `main` that passes
+[CI](.github/workflows/build.yml) publishes a new [release](../../releases)
+`v0.0.<build number>`; **Run workflow** on the
+[Build workflow page](../../actions/workflows/build.yml) makes one on demand
+from any branch. The build number is also the app's version code, and every
+build is signed with the same key ([`app/debug.keystore`](app/debug.keystore),
+committed on purpose; it is not secret and not for the Play Store), so a new
+release **installs over the old one and keeps the high scores**. (A local
+`0.0-dev` build can't replace a newer release; uninstall first.)
 
 ## Build it yourself
 
