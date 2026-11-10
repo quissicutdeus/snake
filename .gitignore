@@ -15,4 +15,6 @@ captures/
 *.apk
 *.aab
 *.keystore
+# Shared, non-secret debug key so every build (local or CI) installs over the last one.
+!app/debug.keystore
 *.jks

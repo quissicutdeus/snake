@@ -2,10 +2,38 @@
 // tested on any machine and reused by a future iOS port.
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.lint) // Android Lint for a plain Kotlin module
+    alias(libs.plugins.detekt)
 }
 
+// Built with JDK 21, but emits Java 17 bytecode like the Android app, so the
+// app can use (and inline) game code.
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        // Compiler checks: every warning (plus the extra K2 checks, e.g. unused
+        // variables and redundant code) fails the build.
+        allWarningsAsErrors.set(true)
+        extraWarnings.set(true)
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+}
+
+lint {
+    warningsAsErrors = true
+    abortOnError = true
+    checkAllWarnings = true
+    checkTestSources = true
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {
@@ -26,8 +54,13 @@ tasks.register<JavaExec>("renderPreviews") {
     group = "verification"
     description = "Renders PNG previews of the game art into build/previews."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.snakearena.game.preview.RenderPreviewsKt")
-    args(layout.buildDirectory.dir("previews").get().asFile.absolutePath)
+    mainClass.set("com.quissicutdeus.snake.game.preview.RenderPreviewsKt")
+    args(
+        layout.buildDirectory
+            .dir("previews")
+            .get()
+            .asFile.absolutePath,
+    )
     jvmArgs("-Djava.awt.headless=true")
 }
 
@@ -37,5 +70,5 @@ tasks.register<JavaExec>("balanceReport") {
     group = "verification"
     description = "Prints how bot-played games go with the current GameConfig."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.snakearena.game.preview.BalanceReportKt")
+    mainClass.set("com.quissicutdeus.snake.game.preview.BalanceReportKt")
 }

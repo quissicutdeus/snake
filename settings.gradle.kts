@@ -16,6 +16,11 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
+        // Google's mirror of Maven Central, only for Robolectric: its large
+        // native-graphics jar is often rate-limited (HTTP 429) on Maven Central.
+        maven("https://maven-central.storage-download.googleapis.com/maven2/") {
+            content { includeGroup("org.robolectric") }
+        }
         mavenCentral()
     }
 }

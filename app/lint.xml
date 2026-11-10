@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Android Lint settings for the app. Every check is on (checkAllWarnings);
+     anything switched off here is explained. -->
+<lint>
+    <!-- Slack Compose rule: Compose strong skipping is on by default (Kotlin 2.0.20+), so
+         List parameters no longer stop composables from skipping; wrapping them in
+         immutable collections would add a dependency for nothing. -->
+    <issue id="ComposeUnstableCollections" severity="ignore" />
+</lint>

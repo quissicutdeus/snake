@@ -1,0 +1,37 @@
+# detekt: overrides on top of the default rules (buildUponDefaultConfig = true).
+# Everything not listed here uses detekt's defaults.
+config:
+  validation: true
+
+complexity:
+  TooManyFunctions:
+    # Canvas2D is a drawing interface (one function per primitive) and Snake /
+    # GameSim are the core classes; splitting them would only scatter them.
+    allowedFunctionsPerClass: 20
+    allowedFunctionsPerInterface: 20
+    allowedFunctionsPerObject: 15
+    allowedFunctionsPerFile: 15
+  CyclomaticComplexMethod:
+    # A `when` that maps each game event to one effect is easy to read.
+    ignoreSimpleWhenEntries: true
+
+style:
+  MagicNumber:
+    # Gameplay numbers must live in GameConfig, so this stays on for the
+    # simulation and model. Drawing code is made of proportions (an eye sits at
+    # 0.42 x head radius...) where names would hurt readability.
+    excludes:
+      - '**/test/**'
+      - '**/*.kts'
+      - '**/render/**'
+      - '**/ui/**'
+      - '**/ComposeCanvas2D.kt'
+  MaxLineLength:
+    maxLineLength: 140 # same as ktlint (.editorconfig)
+  ReturnCount:
+    excludeGuardClauses: true
+
+naming:
+  FunctionNaming:
+    # Composable functions are named like types (TitleScreen, KidButton).
+    ignoreAnnotated: ['Composable']

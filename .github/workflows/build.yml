@@ -22,23 +22,44 @@ jobs:
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;36.0.0"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.2" "build-tools;36.0.0"
+
+      - name: Linters (ktlint, detekt, Android Lint, dead code)
+        run: ./gradlew lintAll --console=plain
 
       - name: Game tests
         run: ./gradlew :game:test --console=plain
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --console=plain
+      - name: App screenshot tests (Robolectric)
+        run: ./gradlew :app:testDebugUnitTest --console=plain
 
-      - name: Upload test reports
+      - name: Build APKs
+        run: ./gradlew :app:assembleDebug :app:assembleRelease --console=plain
+
+      - name: Upload reports (tests, lint, detekt)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: game/build/reports/tests
+          path: |
+            game/build/reports
+            app/build/reports
 
-      - name: Upload APK
+      - name: Upload APK (optimized, install this one)
+        uses: actions/upload-artifact@v4
+        with:
+          name: snake-arena-apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: snake-arena-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: app/build/screenshots

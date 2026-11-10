@@ -100,21 +100,23 @@ README.md – how to build, install on a phone, tune the game
 
 ## Toolchain (checked 2026-11-10)
 
-- **AGP 9.2.x** (Compose 1.12 needs AGP ≥ 9.2.0 and compileSdk 37). AGP 9 has
+- **AGP 9.5.1** (latest stable; Compose 1.12 needs AGP ≥ 9.2.0). AGP 9 has
   built-in Kotlin: do not apply `org.jetbrains.kotlin.android`; still apply
-  `org.jetbrains.kotlin.plugin.compose`. To pin a newer Kotlin, declare
+  `org.jetbrains.kotlin.plugin.compose`. Kotlin is pinned by declaring
   `org.jetbrains.kotlin.jvm` with `apply false` in the root build.
-- **Compose BOM 2026.08.00**, compileSdk/targetSdk 37, minSdk 26.
-- **Kotlin 2.4.21** (latest on Maven Central).
-- **Gradle 9.x** wrapper (9.8.2 / 9.9.0 are out; pick one AGP 9.2 supports).
-- JDK 21 is installed in the cloud container.
-- Re-check these versions when the session starts and the hosts below are reachable.
+- **Compose BOM 2026.09.00**; **compileSdk 37.2** (newest stable platform),
+  targetSdk 37, **minSdk 36** — the owner only uses Pixels and wants the latest
+  (Android 16+ = Pixel 6 and newer).
+- **Kotlin 2.4.21**, **Gradle 9.9.0** wrapper, JDK 21 (game module emits Java 17
+  bytecode like the app so the app can inline game code).
+- Pixels have 90/120 Hz screens: rendering blends between the fixed 60 Hz sim
+  steps so motion is smooth at any refresh rate.
 
 ## Environment requirement
 
 The Android build needs **`dl.google.com`** and **`maven.google.com`** (Google
-Maven: AGP, AndroidX; plus the Android SDK). The Default cloud environment
-blocks them. To build in the cloud session, allow both hosts (environment menu
+Maven: AGP, AndroidX; plus the Android SDK). (They were reachable when the build
+was done.) To build in the cloud session, allow both hosts (environment menu
 → Edit → Network access → Allowed domains, keep "Allow package managers"
 ticked). Without them only the `game` module builds locally, and the APK is
 built by GitHub Actions.

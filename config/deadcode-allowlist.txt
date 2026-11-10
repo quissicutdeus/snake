@@ -1,0 +1,8 @@
+# Code the dead-code check (./gradlew deadCode) may report but that stays on purpose.
+# One substring per line; a reported entry containing it is ignored. Say why.
+
+# Kotlin `inline` functions: their bodies are copied into callers, so the
+# original methods are never called directly.
+Path2D :: public final void forEach(
+SpatialGrid :: public final void query(
+SpatialGrid :: public final void forEachInBox(

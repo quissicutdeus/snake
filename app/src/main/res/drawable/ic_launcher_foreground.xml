@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A happy green snake with a crown, drawn in vectors (108dp adaptive-icon canvas). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- body outline + body -->
+    <path
+        android:pathData="M26,84 C34,66 46,90 54,70"
+        android:strokeWidth="21"
+        android:strokeColor="#1B7A43"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M26,84 C34,66 46,90 54,70"
+        android:strokeWidth="15"
+        android:strokeColor="#2ECC71"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M29,80 C35,70 43,82 50,72"
+        android:strokeWidth="4"
+        android:strokeColor="#8FE8B4"
+        android:strokeLineCap="round" />
+    <!-- head -->
+    <path
+        android:fillColor="#1B7A43"
+        android:pathData="M62,58 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0" />
+    <path
+        android:fillColor="#2ECC71"
+        android:pathData="M62,58 m-18,0 a18,18 0 1,0 36,0 a18,18 0 1,0 -36,0" />
+    <path
+        android:fillColor="#8FE8B4"
+        android:pathData="M54,49 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <!-- eyes -->
+    <path
+        android:fillColor="#2B2B3A"
+        android:pathData="M55,55 m-7.2,0 a7.2,7.2 0 1,0 14.4,0 a7.2,7.2 0 1,0 -14.4,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,55 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <path
+        android:fillColor="#2B2B3A"
+        android:pathData="M69,55 m-7.2,0 a7.2,7.2 0 1,0 14.4,0 a7.2,7.2 0 1,0 -14.4,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M69,55 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <path
+        android:fillColor="#2B2B3A"
+        android:pathData="M57,56 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <path
+        android:fillColor="#2B2B3A"
+        android:pathData="M71,56 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <!-- smile -->
+    <path
+        android:pathData="M55,65 Q62,72 69,65"
+        android:strokeWidth="2.6"
+        android:strokeColor="#2B2B3A"
+        android:strokeLineCap="round" />
+    <!-- crown -->
+    <path
+        android:fillColor="#FFC928"
+        android:strokeColor="#B8860B"
+        android:strokeWidth="1.6"
+        android:strokeLineJoin="round"
+        android:pathData="M51,42 L49,30 L56,35 L62,26 L68,35 L75,30 L73,42 Z" />
+    <path
+        android:fillColor="#E53935"
+        android:pathData="M62,38 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
+</vector>
