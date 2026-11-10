@@ -14,38 +14,45 @@ plugins {
 //   ./gradlew spotlessCheck   fails on badly formatted code
 //   ./gradlew spotlessApply   fixes it
 spotless {
+    // Build output, Gradle/IDE state and local.properties are left out while
+    // walking the tree (not filtered afterwards with targetExclude), so a task
+    // writing to app/build at the same time can't break the check.
+    fun sources(vararg patterns: String) =
+        fileTree(rootDir) {
+            include(*patterns)
+            exclude("**/build/**", ".gradle/**", ".idea/**", ".kotlin/**", "local.properties")
+        }
+
     kotlin {
-        target("**/*.kt")
-        targetExclude("**/build/**")
+        target(sources("**/*.kt"))
         ktlint(libs.versions.ktlint.get())
     }
     kotlinGradle {
-        target("**/*.gradle.kts")
-        targetExclude("**/build/**")
+        target(sources("**/*.gradle.kts"))
         ktlint(libs.versions.ktlint.get())
     }
     // Everything else .editorconfig covers: spaces, no trailing whitespace,
     // a final newline.
     format("misc") {
         target(
-            "**/*.yml",
-            "**/*.yaml",
-            "**/*.toml",
-            "**/*.xml",
-            "**/*.pro",
-            "**/*.properties",
-            ".editorconfig",
-            ".gitignore",
+            sources(
+                "**/*.yml",
+                "**/*.yaml",
+                "**/*.toml",
+                "**/*.xml",
+                "**/*.pro",
+                "**/*.properties",
+                ".editorconfig",
+                ".gitignore",
+            ),
         )
-        targetExclude("**/build/**", ".gradle/**", ".idea/**", "local.properties")
         trimTrailingWhitespace()
         leadingTabsToSpaces(4)
         endWithNewline()
     }
     // Markdown keeps trailing spaces (two of them are a line break); markdownlint checks the rest.
     format("markdown") {
-        target("**/*.md")
-        targetExclude("**/build/**", ".gradle/**")
+        target(sources("**/*.md"))
         leadingTabsToSpaces(4)
         endWithNewline()
     }
