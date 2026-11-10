@@ -57,12 +57,7 @@ class ScreenshotTest {
         repeat((ms / 16).toInt()) { compose.mainClock.advanceTimeByFrame() }
     }
 
-    private fun snap(name: String) {
-        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
-        val dir = File(System.getProperty("screenshots.dir") ?: "build/screenshots")
-        dir.mkdirs()
-        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-    }
+    private fun snap(name: String) = saveScreenshot(compose.onRoot().captureToImage().asAndroidBitmap(), name)
 
     // ---- Scenes (each rendered in several screen shapes below) ----
 
@@ -163,4 +158,14 @@ class ScreenshotTest {
         const val PORTRAIT = "w360dp-h780dp-port-xxhdpi"
         const val TABLET = "w1280dp-h800dp-land-xhdpi"
     }
+}
+
+/** Saves [bitmap] as app/build/screenshots/<name>.png. */
+internal fun saveScreenshot(
+    bitmap: Bitmap,
+    name: String,
+) {
+    val dir = File(System.getProperty("screenshots.dir") ?: "build/screenshots")
+    dir.mkdirs()
+    File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
 }

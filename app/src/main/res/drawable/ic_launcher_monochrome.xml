@@ -5,15 +5,43 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M26,84 C34,66 46,90 54,70"
-        android:strokeWidth="17"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeLineCap="round" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M62,58 m-20,0 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M51,42 L49,30 L56,35 L62,26 L68,35 L75,30 L73,42 Z" />
+    <!-- Artwork in its original 1024-unit coordinates, scaled into the 66dp safe zone. -->
+    <group
+        android:pivotX="520"
+        android:pivotY="448"
+        android:scaleX="0.07158"
+        android:scaleY="0.07158"
+        android:translateX="-466"
+        android:translateY="-394">
+        <!-- Pellet -->
+        <path
+            android:pathData="M784,188 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0 Z"
+            android:fillColor="#FFFFFFFF" />
+        <!-- Body and tail (the body starts just clear of the eyes, overlapping the head) -->
+        <path
+            android:pathData="M 340 740 C 300 705, 255 690, 205 700"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="96"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M546.81,276.2 C461.68,268.77 372.4,299.4 360,380 C340,510 680,500 680,650 C680,800 430,820 340,740"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="150"
+            android:strokeLineCap="round" />
+        <!-- Head with the eyes cut out (evenOdd), pupils inside -->
+        <path
+            android:pathData="M586,318 a104,104 0 1,0 208,0 a104,104 0 1,0 -208,0 Z M624,296 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0 Z M698,278 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0 Z"
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd" />
+        <path
+            android:pathData="M651,286 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M725,268 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z"
+            android:fillColor="#FFFFFFFF" />
+        <!-- Tongue -->
+        <path
+            android:pathData="M778,252 L800,232 M800,232 L820,236 M800,232 L804,212"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="10"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>
