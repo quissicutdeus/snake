@@ -22,6 +22,8 @@ data class SimOptions(
     val spawnPlayer: Boolean = true,
     /** When false, AI snakes just keep going straight (for rule tests). */
     val aiEnabled: Boolean = true,
+    /** When false, no power-ups appear by themselves (for rule tests). */
+    val powerUps: Boolean = true,
 )
 
 /**
@@ -32,7 +34,7 @@ class GameSim(
     seed: Long = Random.nextLong(),
     playerStyle: SnakeStyle = SnakeStyle.DEFAULT,
     playerName: String = "You",
-    private val options: SimOptions = SimOptions(),
+    internal val options: SimOptions = SimOptions(),
 ) {
     val rng = Random(seed)
     val world = World(options.width, options.height)
@@ -42,6 +44,9 @@ class GameSim(
     private val headPairs = HashSet<Long>()
     private var nextId = 1
     private var accumulator = 0f
+
+    /** Seconds until the next power-up appears. */
+    internal var nextPowerUpIn = 0f
 
     /** Effects queue: filled by steps, cleared at the start of each [update]. */
     val events = ArrayList<GameEvent>()
@@ -67,6 +72,7 @@ class GameSim(
             )
         }
         spawner.fill(this)
+        placeStartingPowerUps()
         grid.build(world.snakes)
     }
 
@@ -110,8 +116,9 @@ class GameSim(
             Movement.tickTimers(s, dt)
         }
 
-        // 2. Food.
+        // 2. Food and power-ups.
         eatFood(dt)
+        updatePowerUps(dt)
 
         // 3. Snake vs snake.
         grid.build(world.snakes)

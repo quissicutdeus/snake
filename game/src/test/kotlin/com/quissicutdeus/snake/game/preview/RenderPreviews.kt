@@ -4,6 +4,8 @@ import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Pattern
+import com.quissicutdeus.snake.game.model.PowerType
+import com.quissicutdeus.snake.game.model.PowerUp
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.render.Camera
 import com.quissicutdeus.snake.game.render.Colors
@@ -33,6 +35,7 @@ fun main(args: Array<String>) {
     facesAndHats(out)
     moods(out)
     curls(out)
+    powerUps(out)
     println("Previews written to ${out.absolutePath}")
 }
 
@@ -213,5 +216,69 @@ private fun curls(out: File) {
         ps.draw(c, 0f)
         c.restore()
         ""
+    }
+}
+
+/** The three power-ups on the map, Super Strength scaring a bigger snake, and Armor + Speed in action. */
+private fun powerUps(out: File) {
+    fun scene(
+        name: String,
+        powers: List<PowerType>,
+        setup: (GameSim, com.quissicutdeus.snake.game.model.Snake) -> Unit,
+    ) {
+        val sim = GameSim(seed = 3, options = SimOptions(aiCount = 0, pelletCount = 160, spawnPlayer = false, powerUps = false))
+        val p =
+            sim.addSnake(
+                "You",
+                SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES, hat = Hat.CROWN),
+                true,
+                2000f,
+                2000f,
+                0.3f,
+                500f,
+            )
+        powers.forEach { p.givePower(it) }
+        setup(sim, p)
+        val fx = Fx()
+        val cam = Camera()
+        var t = 0f
+        repeat(40) {
+            sim.update(GameConfig.STEP, SteerInput())
+            fx.onEvents(sim, sim.events)
+            fx.update(GameConfig.STEP)
+            t += GameConfig.STEP
+        }
+        cam.snapTo(p.x, p.y, p.radius, W.toFloat(), H.toFloat())
+        val c = Java2DCanvas(W, H)
+        SceneRenderer.draw(c, sim, cam, fx, t + 0.3f)
+        c.writePng(File(out, name))
+    }
+    scene("power_ups.png", listOf(PowerType.STRENGTH)) { sim, p ->
+        PowerType.entries.forEachIndexed { i, type -> sim.world.powerUps.add(PowerUp(type, p.x + 160f + i * 140f, p.y - 260f)) }
+        sim.world.powerUps.add(PowerUp(PowerType.ARMOR, p.x - 1500f, p.y + 500f)) // off-screen: edge arrow
+        val big =
+            sim.addSnake(
+                "Big Bob",
+                SnakeStyle(color1 = 0, color2 = 10, pattern = Pattern.DOTS),
+                false,
+                p.x + 150f,
+                p.y + 230f,
+                3.1f,
+                1400f,
+            )
+        big.brain = null
+    }
+    scene("power_ups_armor_speed.png", listOf(PowerType.ARMOR, PowerType.SPEED)) { sim, p ->
+        val big =
+            sim.addSnake(
+                "Chomper",
+                SnakeStyle(color1 = 8, color2 = 2, pattern = Pattern.ZIGZAG),
+                false,
+                p.x + 260f,
+                p.y - 120f,
+                2.3f,
+                1500f,
+            )
+        big.brain = null
     }
 }

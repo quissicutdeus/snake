@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.Food
+import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.dist
 import com.quissicutdeus.snake.game.model.dist2
@@ -117,7 +118,7 @@ object Ai {
         for (o in sim.world.snakes) {
             if (o === s || !o.alive) continue
             val d = dist(s.x, s.y, o.x, o.y).coerceAtLeast(1f)
-            when (s.relationTo(o)) {
+            when (s.fightRelationTo(o)) {
                 SizeRelation.SMALLER -> {
                     noteThreat(s, o, d)
                 }
@@ -149,7 +150,9 @@ object Ai {
         prey: Snake,
         d: Float,
     ) {
-        if (d < GameConfig.AI_CHASE_RADIUS && d < Scan.preyDistance && prey.invulnerable <= 0f) {
+        // Blinking or armored snakes can't be hurt, so they aren't worth chasing.
+        val catchable = prey.invulnerable <= 0f && !prey.hasPower(PowerType.ARMOR)
+        if (d < GameConfig.AI_CHASE_RADIUS && d < Scan.preyDistance && catchable) {
             Scan.prey = prey
             Scan.preyDistance = d
         }
@@ -245,7 +248,7 @@ object Ai {
     ): Float {
         val prey = sim.world.snakeById(brain.targetSnakeId)
         brain.chaseTime += dt
-        if (prey == null || brain.chaseTime > GameConfig.AI_CHASE_MAX_SECONDS || s.relationTo(prey) != SizeRelation.BIGGER) {
+        if (prey == null || brain.chaseTime > GameConfig.AI_CHASE_MAX_SECONDS || s.fightRelationTo(prey) != SizeRelation.BIGGER) {
             // Give up and rest for a bit: kids get a chance to escape.
             brain.chaseRest = GameConfig.AI_CHASE_REST_SECONDS
             brain.chaseTime = 0f
@@ -280,7 +283,7 @@ object Ai {
         brain: AiBrain,
     ): Boolean {
         val chasingIt = brain.mode == AiMode.CHASE && o.id == brain.targetSnakeId
-        return o !== s && !chasingIt && s.relationTo(o) != SizeRelation.BIGGER
+        return o !== s && !chasingIt && s.fightRelationTo(o) != SizeRelation.BIGGER
     }
 
     /** Swerves away from the bodies of snakes we must not run into. */

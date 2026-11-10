@@ -11,7 +11,7 @@ fun emptySim(
     pellets: Int = 0,
 ) = GameSim(
     seed = 42,
-    options = SimOptions(pelletCount = pellets, aiCount = 0, spawnPlayer = false, aiEnabled = aiEnabled),
+    options = SimOptions(pelletCount = pellets, aiCount = 0, spawnPlayer = false, aiEnabled = aiEnabled, powerUps = false),
 )
 
 fun GameSim.player(

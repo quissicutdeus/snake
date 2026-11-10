@@ -25,6 +25,16 @@ ones. Your snake follows your finger.
 - Lose all 3 hearts and you get gobbled up. Game over — put your name on the
   high-score list!
 
+**Power-ups** glow on the map (arrows at the screen edge point to nearby ones).
+Only you can pick them up, and each lasts a few seconds — watch the bar under
+your score:
+
+| Power-up | Looks like | What it does |
+|---|---|---|
+| **Super Strength** | throbbing red ball with a barbell | You win every fight: eat or snip snakes *bigger* than you. Everyone gets scared and runs. |
+| **Super Speed** | flickering yellow ball with a lightning bolt | Much faster and turns quicker, with a sparkle trail. |
+| **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
+
 **My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
 rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 
@@ -106,6 +116,8 @@ After a change, run `./gradlew :game:test :game:balanceReport` to see how games 
 | Bigger arena | `ARENA_WIDTH`, `ARENA_HEIGHT` (and more `PELLET_COUNT`) |
 | See more / less of the arena | `BASE_VIEW_SPAN` |
 | Fatter / thinner snakes | `START_RADIUS`, `RADIUS_GROWTH_EXPONENT` |
+| More / fewer power-ups | `POWER_UP_MAX`, `POWER_UP_INTERVAL`, `POWER_UP_LIFETIME` |
+| Longer / shorter powers | `STRENGTH_SECONDS`, `SPEED_SECONDS`, `ARMOR_SECONDS`, `SPEED_POWER_FACTOR` |
 
 ## How it's built
 
@@ -113,9 +125,9 @@ After a change, run `./gradlew :game:test :game:balanceReport` to see how games 
 game/   pure Kotlin, no Android: all rules, AI and drawing code
   model/   Snake (body follows the head's trail), food, SnakeStyle, scores
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
-           Rules, Ai, Spawner, Scoreboard
+           Rules, PowerUps, Ai, Spawner, Scoreboard
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
-           FoodArt, SceneRenderer (arena) + HudRenderer, Camera,
+           FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
            Fx (particles, comic words, shake), PosedSnake
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)

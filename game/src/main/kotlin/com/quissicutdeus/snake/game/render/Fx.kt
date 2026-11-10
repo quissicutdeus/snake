@@ -1,11 +1,14 @@
 package com.quissicutdeus.snake.game.render
 
+import com.quissicutdeus.snake.game.model.PI_F
+import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.TWO_PI
 import com.quissicutdeus.snake.game.model.dist2
 import com.quissicutdeus.snake.game.sim.GameEvent
 import com.quissicutdeus.snake.game.sim.GameSim
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -58,6 +61,7 @@ class Fx(
         sim: GameSim,
         events: List<GameEvent>,
     ) {
+        speedTrail(sim)
         val p = sim.player
         val pid = p?.id ?: -1
         for (e in events) {
@@ -70,6 +74,8 @@ class Fx(
                 is GameEvent.Bounced -> bounced(e, pid)
                 is GameEvent.HitWall -> if (e.snakeId == pid) addShake(3f)
                 is GameEvent.PlayerEaten -> playerEaten(e)
+                is GameEvent.PowerUpTaken -> powerUpTaken(e)
+                is GameEvent.Blocked -> if (e.snakeId == pid) blocked(e)
             }
         }
     }
@@ -113,6 +119,40 @@ class Fx(
             addShake(6f)
             word("BOING!", e.x, e.y, 0xFFB388FF.toInt(), 24f)
         }
+    }
+
+    private fun powerUpTaken(e: GameEvent.PowerUpTaken) {
+        val col = PowerUpArt.color(e.type)
+        burst(e.x, e.y, col, count = 30, speed = 260f, size = 7f, life = 0.9f)
+        word("${e.type.label.uppercase()}!", e.x, e.y, col, 30f)
+        addShake(6f)
+    }
+
+    /** Super Armor stopped a hit on the player. */
+    private fun blocked(e: GameEvent.Blocked) {
+        burst(e.x, e.y, PowerUpArt.color(PowerType.ARMOR), count = 12, speed = 200f, size = 5f, life = 0.5f)
+        word("CLANG!", e.x, e.y, 0xFFB3E5FF.toInt(), 28f)
+        addShake(5f)
+    }
+
+    /** Super Speed leaves a trail of sparkles behind the player. */
+    private fun speedTrail(sim: GameSim) {
+        val p = sim.player?.takeIf { it.alive && it.hasPower(PowerType.SPEED) } ?: return
+        if (p.segCount < 4 || particles.size > 600) return
+        val i = min(p.segCount - 1, 4 + rng.nextInt(6))
+        val back = p.heading + PI_F + (rng.nextFloat() - 0.5f)
+        particles.add(
+            Particle(
+                p.segX[i] + (rng.nextFloat() - 0.5f) * p.radius,
+                p.segY[i] + (rng.nextFloat() - 0.5f) * p.radius,
+                cos(back) * 140f,
+                sin(back) * 140f,
+                0.4f,
+                0.4f,
+                3f + rng.nextFloat() * 3f,
+                if (rng.nextBoolean()) Colors.WHITE else PowerUpArt.color(PowerType.SPEED),
+            ),
+        )
     }
 
     private fun playerEaten(e: GameEvent.PlayerEaten) {

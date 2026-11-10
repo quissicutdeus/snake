@@ -6,11 +6,15 @@ import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.dist2
 import com.quissicutdeus.snake.game.sim.GameSim
 import com.quissicutdeus.snake.game.sim.SizeRelation
-import com.quissicutdeus.snake.game.sim.compareSize
+import com.quissicutdeus.snake.game.sim.fightRelationTo
+import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sin
 
 /**
  * Safe-area insets (screen pixels) the HUD should stay clear of, plus the
@@ -33,7 +37,8 @@ object SceneRenderer {
         player: Snake?,
     ): Mood {
         if (player == null || s === player || !player.alive) return Mood.HAPPY
-        return when (compareSize(s.length, player.length)) {
+        // Fight relation: with Super Strength, every other snake is scared of you.
+        return when (s.fightRelationTo(player)) {
             SizeRelation.SMALLER -> Mood.SCARED
             SizeRelation.BIGGER -> Mood.ANGRY
             SizeRelation.EQUAL -> Mood.HAPPY
@@ -102,6 +107,7 @@ object SceneRenderer {
         drawFx(c, fx, ui / cam.scale)
         c.restore()
 
+        if (showHud) drawPowerUpMarkers(c, sim, cam, ui)
         if (fx.hurtFlash > 0f) {
             c.fillRect(0f, 0f, c.width, c.height, Colors.withAlpha(Colors.ANGRY_RED, fx.hurtFlash / Fx.HURT_FLASH_SECONDS * 0.28f))
         }
@@ -116,7 +122,48 @@ object SceneRenderer {
     ) {
         for (t in sim.world.tailPieces) if (View.contains(t.x, t.y, t.radius)) FoodArt.drawTailPiece(c, t, time)
         for (p in sim.world.pellets) if (View.contains(p.x, p.y, p.radius * 2f)) FoodArt.drawPellet(c, p, time)
+        val glow = GameConfig.POWER_UP_RADIUS * 2.5f
+        for (u in sim.world.powerUps) if (View.contains(u.x, u.y, glow)) PowerUpArt.drawItem(c, u, time)
     }
+
+    /** Off-screen power-ups near the player show as little glowing arrows at the screen edge. */
+    private fun drawPowerUpMarkers(
+        c: Canvas2D,
+        sim: GameSim,
+        cam: Camera,
+        ui: Float,
+    ) {
+        val p = sim.player?.takeIf { it.alive } ?: return
+        val cx = c.width / 2f
+        val cy = c.height / 2f
+        val inset = 26f * ui
+        for (u in sim.world.powerUps) {
+            val dx = cam.worldToScreenX(u.x, c.width) - cx
+            val dy = cam.worldToScreenY(u.y, c.height) - cy
+            val onScreen = abs(dx) < cx && abs(dy) < cy
+            if (onScreen || dist2(u.x, u.y, p.x, p.y) > MARKER_RANGE * MARKER_RANGE) continue
+            // Where the line from the screen centre to the power-up leaves the (inset) screen.
+            // Along the top, stay below the pause button.
+            val limitY = if (dy < 0f) cy - 76f * ui else cy - inset
+            val k = min((cx - inset) / max(abs(dx), 1e-3f), limitY / max(abs(dy), 1e-3f))
+            val mx = cx + dx * k
+            val my = cy + dy * k
+            val a = atan2(dy, dx)
+            val tip = 25f * ui
+            val wing = 9f * ui
+            arrow.reset()
+            arrow.moveTo(mx + cos(a) * tip, my + sin(a) * tip)
+            arrow.lineTo(mx + cos(a + 1.2f) * wing * 1.4f, my + sin(a + 1.2f) * wing * 1.4f)
+            arrow.lineTo(mx + cos(a - 1.2f) * wing * 1.4f, my + sin(a - 1.2f) * wing * 1.4f)
+            arrow.close()
+            c.fillPath(arrow, PowerUpArt.color(u.type))
+            PowerUpArt.drawOrb(c, u.type, mx, my, 10f * ui)
+        }
+    }
+
+    /** Off-screen power-ups closer than this get an arrow. */
+    private const val MARKER_RANGE = 2400f
+    private val arrow = Path2D()
 
     /** AI snakes first, the player on top. */
     private fun drawSnakes(

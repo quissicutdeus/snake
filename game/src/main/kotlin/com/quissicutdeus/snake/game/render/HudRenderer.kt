@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.game.render
 
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.sim.GameSim
 import kotlin.math.min
@@ -56,7 +57,30 @@ object HudRenderer {
             )
         }
 
+        drawPowers(c, player, left, scoreY + 34f * ui, ui)
         drawLeaderboard(c, sim, player, insets, ui)
+    }
+
+    /** One row per active power: its orb, its name and a bar showing the time left. */
+    private fun drawPowers(
+        c: Canvas2D,
+        player: Snake,
+        left: Float,
+        top: Float,
+        ui: Float,
+    ) {
+        var y = top + 10f * ui
+        for (type in PowerType.entries) {
+            val timeLeft = player.powerLeft(type)
+            if (timeLeft <= 0f) continue
+            val col = PowerUpArt.color(type)
+            PowerUpArt.drawOrb(c, type, left + 10f * ui, y, 10f * ui)
+            SceneRenderer.shadowText(c, type.label, left + 26f * ui, y - 1f * ui, 12f * ui, Colors.WHITE, TextAlign.LEFT, 1.2f * ui)
+            val barW = 84f * ui
+            c.fillRoundRect(left + 26f * ui, y + 3f * ui, barW, 5f * ui, 2.5f * ui, Colors.withAlpha(Colors.INK, 0.4f))
+            c.fillRoundRect(left + 26f * ui, y + 3f * ui, barW * timeLeft / type.seconds, 5f * ui, 2.5f * ui, col)
+            y += 26f * ui
+        }
     }
 
     /** Live "Biggest snakes" list: top 5, your row highlighted (and added below if you're not in it). */

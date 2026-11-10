@@ -152,6 +152,30 @@ object GameConfig {
      */
     const val AI_MAX_LENGTH_RATIO = 3f
 
+    // ---- Power-ups (only the player can pick them up) -----------------------
+
+    /** At most this many power-ups lie on the map; a new one appears every [POWER_UP_INTERVAL] s. */
+    const val POWER_UP_MAX = 5
+    const val POWER_UP_START = 3
+    const val POWER_UP_INTERVAL = 9f
+
+    /** Power-ups vanish after this long (the last [POWER_UP_FADE] s they blink), so they move around. */
+    const val POWER_UP_LIFETIME = 45f
+    const val POWER_UP_FADE = 3f
+    const val POWER_UP_RADIUS = 22f
+
+    /** New power-ups appear at least this far from the walls. */
+    const val POWER_UP_WALL_MARGIN = 200f
+
+    /** How long each power lasts. */
+    const val STRENGTH_SECONDS = 7f
+    const val SPEED_SECONDS = 8f
+    const val ARMOR_SECONDS = 10f
+
+    /** Super Speed: this much faster, and turning this much quicker. */
+    const val SPEED_POWER_FACTOR = 1.6f
+    const val SPEED_POWER_TURN_FACTOR = 1.3f
+
     // ---- Spawner -----------------------------------------------------------
     const val AI_TARGET_COUNT = 14
     const val SPAWN_INTERVAL = 0.7f

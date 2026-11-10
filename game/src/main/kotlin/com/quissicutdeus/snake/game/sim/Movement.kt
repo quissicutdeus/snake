@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.PI_F
+import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.World
 import com.quissicutdeus.snake.game.model.angleDiff
@@ -20,7 +21,8 @@ object Movement {
     ) {
         if (s.steerLock > 0f || desired.isNaN()) return
         val diff = angleDiff(s.heading, desired)
-        val maxTurn = GameConfig.TURN_RATE * dt
+        val turnBoost = if (s.hasPower(PowerType.SPEED)) GameConfig.SPEED_POWER_TURN_FACTOR else 1f
+        val maxTurn = GameConfig.TURN_RATE * turnBoost * dt
         s.heading = wrapAngle(s.heading + diff.coerceIn(-maxTurn, maxTurn))
     }
 
@@ -72,5 +74,6 @@ object Movement {
         s.invulnerable = max(0f, s.invulnerable - dt)
         s.sinceAte += dt
         s.age += dt
+        s.tickPowers(dt)
     }
 }

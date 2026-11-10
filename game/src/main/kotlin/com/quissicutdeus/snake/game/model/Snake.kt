@@ -50,6 +50,9 @@ class Snake(
     /** Seconds since the snake last ate something (used for the "squash" effect). */
     var sinceAte = 10f
 
+    /** Seconds left of each power (indexed by [PowerType.ordinal]). */
+    private val powerTime = FloatArray(PowerType.entries.size)
+
     /** Seconds since spawned. */
     var age = 0f
 
@@ -86,7 +89,24 @@ class Snake(
     val radius: Float get() = GameConfig.radiusFor(length)
 
     val speed: Float
-        get() = GameConfig.speedFor(length) * (if (isPlayer) 1f else GameConfig.AI_SPEED_FACTOR)
+        get() {
+            val base = GameConfig.speedFor(length) * (if (isPlayer) 1f else GameConfig.AI_SPEED_FACTOR)
+            return if (hasPower(PowerType.SPEED)) base * GameConfig.SPEED_POWER_FACTOR else base
+        }
+
+    fun hasPower(type: PowerType): Boolean = powerTime[type.ordinal] > 0f
+
+    /** Seconds left of [type] (0 when not active). */
+    fun powerLeft(type: PowerType): Float = powerTime[type.ordinal]
+
+    /** Starts (or tops up) a power. */
+    fun givePower(type: PowerType) {
+        powerTime[type.ordinal] = type.seconds
+    }
+
+    fun tickPowers(dt: Float) {
+        for (i in powerTime.indices) powerTime[i] = max(0f, powerTime[i] - dt)
+    }
 
     val score: Int get() = GameConfig.scoreFor(bestLength)
 

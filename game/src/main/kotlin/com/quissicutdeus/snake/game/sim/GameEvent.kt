@@ -1,5 +1,7 @@
 package com.quissicutdeus.snake.game.sim
 
+import com.quissicutdeus.snake.game.model.PowerType
+
 /** Things that happened during a step, for effects (particles, shake, sounds). */
 sealed class GameEvent {
     abstract val x: Float
@@ -39,6 +41,20 @@ sealed class GameEvent {
     ) : GameEvent()
 
     data class HitWall(
+        val snakeId: Int,
+        override val x: Float,
+        override val y: Float,
+    ) : GameEvent()
+
+    /** The player picked up a power-up. */
+    data class PowerUpTaken(
+        val type: PowerType,
+        override val x: Float,
+        override val y: Float,
+    ) : GameEvent()
+
+    /** Super Armor stopped a hit on [snakeId]. */
+    data class Blocked(
         val snakeId: Int,
         override val x: Float,
         override val y: Float,

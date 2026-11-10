@@ -8,6 +8,7 @@ class World(
     val snakes = ArrayList<Snake>()
     val pellets = ArrayList<Pellet>()
     val tailPieces = ArrayList<TailPiece>()
+    val powerUps = ArrayList<PowerUp>()
 
     /** Seconds of simulated time. */
     var time = 0f

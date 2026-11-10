@@ -77,6 +77,7 @@ object SnakeArt {
         val wash = if (blink) BLINK_WASH else 0f
         val ow = if (mood == Mood.ANGRY) max(2.5f, r * 0.26f) else max(1.5f, r * 0.16f)
         val outline = Colors.washed(outlineColor(s.style, mood), wash)
+        PowerUpArt.drawAuras(c, s, time)
         drawBody(c, s, ow, outline, wash)
         when (s.style.pattern) {
             Pattern.DOTS -> {
@@ -95,6 +96,7 @@ object SnakeArt {
         }
         drawGloss(c, s)
         drawHead(c, s, mood, time, ow, outline, wash)
+        PowerUpArt.drawShield(c, s, time)
     }
 
     /** Outline (slightly bigger circles behind everything), then the body, tail first so the front overlaps the back. */

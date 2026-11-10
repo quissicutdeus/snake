@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.TailPiece
 import com.quissicutdeus.snake.game.model.dist
@@ -27,10 +28,10 @@ internal fun GameSim.resolveContact(c: Contact) {
 
     val cx = b.segX[c.seg]
     val cy = b.segY[c.seg]
-    when (a.relationTo(b)) {
+    when (a.fightRelationTo(b)) {
         SizeRelation.EQUAL -> bounceOffEqual(a, b, headToHead, cx, cy)
         SizeRelation.BIGGER -> bite(attacker = a, victim = b, seg = c.seg)
-        SizeRelation.SMALLER -> damage(victim = a, by = b, fromX = cx, fromY = cy)
+        SizeRelation.SMALLER -> bumpIntoBigger(a = a, bigger = b, cx = cx, cy = cy)
     }
 }
 
@@ -54,7 +55,30 @@ private fun GameSim.bite(
     seg: Int,
 ) {
     if (victim.invulnerable > 0f) return
+    if (victim.hasPower(PowerType.ARMOR)) {
+        // The bite bounces off the armor.
+        if (attacker.knockback <= 0f) bounce(attacker, victim.segX[seg], victim.segY[seg], victim)
+        emit(GameEvent.Blocked(victim.id, victim.segX[seg], victim.segY[seg]))
+        return
+    }
     if (seg == 0) damage(victim = victim, by = attacker) else sever(victim = victim, seg = seg, by = attacker)
+}
+
+/** [a] ran into a snake that wins the fight: it gets hurt, unless armor makes it just bounce. */
+private fun GameSim.bumpIntoBigger(
+    a: Snake,
+    bigger: Snake,
+    cx: Float,
+    cy: Float,
+) {
+    if (!a.hasPower(PowerType.ARMOR)) {
+        damage(victim = a, by = bigger, fromX = cx, fromY = cy)
+        return
+    }
+    if (a.knockback <= 0f) {
+        bounce(a, cx, cy, bigger)
+        emit(GameEvent.Blocked(a.id, cx, cy))
+    }
 }
 
 /** Victim loses a heart and bounces away; at 0 hearts it is eaten by [by]. */
@@ -64,7 +88,7 @@ internal fun GameSim.damage(
     fromX: Float = by.x,
     fromY: Float = by.y,
 ) {
-    if (victim.invulnerable > 0f || !victim.alive) return
+    if (victim.invulnerable > 0f || victim.hasPower(PowerType.ARMOR) || !victim.alive) return
     victim.hearts--
     if (victim.hearts <= 0) {
         eatWhole(eater = by, victim = victim)
