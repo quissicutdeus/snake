@@ -29,6 +29,8 @@ lint {
     abortOnError = true
     checkAllWarnings = true
     checkTestSources = true
+    // Online "newer version available" checks: see app/lint.xml.
+    disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
 }
 
 java {

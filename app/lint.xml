@@ -6,4 +6,11 @@
          List parameters no longer stop composables from skipping; wrapping them in
          immutable collections would add a dependency for nothing. -->
     <issue id="ComposeUnstableCollections" severity="ignore" />
+
+    <!-- "A newer version of X is available": these look the versions up online, so a
+         release anywhere (Gradle, AGP, any library) failed the next unrelated build.
+         Dependabot opens the update PRs instead (.github/dependabot.yml). -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
 </lint>
