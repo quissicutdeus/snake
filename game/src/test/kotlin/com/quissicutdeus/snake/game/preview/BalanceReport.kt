@@ -69,8 +69,8 @@ private fun playOneGame(seed: Long) {
         }
     }
     println(
-        "Game $seed: lasted ${steps / 60}s, best score ${p.score}, hurt ${tally.hurts}×, " +
-            "lost tail ${tally.cuts}×, ate ${tally.eats} snakes",
+        "Game $seed: lasted ${steps / 60}s, best score ${p.score}, hurt ${tally.hurts} times, " +
+            "lost tail ${tally.cuts} times, ate ${tally.eats} snakes",
     )
     print(log)
 }
