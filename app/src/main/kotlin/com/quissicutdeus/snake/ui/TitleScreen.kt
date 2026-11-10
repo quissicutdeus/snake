@@ -88,7 +88,7 @@ fun TitleScreen(
             val title: @Composable () -> Unit = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ShadowText(
-                        "Snake Arena",
+                        "Sniddle",
                         MaterialTheme.typography.displayLarge.copy(
                             fontSize = if (landscape) 54.sp else 50.sp,
                             fontWeight = FontWeight.Black,

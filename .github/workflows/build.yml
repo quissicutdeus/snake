@@ -68,13 +68,13 @@ jobs:
       - name: Upload APK (optimized, install this one)
         uses: actions/upload-artifact@v7
         with:
-          name: snake-arena-apk
+          name: sniddle-apk
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
-          name: snake-arena-debug-apk
+          name: sniddle-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload screenshots
@@ -118,7 +118,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: snake-arena-apk
+          name: sniddle-apk
 
       - name: Create release v${{ env.VERSION_NAME }}
         env:

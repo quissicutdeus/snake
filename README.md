@@ -1,4 +1,4 @@
-# Snake Arena
+# Sniddle
 
 A cartoony snake game for kids, made for our family's Pixel phones and tablets.
 **No ads, no purchases, no accounts, no internet** — the app asks for no

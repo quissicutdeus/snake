@@ -17,7 +17,7 @@ import com.quissicutdeus.snake.ui.GameResult
 import com.quissicutdeus.snake.ui.GameScreen
 import com.quissicutdeus.snake.ui.HighScoresScreen
 import com.quissicutdeus.snake.ui.MySnakeScreen
-import com.quissicutdeus.snake.ui.SnakeArenaTheme
+import com.quissicutdeus.snake.ui.SniddleTheme
 import com.quissicutdeus.snake.ui.TitleScreen
 import org.junit.Before
 import org.junit.Rule
@@ -49,7 +49,7 @@ class ScreenshotTest {
     }
 
     private fun show(content: @androidx.compose.runtime.Composable () -> Unit) {
-        compose.setContent { SnakeArenaTheme(content) }
+        compose.setContent { SniddleTheme(content) }
     }
 
     private fun advance(ms: Long) {

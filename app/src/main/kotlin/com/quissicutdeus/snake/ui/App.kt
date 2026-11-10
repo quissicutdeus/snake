@@ -38,7 +38,7 @@ sealed interface Screen {
 
 /** Top level: a tiny screen switcher (no navigation library needed). */
 @Composable
-fun SnakeArenaApp(storage: Storage) {
+fun SniddleApp(storage: Storage) {
     var screen by remember { mutableStateOf<Screen>(Screen.Title) }
     var style by remember { mutableStateOf(storage.loadStyle()) }
     var round by remember { mutableIntStateOf(0) }
@@ -48,7 +48,7 @@ fun SnakeArenaApp(storage: Storage) {
         screen = Screen.Play(round)
     }
 
-    SnakeArenaTheme {
+    SniddleTheme {
         when (val s = screen) {
             Screen.Title -> {
                 TitleScreen(

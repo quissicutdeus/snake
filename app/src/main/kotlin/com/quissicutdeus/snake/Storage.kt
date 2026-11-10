@@ -10,6 +10,7 @@ import com.quissicutdeus.snake.game.sim.Scoreboard
 class Storage(
     context: Context,
 ) {
+    // Named from when the game was "Snake Arena"; renaming it would lose everyone's saved high scores.
     private val prefs = context.getSharedPreferences("snake_arena", Context.MODE_PRIVATE)
 
     fun loadStyle(): SnakeStyle = SnakeStyle.decode(prefs.getString(KEY_STYLE, null))

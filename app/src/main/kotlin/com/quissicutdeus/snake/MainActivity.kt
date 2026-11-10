@@ -8,7 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.quissicutdeus.snake.ui.SnakeArenaApp
+import com.quissicutdeus.snake.ui.SniddleApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         // Keep the screen awake while the game is open.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val storage = Storage(applicationContext)
-        setContent { SnakeArenaApp(storage) }
+        setContent { SniddleApp(storage) }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

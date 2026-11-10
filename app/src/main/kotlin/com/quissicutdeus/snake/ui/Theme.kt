@@ -34,6 +34,6 @@ private val typography =
     }
 
 @Composable
-fun SnakeArenaTheme(content: @Composable () -> Unit) {
+fun SniddleTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = colors, typography = typography, content = content)
 }

@@ -1,4 +1,4 @@
-# Snake Arena — kid-friendly snake game for Android
+# Sniddle (originally "Snake Arena") — kid-friendly snake game for Android
 
 ## Context
 
