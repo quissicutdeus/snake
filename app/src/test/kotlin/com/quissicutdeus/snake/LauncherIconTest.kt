@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake
 
+import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Path
 import android.graphics.drawable.AdaptiveIconDrawable
@@ -28,7 +29,11 @@ import kotlin.math.sin
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36])
 class LauncherIconTest {
-    @Test fun launcherIcon() {
+    // Themed (monochrome) icons arrived in Android 13 (older phones show the
+    // colour icon); this test always runs on Android 16, per @Config above.
+    @SuppressLint("NewApi")
+    @Test
+    fun launcherIcon() {
         val icon = RuntimeEnvironment.getApplication().getDrawable(R.mipmap.ic_launcher) as AdaptiveIconDrawable
         val monochrome = checkNotNull(icon.monochrome) { "the icon needs a monochrome layer for themed icons" }
         val tiles =

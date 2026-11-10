@@ -45,7 +45,8 @@ rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 
 ## Install it on a Pixel
 
-Needs **Android 16 or newer** (Pixel 6 and later).
+Needs **Android 11 or newer**: any recent Pixel, and older phones such as a
+Samsung Galaxy Note 10 or Note 20.
 
 1. On the phone, open the **[latest release](../../releases/latest)** and tap
    **`sniddle.apk`** (or use the direct link:
@@ -93,7 +94,7 @@ Handy extras that need no phone:
 ```
 
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
-Jetpack Compose (BOM 2026.09), compileSdk 37.2 / targetSdk 37 / minSdk 36.
+Jetpack Compose (BOM 2026.09), compileSdk 37.2 / targetSdk 37 / minSdk 30.
 Versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml). The
 app ID / namespace is `com.quissicutdeus.snake` (from snake.quissicutdeus.com).
 

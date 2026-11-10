@@ -18,8 +18,9 @@ android {
 
     defaultConfig {
         applicationId = "com.quissicutdeus.snake"
-        // Android 16+: every Pixel from the Pixel 6 onwards.
-        minSdk = 36
+        // Android 11+: all recent Pixels and older Samsungs such as the Galaxy
+        // Note 10 / Note 20. (Below 30 the CONFIRM/REJECT haptics don't exist.)
+        minSdk = 30
         targetSdk = 37
         // CI passes the build number as versionCode (always goes up, so every
         // release installs over the previous one) and the semver release number

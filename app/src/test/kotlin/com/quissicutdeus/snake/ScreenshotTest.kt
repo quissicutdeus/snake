@@ -154,9 +154,20 @@ class ScreenshotTest {
     @Test
     fun mySnakeTablet() = mySnakeScene("my_snake_tablet")
 
+    // ---- Oldest supported Android (minSdk), Galaxy Note 20 size ----
+
+    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Test
+    fun titleOldestAndroid() = titleScene("title_android11")
+
+    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Test
+    fun playingOldestAndroid() = playScene("game_android11")
+
     private companion object {
         const val PORTRAIT = "w360dp-h780dp-port-xxhdpi"
         const val TABLET = "w1280dp-h800dp-land-xhdpi"
+        const val NOTE_20 = "w915dp-h412dp-land-xxhdpi"
     }
 }
 
