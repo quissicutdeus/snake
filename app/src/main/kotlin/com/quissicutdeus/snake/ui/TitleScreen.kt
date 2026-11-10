@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,10 +90,20 @@ fun TitleScreen(
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
     onHighScores: () -> Unit,
+    soundOn: Boolean,
+    onSoundOnChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
         ArenaBackground(Modifier.fillMaxSize())
+        SoundButton(
+            soundOn,
+            onSoundOnChange,
+            Modifier
+                .align(Alignment.TopEnd)
+                .safeDrawingPadding()
+                .padding(12.dp),
+        )
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
             val landscape = maxWidth > maxHeight
             val title: @Composable () -> Unit = {
@@ -116,6 +137,59 @@ fun TitleScreen(
                     Spacer(Modifier.height(28.dp))
                     buttons()
                 }
+            }
+        }
+    }
+}
+
+/** Round speaker button: sound on (waves) or off (a cross). */
+@Composable
+private fun SoundButton(
+    soundOn: Boolean,
+    onSoundOnChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = { onSoundOnChange(!soundOn) },
+        modifier =
+            modifier
+                .size(56.dp)
+                .semantics {
+                    contentDescription = if (soundOn) "Sound on. Tap to turn it off." else "Sound off. Tap to turn it on."
+                },
+        shape = CircleShape,
+        color = Color(0x662B2B3A),
+    ) {
+        Canvas(Modifier.padding(14.dp)) {
+            val w = size.width
+            val h = size.height
+            val speaker =
+                Path().apply {
+                    moveTo(0f, h * 0.35f)
+                    lineTo(w * 0.22f, h * 0.35f)
+                    lineTo(w * 0.5f, h * 0.08f)
+                    lineTo(w * 0.5f, h * 0.92f)
+                    lineTo(w * 0.22f, h * 0.65f)
+                    lineTo(0f, h * 0.65f)
+                    close()
+                }
+            drawPath(speaker, Color.White)
+            val stroke = Stroke(w * 0.09f, cap = StrokeCap.Round)
+            if (soundOn) {
+                for (r in floatArrayOf(0.22f, 0.4f)) {
+                    drawArc(
+                        Color.White,
+                        startAngle = -45f,
+                        sweepAngle = 90f,
+                        useCenter = false,
+                        topLeft = Offset(w * (0.5f - r), h * (0.5f - r)),
+                        size = Size(w * 2 * r, h * 2 * r),
+                        style = stroke,
+                    )
+                }
+            } else {
+                drawLine(Color.White, Offset(w * 0.66f, h * 0.32f), Offset(w * 0.98f, h * 0.68f), stroke.width, StrokeCap.Round)
+                drawLine(Color.White, Offset(w * 0.98f, h * 0.32f), Offset(w * 0.66f, h * 0.68f), stroke.width, StrokeCap.Round)
             }
         }
     }

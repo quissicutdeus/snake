@@ -66,6 +66,21 @@ tasks.register<JavaExec>("renderPreviews") {
     jvmArgs("-Djava.awt.headless=true")
 }
 
+// Writes every sound effect as a WAV file, to listen to on a computer:
+//   ./gradlew :game:soundPreviews   ->  game/build/sounds/*.wav
+tasks.register<JavaExec>("soundPreviews") {
+    group = "verification"
+    description = "Writes the synthesized sound effects as WAV files into build/sounds."
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.quissicutdeus.snake.game.preview.SoundPreviewsKt")
+    args(
+        layout.buildDirectory
+            .dir("sounds")
+            .get()
+            .asFile.absolutePath,
+    )
+}
+
 // Plays a few games with a bot player and prints survival time and size mix:
 //   ./gradlew :game:balanceReport
 tasks.register<JavaExec>("balanceReport") {

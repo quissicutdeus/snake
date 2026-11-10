@@ -61,8 +61,11 @@ class ScreenshotTest {
 
     // ---- Scenes (each rendered in several screen shapes below) ----
 
-    private fun titleScene(name: String) {
-        show { TitleScreen(style, {}, {}, {}) }
+    private fun titleScene(
+        name: String,
+        soundOn: Boolean = true,
+    ) {
+        show { TitleScreen(style, {}, {}, {}, soundOn = soundOn, onSoundOnChange = {}) }
         advance(1500)
         snap(name)
     }
@@ -121,7 +124,7 @@ class ScreenshotTest {
 
     @Config(qualifiers = PORTRAIT)
     @Test
-    fun titlePortrait() = titleScene("title_portrait")
+    fun titlePortrait() = titleScene("title_portrait", soundOn = false)
 
     @Config(qualifiers = PORTRAIT)
     @Test

@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.Storage
+import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.model.SnakeStyle
 
 /** Result of one game, handed from the play screen to the game-over screen. */
@@ -36,10 +37,14 @@ sealed interface Screen {
     ) : Screen
 }
 
-/** Top level: a tiny screen switcher (no navigation library needed). */
+/** Top level: a tiny screen switcher (no navigation library needed). [playSound] plays an effect. */
 @Composable
-fun SniddleApp(storage: Storage) {
+fun SniddleApp(
+    storage: Storage,
+    playSound: (Sound) -> Unit,
+) {
     var screen by remember { mutableStateOf<Screen>(Screen.Title) }
+    var soundOn by remember { mutableStateOf(storage.loadSoundOn()) }
     var style by remember { mutableStateOf(storage.loadStyle()) }
     var round by remember { mutableIntStateOf(0) }
 
@@ -56,6 +61,11 @@ fun SniddleApp(storage: Storage) {
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onHighScores = { screen = Screen.HighScores() },
+                    soundOn = soundOn,
+                    onSoundOnChange = {
+                        soundOn = it
+                        storage.saveSoundOn(it)
+                    },
                 )
             }
 
@@ -65,6 +75,7 @@ fun SniddleApp(storage: Storage) {
                     style = style,
                     onGameOver = { screen = Screen.GameOver(it) },
                     onQuit = { screen = Screen.Title },
+                    onSound = { if (soundOn) playSound(it) },
                 )
             }
 

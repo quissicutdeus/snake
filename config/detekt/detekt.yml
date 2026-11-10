@@ -19,11 +19,13 @@ style:
   MagicNumber:
     # Gameplay numbers must live in GameConfig, so this stays on for the
     # simulation and model. Drawing code is made of proportions (an eye sits at
-    # 0.42 x head radius...) where names would hurt readability.
+    # 0.42 x head radius...) where names would hurt readability, and so is
+    # sound synthesis (notes in Hz, durations in seconds).
     excludes:
       - '**/test/**'
       - '**/*.kts'
       - '**/render/**'
+      - '**/audio/**'
       - '**/ui/**'
       - '**/ComposeCanvas2D.kt'
   MaxLineLength:

@@ -37,8 +37,12 @@ your score:
 | **Super Speed** | flickering yellow ball with a lightning bolt | Much faster and turns quicker, with a sparkle trail. |
 | **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
 
-The phone gives a little buzz when you chomp a snake, grab a power-up, get hurt
-or get gobbled (it follows the phone's own *Vibration & haptics* setting).
+Sound effects go with the big moments (*nom-nom*, *boing*, *clang*, a
+power-up jingle, a sad *wah-wah* when you're gobbled) and a little pop for
+every food dot, rising in pitch when you gobble a row of them. The speaker
+button on the title screen turns sound off and on; the phone's media volume
+sets how loud. The phone also gives a little buzz for the big moments (it
+follows the phone's own *Vibration & haptics* setting).
 
 **My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
 rainbow, checker), eyes and a hat. Everything is unlocked from the start.
@@ -90,6 +94,7 @@ Handy extras that need no phone:
 ```sh
 ./gradlew :game:renderPreviews   # PNGs of the real game art -> game/build/previews/
 ./gradlew :game:balanceReport    # bot-played games: survival time, score, size mix
+./gradlew :game:soundPreviews    # every sound effect as a WAV -> game/build/sounds/
 ./gradlew :game:benchmark        # time per sim step and per frame, plus a checksum of the final world
 ```
 
@@ -141,12 +146,16 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
            FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),
            PosedSnake
+  audio/   Synth (makes every sound effect from scratch), SoundCues (which
+           sound when)
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
   ui/               Title, Game (frame loop + thumbstick + pause),
                     Game over ("Who played?"), High scores, My Snake
-  Storage           snake look, top-10 scores and names (SharedPreferences)
+  Storage           snake look, top-10 scores, names, sound on/off
+                    (SharedPreferences)
+  SoundPlayer       plays the effects (one preloaded AudioTrack each)
 ```
 
 The simulation runs at a fixed 60 steps per second; drawing blends between

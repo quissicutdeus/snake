@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.quissicutdeus.snake.ComposeCanvas2D
+import com.quissicutdeus.snake.game.audio.Sound
+import com.quissicutdeus.snake.game.audio.SoundCues
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.render.Buzz
 import com.quissicutdeus.snake.game.render.Camera
@@ -69,6 +71,7 @@ private class GameHolder(
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()
+    val soundCues = SoundCues()
     val input = SteerInput()
     val adapter = ComposeCanvas2D()
     var time = 0f
@@ -97,6 +100,7 @@ fun GameScreen(
     onGameOver: (GameResult) -> Unit,
     onQuit: () -> Unit,
     modifier: Modifier = Modifier,
+    onSound: (Sound) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val game =
@@ -107,6 +111,7 @@ fun GameScreen(
     var paused by remember(key) { mutableStateOf(false) }
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
+    val currentOnSound by rememberUpdatedState(onSound)
     val view = LocalView.current
 
     // Pause when the app goes to the background; back button pauses / resumes.
@@ -119,7 +124,7 @@ fun GameScreen(
             withFrameNanos { now ->
                 val dt = if (last == 0L) 0f else ((now - last) / 1_000_000_000f).coerceAtMost(0.1f)
                 last = now
-                step(game, dt, paused)?.let { view.performHapticFeedback(hapticFor(it)) }
+                step(game, dt, paused, currentOnSound)?.let { view.performHapticFeedback(hapticFor(it)) }
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     val p = game.sim.player!!
@@ -228,12 +233,13 @@ private fun DrawScope.drawStick(stick: Thumbstick) {
 
 /**
  * One frame: steer from the thumbstick, advance the world, effects and camera.
- * Returns the buzz to play for this frame, if any.
+ * Starts this frame's sounds with [onSound], and returns the buzz to play, if any.
  */
 private fun step(
     game: GameHolder,
     dt: Float,
     paused: Boolean,
+    onSound: (Sound) -> Unit,
 ): Buzz? {
     val sim = game.sim
     val p = sim.player ?: return null
@@ -249,6 +255,7 @@ private fun step(
         sim.update(dt, game.input)
         game.fx.onEvents(sim, sim.events)
         buzz = game.haptics.onEvents(sim.events, p.id, dt)
+        game.soundCues.onEvents(sim.events, p, dt).forEach(onSound)
         game.fx.update(dt)
         if (sim.gameOver) game.overTimer += dt
     }
