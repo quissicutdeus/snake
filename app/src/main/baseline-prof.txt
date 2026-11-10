@@ -1,0 +1,7 @@
+# Baseline profile: code Android compiles ahead of time at install, so the
+# first games run as smoothly as later ones (see profileinstaller in
+# app/build.gradle.kts). The whole app is small enough to list all of it:
+# "H" hot, "S" run at startup, "P" run after startup; "L...;" preloads classes.
+# Covers the game module too (same package prefix).
+HSPLcom/quissicutdeus/snake/**->**(**)**
+Lcom/quissicutdeus/snake/**;

@@ -147,5 +147,9 @@ the last two steps so motion stays smooth on 90/120 Hz Pixel screens. Because
 the game logic and art don't depend on Android, an iOS version could reuse them
 one day.
 
+`app/src/main/baseline-prof.txt` lists the app's code for Android to compile
+ahead of time at install (profileinstaller does this for sideloaded APKs too),
+so the first rounds after an update don't stutter.
+
 The original design notes are in [`PLAN.md`](PLAN.md). Ideas for later: sound
 effects, a joystick option, levels, iOS, Play Store.

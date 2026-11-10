@@ -107,6 +107,11 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    // Installs the baseline profile (src/main/baseline-prof.txt, plus the ones
+    // the Compose libraries ship) on sideloaded installs, which never get
+    // Play Store cloud profiles: the game is compiled ahead of time instead of
+    // stuttering through its first few rounds.
+    implementation(libs.androidx.profileinstaller)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
