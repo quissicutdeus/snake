@@ -1,9 +1,9 @@
 name: Build
 
 # Every push and pull request: lint, test and build. On main, if all of that
-# passes, a GitHub release "v0.0.<build number>" is published with
-# snake-arena.apk attached, so the newest APK is always at
-#   releases/latest/download/snake-arena.apk
+# passes, a GitHub release "v<MAJOR.MINOR>.<patch>" is published with
+# sniddle.apk attached, so the newest APK is always at
+#   releases/latest/download/sniddle.apk
 # "Run workflow" in the Actions tab publishes one from any branch.
 on:
   push:
@@ -14,16 +14,23 @@ on:
 permissions:
   contents: read
 
-env:
-  # Still a beta: 0.0.<build number>. Change the "0.0" to 0.1 / 1.0 when it's
-  # ready. Android only compares the build number (versionCode), which always
-  # goes up, so every release still installs over the previous one.
-  VERSION_NAME: 0.0.${{ github.run_number }}
+# Semver: MAJOR.MINOR is appVersion in gradle.properties; the patch is the next
+# unused number among that series' tags. Android itself only compares the build
+# number (versionCode = run number), which always goes up, so every release
+# installs over the previous one.
+
+# Runs on main go one at a time, so two pushes can't pick the same patch
+# number. On other branches a newer push cancels the older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.name }}
     steps:
       - uses: actions/checkout@v7
 
@@ -50,6 +57,23 @@ jobs:
 
       - name: App screenshot tests (Robolectric)
         run: ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: Pick the release version (appVersion + next unused patch)
+        id: version
+        run: |
+          base=$(sed -n 's/^appVersion=//p' gradle.properties)
+          if ! printf '%s\n' "$base" | grep -Eqx '[0-9]+\.[0-9]+'; then
+            echo "::error file=gradle.properties::appVersion must be MAJOR.MINOR, found '$base'"
+            exit 1
+          fi
+          base_re=$(printf '%s' "$base" | sed 's/\./\\./g')
+          # Tags on GitHub, not in this shallow checkout. Fails the step if GitHub can't be reached.
+          tags=$(git ls-remote --tags --refs origin)
+          last=$(printf '%s\n' "$tags" | sed -n "s#.*refs/tags/v$base_re\.\([0-9][0-9]*\)\$#\1#p" | sort -n | tail -n 1)
+          version="$base.$(( ${last:--1} + 1 ))"
+          echo "Version $version (last v$base.* tag: ${last:-none})"
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "VERSION_NAME=$version" >> "$GITHUB_ENV"
 
       - name: Build APKs (version ${{ env.VERSION_NAME }})
         run: >-
@@ -115,6 +139,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write # create the tag and the release
+    env:
+      VERSION_NAME: ${{ needs.build.outputs.version }}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -124,19 +150,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mv app-release.apk snake-arena.apk
+          mv app-release.apk sniddle.apk
+          # 0.x releases are betas; from 1.0.0 on they're just releases.
+          label=""
+          case $VERSION_NAME in 0.*) label=" (beta)" ;; esac
           cat > notes.md <<NOTES
-          Snake Arena $VERSION_NAME (beta) for Android 16+ (Pixel 6 and newer).
+          Sniddle $VERSION_NAME$label for Android 16+ (Pixel 6 and newer).
 
-          **Install:** open this page on the phone, tap **snake-arena.apk**, then open
+          **Install:** open this page on the phone, tap **sniddle.apk**, then open
           the download and allow installing apps from that source when Android asks.
           It installs over any earlier version and keeps the high scores.
 
           Built from $GITHUB_SHA.
           NOTES
-          gh release create "v$VERSION_NAME" snake-arena.apk \
+          gh release create "v$VERSION_NAME" sniddle.apk \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Snake Arena $VERSION_NAME (beta)" \
+            --title "Sniddle $VERSION_NAME$label" \
             --notes-file notes.md \
             --latest

@@ -21,10 +21,12 @@ android {
         // Android 16+: every Pixel from the Pixel 6 onwards.
         minSdk = 36
         targetSdk = 37
-        // CI passes the build number (-PversionCode=... -PversionName=...) so every
-        // release installs over the previous one. Local builds are 1 / "0.0-dev".
+        // CI passes the build number as versionCode (always goes up, so every
+        // release installs over the previous one) and the semver release number
+        // as versionName. Local builds are 1 / "<appVersion>-dev".
         versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 1
-        versionName = providers.gradleProperty("versionName").orNull ?: "0.0-dev"
+        versionName = providers.gradleProperty("versionName").orNull
+            ?: "${providers.gradleProperty("appVersion").get()}-dev"
     }
 
     signingConfigs {

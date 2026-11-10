@@ -43,22 +43,25 @@ rainbow, checker), eyes and a hat. Everything is unlocked from the start.
 Needs **Android 16 or newer** (Pixel 6 and later).
 
 1. On the phone, open the **[latest release](../../releases/latest)** and tap
-   **`snake-arena.apk`** (or use the direct link:
-   [`releases/latest/download/snake-arena.apk`](../../releases/latest/download/snake-arena.apk)).
+   **`sniddle.apk`** (or use the direct link:
+   [`releases/latest/download/sniddle.apk`](../../releases/latest/download/sniddle.apk)).
 2. Open the download. Android asks to allow installing apps from that source —
    allow it once.
 
-Or with a cable and `adb`: `adb install -r snake-arena.apk`.
+Or with a cable and `adb`: `adb install -r sniddle.apk`.
 
-Snake Arena is still a **beta**: every push to `main` that passes
-[CI](.github/workflows/build.yml) publishes a new [release](../../releases)
-`v0.0.<build number>`; **Run workflow** on the
-[Build workflow page](../../actions/workflows/build.yml) makes one on demand
-from any branch. The build number is also the app's version code, and every
+Sniddle is still a **beta** (0.x): every push to `main` that passes
+[CI](.github/workflows/build.yml) publishes a new [release](../../releases).
+Releases use [semver](https://semver.org): you set MAJOR.MINOR as `appVersion`
+in [`gradle.properties`](gradle.properties), and CI adds the next patch number
+(`v0.1.0`, `v0.1.1`, …). Change `appVersion` to `0.2`, and later `1.0`, to start
+a new series. **Run workflow** on the
+[Build workflow page](../../actions/workflows/build.yml) makes a release on demand
+from any branch. Separately, the build number is the app's version code, and every
 build is signed with the same key ([`app/debug.keystore`](app/debug.keystore),
 committed on purpose; it is not secret and not for the Play Store), so a new
 release **installs over the old one and keeps the high scores**. (A local
-`0.0-dev` build can't replace a newer release; uninstall first.)
+`0.1-dev` build can't replace a newer release; uninstall first.)
 
 ## Build it yourself
 
