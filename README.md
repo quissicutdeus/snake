@@ -30,7 +30,7 @@ Only you can pick them up, and each lasts a few seconds — watch the bar under
 your score:
 
 | Power-up | Looks like | What it does |
-|---|---|---|
+| --- | --- | --- |
 | **Super Strength** | throbbing red ball with a barbell | You win every fight: eat or snip snakes *bigger* than you. Everyone gets scared and runs. |
 | **Super Speed** | flickering yellow ball with a lightning bolt | Much faster and turns quicker, with a sparkle trail. |
 | **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
@@ -94,7 +94,7 @@ app ID / namespace is `com.quissicutdeus.snake` (from snake.quissicutdeus.com).
 `./gradlew lintAll` runs all of them; any finding fails the build (and CI).
 
 | Tool | Checks | Config |
-|---|---|---|
+| --- | --- | --- |
 | **ktlint** (via Spotless) | formatting and Kotlin style; `./gradlew spotlessApply` fixes most of it | [`.editorconfig`](.editorconfig) |
 | **detekt** | code smells: complexity, long functions, magic numbers in game logic, unused private code, likely bugs | [`config/detekt/detekt.yml`](config/detekt/detekt.yml) |
 | **Android Lint** | every check switched on, for the app *and* the pure-Kotlin game module, plus Slack's Compose rules | [`app/lint.xml`](app/lint.xml) |
@@ -110,7 +110,7 @@ All gameplay numbers live in one file (detekt makes sure they stay there):
 After a change, run `./gradlew :game:test :game:balanceReport` to see how games go.
 
 | Want… | Change |
-|---|---|
+| --- | --- |
 | Easier | more `PLAYER_HEARTS`, longer `HURT_INVULNERABLE_SECONDS`, lower `AI_AGGRESSION` or `AI_SPEED_FACTOR`, higher `SMALLER_FRACTION` |
 | Harder | the opposite, or more `AI_TARGET_COUNT` |
 | Faster growth | `PELLET_VALUE`, `PELLET_COUNT`, `EAT_WHOLE_GAIN` |
@@ -123,7 +123,7 @@ After a change, run `./gradlew :game:test :game:balanceReport` to see how games 
 
 ## How it's built
 
-```
+```text
 game/   pure Kotlin, no Android: all rules, AI and drawing code
   model/   Snake (body follows the head's trail), food, SnakeStyle, scores
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),

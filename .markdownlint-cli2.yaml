@@ -1,0 +1,12 @@
+# Markdown lint: markdownlint-cli2 .   (CI runs the same config)
+config:
+  default: true
+  # Same limit as the Kotlin code; tables can't wrap, so they're exempt.
+  MD013:
+    line_length: 140
+    tables: false
+globs:
+  - "**/*.md"
+ignores:
+  - "**/build/**"
+  - ".gradle/**"

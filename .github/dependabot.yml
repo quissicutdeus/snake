@@ -1,0 +1,21 @@
+# Weekly update PRs: one for the workflow's actions, one for Gradle
+# dependencies (gradle/libs.versions.toml and the wrapper).
+# Not covered: the pinned lint images in build.yml's lint-repo job (bump
+# those by hand, together with the local tools).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ["*"]

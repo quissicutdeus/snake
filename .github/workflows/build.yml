@@ -84,9 +84,32 @@ jobs:
           name: screenshots
           path: app/build/screenshots
 
+  # Everything that isn't Kotlin, in pinned Docker images (the same versions
+  # can be run locally: actionlint, scripts/lint-shell.sh, markdownlint-cli2).
+  lint-repo:
+    name: Workflow, shell and Markdown lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: actionlint (workflows, including shellcheck on run steps)
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color
+
+      - name: shellcheck + shfmt (shell scripts)
+        env:
+          SHELLCHECK: docker run --rm -v ${{ github.workspace }}:/mnt -w /mnt koalaman/shellcheck:v0.11.0
+          SHFMT: docker run --rm -v ${{ github.workspace }}:/mnt -w /mnt mvdan/shfmt:v3.14.1
+        run: scripts/lint-shell.sh
+
+      - name: markdownlint (config in .markdownlint-cli2.yaml)
+        uses: docker://davidanson/markdownlint-cli2:v0.23.2
+
   release:
     name: Publish GitHub release
-    needs: build
+    needs: [build, lint-repo]
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -24,6 +24,31 @@ spotless {
         targetExclude("**/build/**")
         ktlint(libs.versions.ktlint.get())
     }
+    // Everything else .editorconfig covers: spaces, no trailing whitespace,
+    // a final newline.
+    format("misc") {
+        target(
+            "**/*.yml",
+            "**/*.yaml",
+            "**/*.toml",
+            "**/*.xml",
+            "**/*.pro",
+            "**/*.properties",
+            ".editorconfig",
+            ".gitignore",
+        )
+        targetExclude("**/build/**", ".gradle/**", ".idea/**", "local.properties")
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(4)
+        endWithNewline()
+    }
+    // Markdown keeps trailing spaces (two of them are a line break); markdownlint checks the rest.
+    format("markdown") {
+        target("**/*.md")
+        targetExclude("**/build/**", ".gradle/**")
+        leadingTabsToSpaces(4)
+        endWithNewline()
+    }
 }
 
 // Every check in one go: ./gradlew lintAll

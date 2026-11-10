@@ -8,6 +8,7 @@ accounts, no network permission, fully offline**. Android is the target; iOS is
 only "maybe someday".
 
 Decisions made with the owner:
+
 - **Kotlin + Jetpack Compose** (plain Android, not Multiplatform). Game rules and
   drawing live in a pure-Kotlin module so an iOS port later stays possible.
 - **Smooth slither movement** (free 360°, curvy bodies, open arena).
@@ -47,6 +48,7 @@ Decisions made with the owner:
 ## Snake customization
 
 "My Snake" screen with a live wiggling preview:
+
 - **Color**: ~12 bright swatches for the body, plus a second color for patterns.
 - **Pattern**: solid, stripes, polka dots, zigzag, rainbow, checker.
 - **Face / extras**: eye style (googly, sleepy, sunglasses); hat (none, crown,
@@ -61,6 +63,7 @@ Decisions made with the owner:
 ## Scoreboard
 
 Fully offline (no accounts, no online leaderboard):
+
 - **High scores on the device**: top 10 runs with player name, score, snakes
   eaten, and a small picture of the snake used. At game over a qualifying score
   asks "Who played?" — tap a previously used name (siblings sharing a tablet) or
@@ -72,7 +75,7 @@ Fully offline (no accounts, no online leaderboard):
 
 ## Architecture
 
-```
+```text
 settings.gradle.kts, build.gradle.kts, gradle/libs.versions.toml, gradlew
 game/   pure Kotlin/JVM library — no Android or UI dependencies
   model/   Vec2, Snake (head, heading, path points, length, style), Pellet,
