@@ -5,12 +5,14 @@ A cartoony snake game for kids, made for our family's Pixel phones and tablets.
 permissions at all and works fully offline.
 
 Grow by eating food dots, gobble up smaller snakes, and steer clear of bigger
-ones. Your snake follows your finger.
+ones. Steer with your thumb, anywhere on the screen.
 
 ## How to play
 
-- **Steer**: touch and hold anywhere — your snake heads towards your finger.
-  Let go and it keeps going straight.
+- **Steer**: put your thumb down anywhere and drag it the way you want to go —
+  a little ring shows where you started. To turn around, just drag back the
+  other way; you never have to reach across the screen. Let go and the snake
+  keeps going straight.
 - **Grow**: eat the food dots. Your **length** is your score.
 - **Bigger = slower.** Small snakes are quick; big snakes are strong.
 - **Faces tell you who's who**: a snake that looks *scared* is smaller than you
@@ -141,7 +143,7 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
-  ui/               Title, Game (frame loop + finger steering + pause),
+  ui/               Title, Game (frame loop + thumbstick + pause),
                     Game over ("Who played?"), High scores, My Snake
   Storage           snake look, top-10 scores and names (SharedPreferences)
 ```

@@ -30,7 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -53,11 +58,12 @@ import com.quissicutdeus.snake.game.render.HudInsets
 import com.quissicutdeus.snake.game.render.SceneRenderer
 import com.quissicutdeus.snake.game.sim.GameSim
 import com.quissicutdeus.snake.game.sim.SteerInput
-import kotlin.math.atan2
+import com.quissicutdeus.snake.game.sim.Thumbstick
 
 /** Mutable per-game objects the frame loop works on (not Compose state: they change every frame). */
 private class GameHolder(
     style: SnakeStyle,
+    val stick: Thumbstick,
 ) {
     val sim = GameSim(playerStyle = style)
     val camera = Camera()
@@ -68,15 +74,21 @@ private class GameHolder(
     var time = 0f
     var width = 0f
     var height = 0f
-    var fingerDown = false
-    var fingerX = 0f
-    var fingerY = 0f
+
+    /** The finger steering [stick], so a second finger can't make it jump. */
+    var stickPointer: PointerId? = null
     var overTimer = 0f
     var reported = false
 }
 
 /** Size of the round pause button at the top centre (the HUD keeps clear of it). */
 private val PauseButtonSize = 52.dp
+
+/** Thumbstick: drags shorter than this keep the snake going straight. */
+private val StickDeadZone = 12.dp
+
+/** Thumbstick: how far the thumb gets from the centre before the centre follows it. */
+private val StickLeash = 56.dp
 
 @Composable
 fun GameScreen(
@@ -86,11 +98,15 @@ fun GameScreen(
     onQuit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val game = remember(key) { GameHolder(style) }
+    val density = LocalDensity.current
+    val game =
+        remember(key) {
+            val stick = with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) }
+            GameHolder(style, stick)
+        }
     var paused by remember(key) { mutableStateOf(false) }
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
-    val deadZone = with(LocalDensity.current) { 14.dp.toPx() }
     val view = LocalView.current
 
     // Pause when the app goes to the background; back button pauses / resumes.
@@ -103,7 +119,7 @@ fun GameScreen(
             withFrameNanos { now ->
                 val dt = if (last == 0L) 0f else ((now - last) / 1_000_000_000f).coerceAtMost(0.1f)
                 last = now
-                step(game, dt, paused, deadZone)?.let { view.performHapticFeedback(hapticFor(it)) }
+                step(game, dt, paused)?.let { view.performHapticFeedback(hapticFor(it)) }
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     val p = game.sim.player!!
@@ -159,20 +175,16 @@ private fun ArenaCanvas(
 ) {
     Canvas(
         modifier
-            .semantics { contentDescription = "Snake arena. Touch and hold to steer your snake towards your finger." }
-            .onSizeChanged {
+            .semantics {
+                contentDescription = "Snake arena. Touch anywhere and drag your thumb the way your snake should go."
+            }.onSizeChanged {
                 game.width = it.width.toFloat()
                 game.height = it.height.toFloat()
             }.pointerInput(game) {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()
-                        val touch = event.changes.lastOrNull { it.pressed }
-                        game.fingerDown = touch != null
-                        if (touch != null) {
-                            game.fingerX = touch.position.x
-                            game.fingerY = touch.position.y
-                        }
+                        steerWith(game, event.changes)
                         event.changes.forEach { it.consume() }
                     }
                 }
@@ -182,31 +194,55 @@ private fun ArenaCanvas(
         game.adapter.draw(this) { c ->
             SceneRenderer.draw(c, game.sim, game.camera, game.fx, game.time, insets, showHud = !game.sim.gameOver)
         }
+        if (game.stick.down && !game.sim.gameOver) drawStick(game.stick)
     }
 }
 
 /**
- * One frame: steer from the finger, advance the world, effects and camera.
+ * The first finger down steers; the stick starts where it lands. If that finger
+ * lifts while another is still down, the other one takes over from where it is.
+ */
+private fun steerWith(
+    game: GameHolder,
+    changes: List<PointerInputChange>,
+) {
+    val stick = game.stick
+    val current = changes.firstOrNull { it.id == game.stickPointer && it.pressed }
+    if (current != null) {
+        stick.move(current.position.x, current.position.y)
+        return
+    }
+    val next = changes.firstOrNull { it.pressed }
+    game.stickPointer = next?.id
+    if (next == null) stick.release() else stick.press(next.position.x, next.position.y)
+}
+
+/** A faint ring where the thumb landed and a knob under the thumb. */
+private fun DrawScope.drawStick(stick: Thumbstick) {
+    val center = Offset(stick.centerX, stick.centerY)
+    val ring = StickLeash.toPx()
+    drawCircle(Color.White.copy(alpha = 0.12f), ring, center)
+    drawCircle(Color.White.copy(alpha = 0.35f), ring, center, style = Stroke(2.dp.toPx()))
+    drawCircle(Color.White.copy(alpha = 0.45f), ring * 0.45f, Offset(stick.thumbX, stick.thumbY))
+}
+
+/**
+ * One frame: steer from the thumbstick, advance the world, effects and camera.
  * Returns the buzz to play for this frame, if any.
  */
 private fun step(
     game: GameHolder,
     dt: Float,
     paused: Boolean,
-    deadZone: Float,
 ): Buzz? {
     val sim = game.sim
     val p = sim.player ?: return null
     var buzz: Buzz? = null
     if (!paused) {
         game.time += dt
-        if (game.fingerDown && p.alive && game.width > 0f) {
-            val hx = game.camera.worldToScreenX(p.x, game.width)
-            val hy = game.camera.worldToScreenY(p.y, game.height)
-            val dx = game.fingerX - hx
-            val dy = game.fingerY - hy
-            // Right on top of the head: keep the current heading instead of spinning.
-            if (dx * dx + dy * dy > deadZone * deadZone) game.input.set(atan2(dy, dx))
+        if (game.stick.down && p.alive) {
+            // Inside the dead zone the heading stays as it was.
+            game.stick.heading()?.let { game.input.set(it) }
         } else {
             game.input.release()
         }
