@@ -89,14 +89,21 @@ class Spawner(private val targetCount: Int = GameConfig.AI_TARGET_COUNT) {
         val player = sim.player ?: return
         if (!player.alive) return
         val far = GameConfig.offscreenDistance(player.radius) + 200f
-        for (s in sim.world.snakes) {
-            if (!s.alive || s.isPlayer) continue
+        fun isFar(s: Snake) = dist(s.x, s.y, player.x, player.y) > far
+        val ais = sim.world.snakes.filter { it.alive && !it.isPlayer }
+        for (s in ais) {
             val ratio = s.length / player.length
-            if ((ratio > GameConfig.DESPAWN_MAX_RATIO || ratio < GameConfig.DESPAWN_MIN_RATIO) &&
-                dist(s.x, s.y, player.x, player.y) > far
-            ) {
-                s.alive = false
-            }
+            if ((ratio > GameConfig.DESPAWN_MAX_RATIO || ratio < GameConfig.DESPAWN_MIN_RATIO) && isFar(s)) s.alive = false
+        }
+        // Keep the mix around the player: if the player shrank (or AIs grew) and
+        // too many are now bigger, quietly retire the biggest far-away one.
+        // The next spawn will then be a smaller snake.
+        val alive = ais.filter { it.alive }
+        if (alive.isEmpty()) return
+        val smaller = alive.count { compareSize(it.length, player.length) == SizeRelation.SMALLER }
+        if (smaller.toFloat() / alive.size < GameConfig.SMALLER_FRACTION - 0.15f) {
+            alive.filter { compareSize(it.length, player.length) == SizeRelation.BIGGER && isFar(it) }
+                .maxByOrNull { it.length }?.alive = false
         }
     }
 }

@@ -135,6 +135,22 @@ class GameSim(
     fun leaderboard(): List<Snake> =
         world.snakes.filter { it.alive }.sortedWith(compareByDescending<Snake> { it.length }.thenBy { it.id })
 
+    /** The longest an AI snake may grow right now. */
+    fun aiMaxLength(): Float {
+        val ref = player?.length ?: GameConfig.PLAYER_START_LENGTH
+        return ref * GameConfig.AI_MAX_LENGTH_RATIO
+    }
+
+    /** Grows [s] by [amount]; AI snakes never grow past [aiMaxLength]. */
+    internal fun feed(s: Snake, amount: Float) {
+        if (s.isPlayer) {
+            s.grow(amount)
+            return
+        }
+        val room = aiMaxLength() - s.length
+        if (room > 0f) s.grow(kotlin.math.min(amount, room))
+    }
+
     internal fun emit(e: GameEvent) {
         events.add(e)
     }
@@ -215,7 +231,7 @@ class GameSim(
         val d2 = dist2(s.x, s.y, fx, fy)
         val eatR = r + fr + GameConfig.EAT_MARGIN
         if (d2 < eatR * eatR) {
-            s.grow(value)
+            feed(s, value)
             s.sinceAte = 0f
             return true
         }

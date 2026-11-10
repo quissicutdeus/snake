@@ -60,7 +60,7 @@ class MovementTest {
         assertEquals(160f, p.length, 0.01f)
         assertEquals(160f, p.bestLength, 0.01f)
         assertEquals(1, sim.world.pellets.size, "eaten pellets respawn elsewhere")
-        assertEquals(16, p.score)
+        assertEquals(32, p.score)
     }
 
     @Test fun visibleBodyCatchesUpAfterGrowing() {

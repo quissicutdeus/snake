@@ -32,6 +32,6 @@ class CurvesTest {
     }
 
     @Test fun scoreIsLengthInPoints() {
-        assertEquals(15, GameConfig.scoreFor(GameConfig.PLAYER_START_LENGTH))
+        assertEquals(30, GameConfig.scoreFor(GameConfig.PLAYER_START_LENGTH))
     }
 }

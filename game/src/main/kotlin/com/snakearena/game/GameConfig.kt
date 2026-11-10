@@ -29,13 +29,13 @@ object GameConfig {
     const val PLAYER_START_LENGTH = 150f
 
     /** Body radius of a snake at [PLAYER_START_LENGTH]; thickness grows with length. */
-    const val START_RADIUS = 12f
+    const val START_RADIUS = 15f
     const val RADIUS_GROWTH_EXPONENT = 0.4f
-    const val MIN_RADIUS = 8f
-    const val MAX_RADIUS = 48f
+    const val MIN_RADIUS = 10f
+    const val MAX_RADIUS = 56f
 
-    /** Score shown to players = length / this (so a starting snake is "15"). */
-    const val LENGTH_PER_POINT = 10f
+    /** Score shown to players = length / this (a starting snake is "30", each food dot is +1). */
+    const val LENGTH_PER_POINT = 5f
 
     /** Sizes within this ratio of each other count as "the same size": both just bounce. */
     const val EQUAL_SIZE_RATIO = 1.10f
@@ -66,10 +66,10 @@ object GameConfig {
 
     // ---- Food --------------------------------------------------------------
     const val PELLET_COUNT = 520
-    const val PELLET_VALUE = 10f
+    const val PELLET_VALUE = 5f
     const val PELLET_RADIUS = 6f
     const val BIG_PELLET_CHANCE = 0.12f
-    const val BIG_PELLET_VALUE = 30f
+    const val BIG_PELLET_VALUE = 15f
     const val BIG_PELLET_RADIUS = 10f
 
     /** Food this close to a head (beyond touching) is eaten. */
@@ -119,6 +119,12 @@ object GameConfig {
     const val AI_CHASE_MAX_SECONDS = 4f
     const val AI_CHASE_REST_SECONDS = 3f
 
+    /**
+     * AI snakes stop growing at this many times the player's length, so a
+     * runaway giant can't take over the arena.
+     */
+    const val AI_MAX_LENGTH_RATIO = 3f
+
     // ---- Spawner -----------------------------------------------------------
     const val AI_TARGET_COUNT = 14
     const val SPAWN_INTERVAL = 0.7f
@@ -136,7 +142,7 @@ object GameConfig {
 
     // ---- Camera ------------------------------------------------------------
     /** World units visible across the short side of the screen at the start. */
-    const val BASE_VIEW_SPAN = 720f
+    const val BASE_VIEW_SPAN = 660f
     const val VIEW_GROWTH_EXPONENT = 0.55f
     const val MAX_VIEW_SPAN = 2000f
 

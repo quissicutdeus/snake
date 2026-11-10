@@ -30,3 +30,12 @@ tasks.register<JavaExec>("renderPreviews") {
     args(layout.buildDirectory.dir("previews").get().asFile.absolutePath)
     jvmArgs("-Djava.awt.headless=true")
 }
+
+// Plays a few games with a bot player and prints survival time and size mix:
+//   ./gradlew :game:balanceReport
+tasks.register<JavaExec>("balanceReport") {
+    group = "verification"
+    description = "Prints how bot-played games go with the current GameConfig."
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.snakearena.game.preview.BalanceReportKt")
+}

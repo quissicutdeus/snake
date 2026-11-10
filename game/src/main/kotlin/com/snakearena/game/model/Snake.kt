@@ -105,6 +105,19 @@ class Snake(
         }
     }
 
+    /**
+     * Places the snake along given points (head first) — used for menu
+     * previews and pictures, not during play.
+     */
+    fun setPose(xs: FloatArray, ys: FloatArray, count: Int, heading: Float) {
+        x = xs[0]
+        y = ys[0]
+        this.heading = heading
+        trail.clear()
+        for (i in 0 until count) trail.pushBack(xs[i], ys[i])
+        updateSegments()
+    }
+
     /** Moves the head and the whole body (a bounce shove). */
     fun shove(dx: Float, dy: Float) {
         x += dx

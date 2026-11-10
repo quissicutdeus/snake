@@ -138,13 +138,13 @@ class RulesTest {
 
     @Test fun atZeroHeartsYouAreEatenAndTheGameIsOver() {
         val sim = emptySim()
-        val kid = sim.player(1000f, 1000f, EAST, 150f)
+        val kid = sim.player(1000f, 1000f, EAST, 300f)
         kid.hearts = 1
         val big = sim.ai(1100f, 1000f, WEST, 600f)
         sim.stepUntil { sim.gameOver }
         assertFalse(kid.alive)
         assertEquals(0, kid.hearts)
-        assertEquals(600f + 150f * GameConfig.EAT_WHOLE_GAIN, big.length, 0.01f)
+        assertEquals(600f + 300f * GameConfig.EAT_WHOLE_GAIN, big.length, 0.01f)
         assertTrue(sim.events.any { it is GameEvent.PlayerEaten })
     }
 
@@ -165,6 +165,7 @@ class RulesTest {
 
     @Test fun aiSnakesFollowTheSameRulesAgainstEachOther() {
         val sim = emptySim()
+        sim.player(200f, 200f, EAST, 2000f) // far away; big, so the AI growth cap doesn't interfere
         val big = sim.ai(1000f, 1000f, EAST, 500f, name = "Big")
         val small = sim.ai(1100f, 1000f, WEST, 120f, name = "Small")
         sim.stepUntil { !small.alive }
@@ -175,6 +176,15 @@ class RulesTest {
         val bumper = sim.ai(2000f, 2100f, NORTH, 200f, name = "Bumper")
         sim.stepUntil { !bumper.alive }
         assertEquals(800f + 100f, wall.length, 0.01f)
+    }
+
+    @Test fun aiSnakesStopGrowingAtTheCap() {
+        val sim = emptySim()
+        val kid = sim.player(200f, 200f, EAST, 200f)
+        val big = sim.ai(1000f, 1000f, EAST, 590f)
+        val small = sim.ai(1100f, 1000f, WEST, 200f)
+        sim.stepUntil { !small.alive }
+        assertEquals(kid.length * GameConfig.AI_MAX_LENGTH_RATIO, big.length, 0.01f)
     }
 
     @Test fun protectedSnakesCannotBeCutAgainRightAway() {

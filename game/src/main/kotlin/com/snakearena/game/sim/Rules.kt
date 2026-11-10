@@ -73,7 +73,7 @@ internal fun GameSim.damage(victim: Snake, by: Snake, fromX: Float = by.x, fromY
 internal fun GameSim.eatWhole(eater: Snake, victim: Snake) {
     victim.alive = false
     victim.hearts = 0
-    eater.grow(victim.length * GameConfig.EAT_WHOLE_GAIN)
+    feed(eater, victim.length * GameConfig.EAT_WHOLE_GAIN)
     eater.snakesEaten++
     eater.sinceAte = 0f
     emit(GameEvent.AteSnake(eater.id, victim.id, victim.x, victim.y, victim.style.bodyColor))
