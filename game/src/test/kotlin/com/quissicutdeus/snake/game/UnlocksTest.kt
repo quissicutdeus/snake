@@ -34,6 +34,16 @@ class UnlocksTest {
         assertEquals("Reach length 200", Unlocks.ruleFor(Hat.WIZARD)?.goal)
     }
 
+    @Test fun progressCountsUpToTheGoal() {
+        val stats = Stats(bestScore = 150, snakesEaten = 7, gamesPlayed = 30)
+        val wizard = Unlocks.ruleFor(Hat.WIZARD)!!
+        assertEquals(150, wizard.progress(stats))
+        assertEquals(200, wizard.target)
+        assertEquals(7, Unlocks.ruleFor(Eyes.HEARTS)!!.progress(stats))
+        // Past the goal it stops at the goal.
+        assertEquals(10, Unlocks.ruleFor(Pattern.STARS)!!.progress(stats))
+    }
+
     @Test fun surpriseMeOnlyPicksUnlockedLooks() {
         val fresh = Stats()
         val rng = Random(1)

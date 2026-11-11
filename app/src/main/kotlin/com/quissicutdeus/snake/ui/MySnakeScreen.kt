@@ -254,8 +254,8 @@ private fun <T> Choices(
 ) where T : Enum<T>, T : Labelled {
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
-            val goal = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }?.goal
-            Pill(option.label, option == selected, goal, { onPick(option) })
+            val lock = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }?.let { Lock(it.goal, it.progress(stats), it.target) }
+            Pill(option.label, option == selected, lock, { onPick(option) })
         }
     }
 }
@@ -273,16 +273,23 @@ private fun NameChoices(
     }
 }
 
-/** A rounded choice button; with a [lockedGoal] it's greyed out, shows a lock and the goal, and can't be tapped. */
+/** A locked look's goal ("Play 10 games") and how far along it is ([have] of [need]). */
+private class Lock(
+    val goal: String,
+    val have: Int,
+    val need: Int,
+)
+
+/** A rounded choice button; with a [lock] it's greyed out, shows the goal and progress, and can't be tapped. */
 @Composable
 private fun Pill(
     label: String,
     isSelected: Boolean,
-    lockedGoal: String?,
+    lock: Lock?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val locked = lockedGoal != null
+    val locked = lock != null
     Box(
         modifier
             .clip(RoundedCornerShape(50))
@@ -294,18 +301,43 @@ private fun Pill(
                 },
             ).semantics {
                 this.selected = isSelected
-                if (locked) contentDescription = "$label, locked: $lockedGoal"
+                if (lock != null) contentDescription = "$label, locked: ${lock.goal}, ${lock.have} of ${lock.need} so far"
             }.clickable(enabled = !locked, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = if (locked) 6.dp else 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        if (locked) {
+        if (lock != null) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("🔒 $label", style = MaterialTheme.typography.titleMedium, color = Color(0xFF8A8A8A))
-                Text(lockedGoal, style = MaterialTheme.typography.labelMedium, color = Color(0xFF8A8A8A))
+                Text(lock.goal, style = MaterialTheme.typography.labelMedium, color = Color(0xFF8A8A8A))
+                ProgressBar(lock.have, lock.need)
             }
         } else {
             Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
         }
+    }
+}
+
+/** "7 of 10": a little bar filling up toward a locked look's goal. */
+@Composable
+private fun ProgressBar(
+    have: Int,
+    need: Int,
+) {
+    Row(Modifier.padding(top = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier
+                .size(width = 64.dp, height = 8.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFD6D6D6)),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(have.toFloat() / need)
+                    .background(KidColors.Sunny),
+            )
+        }
+        Text("$have/$need", Modifier.padding(start = 6.dp), style = MaterialTheme.typography.labelSmall, color = Color(0xFF8A8A8A))
     }
 }

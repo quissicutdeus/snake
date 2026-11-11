@@ -48,12 +48,21 @@ data class Unlock(
 ) {
     val goal: String get() = kind.describe(amount)
 
-    fun reachedBy(stats: Stats): Boolean =
-        when (kind) {
-            GoalKind.LENGTH -> stats.bestScore >= amount
-            GoalKind.SNAKES -> stats.snakesEaten >= amount
-            GoalKind.GAMES -> stats.gamesPlayed >= amount
-        }
+    /** The number the goal asks for (100 for "Reach length 100"). */
+    val target: Int get() = amount
+
+    /** How far [stats] have got toward [target], never more than it. */
+    fun progress(stats: Stats): Int =
+        minOf(
+            amount,
+            when (kind) {
+                GoalKind.LENGTH -> stats.bestScore
+                GoalKind.SNAKES -> stats.snakesEaten
+                GoalKind.GAMES -> stats.gamesPlayed
+            },
+        )
+
+    fun reachedBy(stats: Stats): Boolean = progress(stats) >= amount
 }
 
 /**
