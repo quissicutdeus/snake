@@ -16,7 +16,6 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
-import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -47,6 +46,7 @@ import com.quissicutdeus.snake.ui.SniddleTheme
 import com.quissicutdeus.snake.ui.TitleScreen
 import com.quissicutdeus.snake.ui.WhatsNew
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -127,16 +127,16 @@ class ScreenshotTest : ScreenTest() {
      * return the kid is back in the game, still paused, not on the title screen.
      */
     @Test fun aPausedGameSurvivesTheAppBeingClosed() {
-        val restore = StateRestorationTester(compose)
-        restore.setContent { SniddleApp(storage, playSound = {}) }
+        val app = SavedAndRestored()
+        compose.setContent { Restorable(app) { SniddleApp(storage, playSound = {}) } }
         advance(100)
         compose.onNodeWithText("Play!").performClick()
         advance(1000)
         compose.onNodeWithContentDescription("Pause").performClick()
         advance(100)
 
-        restore.emulateSavedInstanceStateRestore()
-        advance(500)
+        app.closeAndReopen { advance(250) }
+        assertTrue("the screen really was saved", app.saved.orEmpty().isNotEmpty())
 
         compose.onNodeWithText("Paused").assertExists()
         compose.onNodeWithText("Play!").assertDoesNotExist()
