@@ -16,7 +16,11 @@ import kotlin.math.sin
  * [Contact.b]:
  *  - roughly equal size: bounce, no damage (head-to-head: both bounce);
  *  - a is bigger: head-to-head hurts b (eaten at 0 hearts), body hit cuts b's tail off;
- *  - a is smaller: a bounces back and loses a heart (eaten at 0 hearts).
+ *  - a is smaller: a bounces back and loses a heart (eaten at 0 hearts). Except
+ *    the player running into a bigger *body* just bounces: only a bigger snake's
+ *    mouth can hurt the player, so whoever eats them is right there on screen
+ *    (the camera follows the player's head), never a long body whose head is
+ *    somewhere off-screen.
  * A protected (blinking) snake can't be hurt or cut; contacts that would hurt it are ignored.
  */
 internal fun GameSim.resolveContact(c: Contact) {
@@ -29,9 +33,21 @@ internal fun GameSim.resolveContact(c: Contact) {
     val cx = b.segX[c.seg]
     val cy = b.segY[c.seg]
     when (a.fightRelationTo(b)) {
-        SizeRelation.EQUAL -> bounceOffEqual(a, b, headToHead, cx, cy)
-        SizeRelation.BIGGER -> bite(attacker = a, victim = b, seg = c.seg)
-        SizeRelation.SMALLER -> bumpIntoBigger(a = a, bigger = b, cx = cx, cy = cy)
+        SizeRelation.EQUAL -> {
+            bounceOffEqual(a, b, headToHead, cx, cy)
+        }
+
+        SizeRelation.BIGGER -> {
+            bite(attacker = a, victim = b, seg = c.seg)
+        }
+
+        SizeRelation.SMALLER -> {
+            if (a.isPlayer && !headToHead) {
+                bounceOffBiggerBody(a, b, cx, cy)
+            } else {
+                bumpIntoBigger(a = a, bigger = b, cx = cx, cy = cy)
+            }
+        }
     }
 }
 
@@ -62,6 +78,16 @@ private fun GameSim.bite(
         return
     }
     if (seg == 0) damage(victim = victim, by = attacker) else sever(victim = victim, seg = seg, by = attacker)
+}
+
+/** The player's head ran into a bigger snake's body: a harmless bounce (*boing*). */
+private fun GameSim.bounceOffBiggerBody(
+    player: Snake,
+    bigger: Snake,
+    cx: Float,
+    cy: Float,
+) {
+    if (player.knockback <= 0f) bounce(player, cx, cy, bigger)
 }
 
 /** [a] ran into a snake that wins the fight: it gets hurt, unless armor makes it just bounce. */

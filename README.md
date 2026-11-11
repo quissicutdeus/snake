@@ -21,8 +21,10 @@ ones. Steer with your thumb, anywhere on the screen.
 - **Bite a smaller snake's head** → you eat it whole and grow a lot.
 - **Bite a smaller snake's body** → you snip its tail off. The tail falls apart
   into pieces anyone can eat.
-- **Bump into a bigger snake** → you bounce back and lose a heart ❤️, then
-  blink for a moment (you can't be hurt while blinking).
+- **Bump heads with a bigger snake** → you bounce back and lose a heart ❤️,
+  then blink for a moment (you can't be hurt while blinking).
+- **Run into a bigger snake's body** → you just bounce off. Only a bigger
+  snake's mouth can hurt you, so you always see who's after you.
 - **A bigger snake bites your body** → your tail falls off. Go back and eat it!
 - Lose all 3 hearts and you get gobbled up. Game over — put your name on the
   high-score list!

@@ -102,27 +102,36 @@ class RulesTest {
         assertTrue(sim.events.any { it is GameEvent.AteSnake })
     }
 
-    @Test fun hittingABiggerSnakeBouncesYouLosesAHeartAndMakesYouBlink() {
+    @Test fun runningIntoABiggerSnakesBodyJustBouncesYou() {
+        // The big snake's head is far off to the east; only its body is near the kid.
         val sim = emptySim()
-        val big = sim.ai(2300f, 2000f, EAST, 600f)
+        val big = sim.ai(2600f, 2000f, EAST, 900f)
         val kid = sim.player(2000f, 2100f, NORTH, 150f)
         val input = SteerInput().apply { set(NORTH) }
         sim.stepUntil {
-            kid.hearts < GameConfig.PLAYER_HEARTS ||
+            sim.events.any { it is GameEvent.Bounced } ||
                 run {
                     sim.step(input)
                     false
                 }
         }
-        assertEquals(GameConfig.PLAYER_HEARTS - 1, kid.hearts)
+        assertEquals(GameConfig.PLAYER_HEARTS, kid.hearts, "no heart lost")
         assertTrue(kid.alive)
-        assertTrue(kid.invulnerable > GameConfig.HURT_INVULNERABLE_SECONDS - 0.05f)
         assertTrue(sin(kid.heading) > 0.5f, "bounced back (now heading south-ish): ${kid.heading}")
-        assertEquals(600f, big.length, "nothing happens to the bigger snake")
+        assertEquals(900f, big.length, "nothing happens to the bigger snake")
 
-        // While blinking you can't lose another heart, even pushing straight back in.
-        repeat(60) { sim.step(input) }
-        assertEquals(GameConfig.PLAYER_HEARTS - 1, kid.hearts)
+        // Pushing straight back in again and again never hurts either.
+        repeat(600) { sim.step(input) }
+        assertEquals(GameConfig.PLAYER_HEARTS, kid.hearts)
+        assertFalse(sim.gameOver)
+    }
+
+    @Test fun aBiggerHeadHittingYourHeadMakesYouBlink() {
+        val sim = emptySim()
+        val kid = sim.player(1000f, 1000f, EAST, 150f)
+        sim.ai(1100f, 1000f, WEST, 600f)
+        sim.stepUntil { kid.hearts < GameConfig.PLAYER_HEARTS }
+        assertTrue(kid.invulnerable > GameConfig.HURT_INVULNERABLE_SECONDS - 0.05f)
     }
 
     @Test fun aBiggerHeadHittingYourBodyKnocksYourTailOffButKeepsYourHearts() {
