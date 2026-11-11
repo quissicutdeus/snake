@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake.game.sim
 
+import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.SnakeStyle
@@ -20,6 +21,8 @@ data class SavedRun(
     val powers: List<Float>,
     /** Seconds spent as the biggest snake so far. */
     val biggestSeconds: Float = 0f,
+    /** How hard the game is: it carries on just as hard. */
+    val difficulty: Difficulty = Difficulty.NORMAL,
 ) {
     /** A short text form (a few dozen characters), read back by [decode]. */
     fun encode(): String =
@@ -31,17 +34,24 @@ data class SavedRun(
             snakesEaten.toString(),
             powers.joinToString(","),
             biggestSeconds.toString(),
+            difficulty.key,
             style.encode(),
             name,
         ).joinToString(SEP)
 
     companion object {
-        private const val VERSION = "run2"
+        private const val VERSION = "run3"
         private const val SEP = ";"
-        private const val FIELDS = 9
+        private const val FIELDS = 10
 
-        /** The version before "biggest snake" time was kept: one field fewer. */
-        private const val OLD_VERSION = "run1"
+        /** Field counts of older versions, which come back as normal games. */
+        private val OLD_VERSIONS =
+            mapOf(
+                // Before little kid mode: no difficulty.
+                "run2" to FIELDS - 1,
+                // Before "biggest snake" time was kept: no time either.
+                "run1" to FIELDS - 2,
+            )
 
         // Positions in the saved text (see encode()).
         private const val F_LENGTH = 1
@@ -50,21 +60,19 @@ data class SavedRun(
         private const val F_EATEN = 4
         private const val F_POWERS = 5
         private const val F_BIGGEST = 6
+        private const val F_DIFFICULTY = 7
 
-        /** Reads [encode] output (or the older "run1" form); null for anything unreadable. */
+        /** Reads [encode] output (or an older form); null for anything unreadable. */
         fun decode(text: String?): SavedRun? {
-            val version = text?.substringBefore(SEP)
-            val fields =
-                when (version) {
-                    VERSION -> FIELDS
-                    OLD_VERSION -> FIELDS - 1
-                    else -> return null
-                }
+            if (text == null) return null
+            val version = text.substringBefore(SEP)
+            val fields = if (version == VERSION) FIELDS else OLD_VERSIONS[version] ?: return null
             // The name is last and may itself contain the separator, so split at most `fields` ways.
             val p = text.split(SEP, limit = fields)
             if (p.size != fields) return null
             val powers = p[F_POWERS].split(',').map { it.toFloatOrNull() ?: return null }
-            val biggest = if (version == VERSION) p[F_BIGGEST].toFloatOrNull() ?: return null else 0f
+            val biggest = if (fields >= FIELDS - 1) p[F_BIGGEST].toFloatOrNull() ?: return null else 0f
+            val difficulty = if (fields == FIELDS) Difficulty.byKey(p[F_DIFFICULTY]) ?: return null else Difficulty.NORMAL
             val run =
                 SavedRun(
                     name = p[fields - 1],
@@ -75,13 +83,14 @@ data class SavedRun(
                     snakesEaten = p[F_EATEN].toIntOrNull() ?: return null,
                     powers = powers,
                     biggestSeconds = biggest,
+                    difficulty = difficulty,
                 )
             return run.takeIf { it.isSane() }
         }
 
         private fun SavedRun.isSane(): Boolean =
             length.isFinite() && length >= GameConfig.MIN_LENGTH && bestLength >= length &&
-                hearts in 1..GameConfig.PLAYER_HEARTS && snakesEaten >= 0 &&
+                hearts in 1..difficulty.hearts && snakesEaten >= 0 &&
                 powers.size == PowerType.entries.size && powers.all { it.isFinite() && it >= 0f } &&
                 biggestSeconds.isFinite() && biggestSeconds >= 0f
     }

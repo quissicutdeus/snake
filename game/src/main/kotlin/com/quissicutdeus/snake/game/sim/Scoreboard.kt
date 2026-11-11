@@ -21,6 +21,13 @@ object Scoreboard {
     private const val FIELD_NAME = 4
     private const val SAVED_FIELDS = 5
 
+    /**
+     * After the name, so older versions (which read the first five fields)
+     * still load the list; lines from before it have no sixth field.
+     */
+    private const val FIELD_LITTLE_KID = 5
+    private const val LITTLE_KID = "little"
+
     /** Best first; equal scores keep the older run first (it got there first). */
     private val order = compareByDescending<ScoreEntry> { it.score }.thenBy { it.timestamp }
 
@@ -63,7 +70,8 @@ object Scoreboard {
 
     fun encode(entries: List<ScoreEntry>): String =
         entries.joinToString("\n") {
-            listOf(it.score, it.snakesEaten, it.timestamp, it.style.encode(), cleanName(it.name)).joinToString("\t")
+            val fields = listOf(it.score, it.snakesEaten, it.timestamp, it.style.encode(), cleanName(it.name))
+            (if (it.littleKid) fields + LITTLE_KID else fields).joinToString("\t")
         }
 
     /** Parses [encode] output. Broken lines are skipped rather than losing the whole list. */
@@ -76,7 +84,8 @@ object Scoreboard {
                 val score = f[FIELD_SCORE].toIntOrNull() ?: return@mapNotNull null
                 val eaten = f[FIELD_EATEN].toIntOrNull() ?: return@mapNotNull null
                 val time = f[FIELD_TIME].toLongOrNull() ?: return@mapNotNull null
-                ScoreEntry(cleanName(f[FIELD_NAME]), score, eaten, SnakeStyle.decode(f[FIELD_STYLE]), time)
+                val little = f.getOrNull(FIELD_LITTLE_KID) == LITTLE_KID
+                ScoreEntry(cleanName(f[FIELD_NAME]), score, eaten, SnakeStyle.decode(f[FIELD_STYLE]), time, little)
             },
         )
     }

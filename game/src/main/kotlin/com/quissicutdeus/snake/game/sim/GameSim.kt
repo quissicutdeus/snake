@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake.game.sim
 
+import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.Food
 import com.quissicutdeus.snake.game.model.Holiday
@@ -33,6 +34,8 @@ data class SimOptions(
     val powerUps: Boolean = true,
     /** Holidays that are on today: computer snakes dress up for them. */
     val season: Set<Holiday> = emptySet(),
+    /** How hard the game is (a saved game comes back as it was saved, whatever this says). */
+    val difficulty: Difficulty = Difficulty.NORMAL,
 )
 
 /**
@@ -48,6 +51,9 @@ class GameSim(
     resume: SavedRun? = null,
 ) {
     val rng = Random(seed)
+
+    /** How hard this game is: as saved when carrying on a game, else from [options]. */
+    val difficulty: Difficulty = resume?.difficulty ?: options.difficulty
     val world = World(options.width, options.height)
     internal val grid = SpatialGrid(options.width, options.height)
     private val heads = HeadGrid(options.width, options.height)
@@ -87,7 +93,7 @@ class GameSim(
         internal set
 
     init {
-        repeat(options.pelletCount) { world.pellets.add(randomPellet()) }
+        repeat((options.pelletCount * difficulty.foodFactor).toInt()) { world.pellets.add(randomPellet()) }
         if (resume != null) {
             comeBack(resume)
         } else if (options.spawnPlayer) {
@@ -99,7 +105,7 @@ class GameSim(
                 y = world.height / 2f,
                 heading = rng.nextFloat() * TWO_PI,
                 length = GameConfig.PLAYER_START_LENGTH,
-            )
+            ).hearts = difficulty.hearts
         }
         spawner.fill(this)
         placeStartingPowerUps()
@@ -112,7 +118,7 @@ class GameSim(
     fun snapshot(): SavedRun? {
         val p = player ?: return null
         if (gameOver || !p.alive) return null
-        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList(), biggestSeconds)
+        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList(), biggestSeconds, difficulty)
     }
 
     /**

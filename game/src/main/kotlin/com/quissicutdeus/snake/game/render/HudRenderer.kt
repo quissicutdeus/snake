@@ -23,7 +23,7 @@ object HudRenderer {
 
         // Hearts.
         val hs = 24f * ui
-        for (i in 0 until GameConfig.PLAYER_HEARTS) {
+        for (i in 0 until sim.difficulty.hearts) {
             val cx = left + hs / 2f + i * hs * 1.2f
             val cy = top + hs / 2f
             val full = i < player.hearts

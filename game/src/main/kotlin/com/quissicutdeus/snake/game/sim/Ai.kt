@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake.game.sim
 
+import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.Food
 import com.quissicutdeus.snake.game.model.PowerType
@@ -124,7 +125,7 @@ object Ai {
                 }
 
                 SizeRelation.BIGGER -> {
-                    notePrey(o, d)
+                    notePrey(o, d, sim.difficulty.chaseRulesFor(o).radius)
                 }
 
                 SizeRelation.EQUAL -> {}
@@ -149,10 +150,11 @@ object Ai {
     private fun notePrey(
         prey: Snake,
         d: Float,
+        chaseRadius: Float,
     ) {
         // Blinking or armored snakes can't be hurt, so they aren't worth chasing.
         val catchable = prey.invulnerable <= 0f && !prey.hasPower(PowerType.ARMOR)
-        if (d < GameConfig.AI_CHASE_RADIUS && d < Scan.preyDistance && catchable) {
+        if (d < chaseRadius && d < Scan.preyDistance && catchable) {
             Scan.prey = prey
             Scan.preyDistance = d
         }
@@ -176,7 +178,7 @@ object Ai {
     ): Boolean {
         if (prey == null || brain.chaseRest > 0f) return false
         val alreadyChasing = brain.mode == AiMode.CHASE && brain.targetSnakeId == prey.id
-        if (alreadyChasing || sim.rng.nextFloat() < GameConfig.AI_AGGRESSION) {
+        if (alreadyChasing || sim.rng.nextFloat() < sim.difficulty.chaseRulesFor(prey).chance) {
             if (!alreadyChasing) brain.chaseTime = 0f
             brain.mode = AiMode.CHASE
             brain.targetSnakeId = prey.id
@@ -247,10 +249,11 @@ object Ai {
         dt: Float,
     ): Float {
         val prey = sim.world.snakeById(brain.targetSnakeId)
+        val rules = prey?.let { sim.difficulty.chaseRulesFor(it) } ?: Difficulty.NORMAL.chaseYou
         brain.chaseTime += dt
-        if (prey == null || brain.chaseTime > GameConfig.AI_CHASE_MAX_SECONDS || s.fightRelationTo(prey) != SizeRelation.BIGGER) {
+        if (prey == null || brain.chaseTime > rules.seconds || s.fightRelationTo(prey) != SizeRelation.BIGGER) {
             // Give up and rest for a bit: kids get a chance to escape.
-            brain.chaseRest = GameConfig.AI_CHASE_REST_SECONDS
+            brain.chaseRest = rules.restSeconds
             brain.chaseTime = 0f
             brain.mode = AiMode.WANDER
             brain.thinkTimer = 0f
@@ -258,7 +261,7 @@ object Ai {
         }
         // Aim a little ahead of where the prey is going.
         val d = dist(s.x, s.y, prey.x, prey.y)
-        val lead = min(d * 0.5f, GameConfig.AI_CHASE_LEAD)
+        val lead = min(d * 0.5f, rules.lead)
         val tx = prey.x + cos(prey.heading) * lead
         val ty = prey.y + sin(prey.heading) * lead
         return atan2(ty - s.y, tx - s.x)

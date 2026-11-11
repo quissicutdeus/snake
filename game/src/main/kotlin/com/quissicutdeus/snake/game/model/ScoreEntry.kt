@@ -9,4 +9,6 @@ data class ScoreEntry(
     val style: SnakeStyle,
     /** When it was played (epoch millis). Also identifies the entry. */
     val timestamp: Long,
+    /** Played in little kid mode (shown with a 🐣 so the list stays fair). */
+    val littleKid: Boolean = false,
 )

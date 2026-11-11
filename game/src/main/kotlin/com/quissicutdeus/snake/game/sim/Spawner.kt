@@ -10,7 +10,8 @@ import kotlin.math.max
 
 /**
  * Keeps a mix of AI snakes around the player's size (~60% smaller, ~40%
- * bigger), always spawning them off-screen, and quietly removes far-away
+ * bigger; little kid mode keeps more smaller, see [com.quissicutdeus.snake.game.Difficulty]),
+ * always spawning them off-screen, and quietly removes far-away
  * ones that no longer fit the mix.
  */
 class Spawner(
@@ -43,7 +44,7 @@ class Spawner(
         val ref = referenceLength(sim)
         val ais = sim.world.snakes.filter { it.alive && !it.isPlayer }
         val smaller = ais.count { compareSize(it.length, ref) == SizeRelation.SMALLER }
-        val wantSmaller = ais.isEmpty() || smaller.toFloat() / ais.size < GameConfig.SMALLER_FRACTION
+        val wantSmaller = ais.isEmpty() || smaller.toFloat() / ais.size < sim.difficulty.smallerFraction
         val ratio =
             if (wantSmaller) {
                 GameConfig.SMALLER_MIN_RATIO + rng.nextFloat() * (GameConfig.SMALLER_MAX_RATIO - GameConfig.SMALLER_MIN_RATIO)
@@ -110,7 +111,7 @@ class Spawner(
         val alive = ais.filter { it.alive }
         if (alive.isEmpty()) return
         val smaller = alive.count { compareSize(it.length, player.length) == SizeRelation.SMALLER }
-        if (smaller.toFloat() / alive.size < GameConfig.SMALLER_FRACTION - GameConfig.MIX_TOLERANCE) {
+        if (smaller.toFloat() / alive.size < sim.difficulty.smallerFraction - GameConfig.MIX_TOLERANCE) {
             alive
                 .filter { compareSize(it.length, player.length) == SizeRelation.BIGGER && isFar(it) }
                 .maxByOrNull { it.length }
