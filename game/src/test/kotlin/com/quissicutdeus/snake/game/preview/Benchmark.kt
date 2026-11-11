@@ -12,8 +12,8 @@ import com.quissicutdeus.snake.game.render.TextAlign
 import com.quissicutdeus.snake.game.sim.Ai
 import com.quissicutdeus.snake.game.sim.AiBrain
 import com.quissicutdeus.snake.game.sim.GameSim
-import com.quissicutdeus.snake.game.sim.SimOptions
 import com.quissicutdeus.snake.game.sim.SecondPlayer
+import com.quissicutdeus.snake.game.sim.SimOptions
 import com.quissicutdeus.snake.game.sim.SteerInput
 import kotlin.random.Random
 

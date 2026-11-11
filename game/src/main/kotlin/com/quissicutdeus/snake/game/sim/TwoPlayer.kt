@@ -93,8 +93,8 @@ internal fun GameSim.spawnTwoKids(
     val north = (-PI / 2).toFloat()
     val gap = GameConfig.TWO_PLAYER_START_GAP
     val length = GameConfig.PLAYER_START_LENGTH
-    addSnake(firstName, firstStyle, isPlayer = true, x = cx - gap, y = cy, heading = north, length = length)
-    addSnake(second.name, second.style, isPlayer = true, x = cx + gap, y = cy, heading = north, length = length)
+    addSnake(firstName, firstStyle, isPlayer = true, x = cx - gap, y = cy, heading = north, length = length).hearts = difficulty.hearts
+    addSnake(second.name, second.style, isPlayer = true, x = cx + gap, y = cy, heading = north, length = length).hearts = difficulty.hearts
 }
 
 /** A kid was gobbled by [eater]: they'll be back soon (see [tickTogether]). */
@@ -163,7 +163,7 @@ private fun GameSim.comeBackFresh(s: Snake) {
     s.layStraightBody()
     s.rememberPrevious()
     s.alive = true
-    s.hearts = GameConfig.PLAYER_HEARTS
+    s.hearts = difficulty.hearts
     s.powerTime.fill(0f)
     s.steerLock = 0f
     s.knockback = 0f

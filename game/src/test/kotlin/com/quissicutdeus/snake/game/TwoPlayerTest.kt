@@ -51,6 +51,17 @@ class TwoPlayerTest {
         assertTrue(kid2.x < x1 - 50f, "the second kid went west")
     }
 
+    @Test fun aGentleGameGivesBothKidsTheExtraHeartAndKeepsItThroughComebacks() {
+        val sim = GameSim(seed = 3, options = SimOptions(difficulty = Difficulty.LITTLE), secondPlayer = mya)
+        assertTrue(sim.players.all { it.hearts == Difficulty.LITTLE.hearts })
+        val kid2 = sim.players[1]
+        kid2.hearts = 1
+        sim.ai(kid2.x, kid2.y - 140f, SOUTH, 700f)
+        sim.stepUntil { !kid2.alive }
+        sim.stepUntil(max = 400) { kid2.alive }
+        assertEquals(Difficulty.LITTLE.hearts, kid2.hearts)
+    }
+
     @Test fun aOnePlayerGameHasNoSecondKid() {
         val sim = GameSim(seed = 3)
         assertNull(sim.together)
