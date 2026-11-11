@@ -28,6 +28,7 @@ import com.quissicutdeus.snake.ui.GameResult
 import com.quissicutdeus.snake.ui.GameScreen
 import com.quissicutdeus.snake.ui.HighScoresScreen
 import com.quissicutdeus.snake.ui.MySnakeScreen
+import com.quissicutdeus.snake.ui.Profile
 import com.quissicutdeus.snake.ui.Settings
 import com.quissicutdeus.snake.ui.SniddleApp
 import com.quissicutdeus.snake.ui.SniddleTheme
@@ -153,6 +154,72 @@ class ScreenshotTest {
         compose.onNodeWithText("Keep playing").performClick()
         advance(500)
         compose.onNodeWithText("Paused").assertDoesNotExist()
+    }
+
+    // ---- Looks earned before unlocks existed: cheered once on the title screen ----
+
+    private val alreadyEarned = "You've already earned: Top hat and Stars!"
+
+    /** Ten old high scores, one past length 100: enough for the top hat and stars, never cheered. */
+    private fun seedOldScores() {
+        (1..10).forEach { i -> storage.addScore(ScoreEntry("Caleb", if (i == 1) 120 else 20 + i, 0, style, 1000L + i)) }
+    }
+
+    /** The whole app; bumping the returned counter starts it afresh (like the next launch). */
+    private fun launchApp(): androidx.compose.runtime.MutableIntState {
+        val launch = androidx.compose.runtime.mutableIntStateOf(0)
+        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, playSound = {}) } }
+        advance(800)
+        return launch
+    }
+
+    private fun alreadyEarnedScene(name: String) {
+        seedOldScores()
+        val launch = launchApp()
+        compose.onNodeWithText(alreadyEarned).assertExists()
+        snap(name)
+        assertEquals(setOf("Hat.TOP_HAT", "Pattern.STARS"), storage.loadAnnounced())
+        compose.onNodeWithText(alreadyEarned).performClick()
+        advance(100)
+        compose.onNodeWithText(alreadyEarned).assertDoesNotExist()
+        launch.intValue++
+        advance(300)
+        compose.onNodeWithText("Play!").assertExists()
+        compose.onNodeWithText(alreadyEarned).assertDoesNotExist()
+    }
+
+    @Test fun alreadyEarnedLandscape() = alreadyEarnedScene("already_earned_landscape")
+
+    @Config(qualifiers = PORTRAIT)
+    @Test
+    fun alreadyEarnedPortrait() = alreadyEarnedScene("already_earned_portrait")
+
+    @Test fun alreadyEarnedGoesAwayOnPlayAndStaysAway() {
+        seedOldScores()
+        val launch = launchApp()
+        compose.onNodeWithText(alreadyEarned).assertExists()
+        compose.onNodeWithText("Play!").performClick()
+        advance(300)
+        launch.intValue++
+        advance(300)
+        compose.onNodeWithText("Play!").assertExists()
+        compose.onNodeWithText(alreadyEarned).assertDoesNotExist()
+    }
+
+    @Test fun aFreshInstallHasNothingToAnnounce() {
+        launchApp()
+        compose.onNodeWithText("Play!").assertExists()
+        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
+        assertEquals(emptySet<String>(), storage.loadAnnounced())
+    }
+
+    @Test fun looksCheeredAtGameOverAreNotAnnouncedAgain() {
+        storage.addScore(ScoreEntry("Caleb", 90, 0, style, 1000L))
+        val unlocked = Profile(storage).recordGame(GameResult(120, 0, style, 2000L))
+        assertEquals(listOf<Any>(Hat.TOP_HAT), unlocked.map { it.item })
+        assertEquals(emptyList<Any>(), Profile(storage).alreadyEarned.map { it.item })
+        launchApp()
+        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
     }
 
     @Test fun musicPlaysOnlyWhileTheGameRuns() {

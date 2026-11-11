@@ -55,6 +55,11 @@ class Storage(
 
     fun saveStats(stats: Stats) = prefs.edit { putString(KEY_STATS, stats.encode()) }
 
+    /** Unlocked looks the player has been told about ("Hat.TOP_HAT"...); any others get a cheer on the title screen. */
+    fun loadAnnounced(): Set<String> = prefs.getStringSet(KEY_ANNOUNCED, null)?.toSet().orEmpty()
+
+    fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(KEY_ANNOUNCED, keys.toSet()) }
+
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
     fun saveNames(names: List<String>) = prefs.edit { putString(KEY_NAMES, Scoreboard.encodeNames(names)) }
@@ -74,5 +79,6 @@ class Storage(
         const val KEY_MUSIC = "music"
         const val KEY_SNAKE_NAME = "snake_name"
         const val KEY_STATS = "stats"
+        const val KEY_ANNOUNCED = "announced"
     }
 }

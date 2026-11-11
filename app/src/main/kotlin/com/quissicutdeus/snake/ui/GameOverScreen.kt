@@ -43,6 +43,7 @@ import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Labelled
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.ScoreEntry
+import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.render.Mood
 import com.quissicutdeus.snake.game.sim.Scoreboard
@@ -157,7 +158,7 @@ internal fun duration(seconds: Int): String =
 
 private const val SECONDS_PER_MINUTE = 60
 
-/** "New hat unlocked!": the player's snake wearing what this game earned. */
+/** "Unlocked: Top hat!": the player's snake wearing what this game earned. */
 @Composable
 private fun UnlockedBanner(
     result: GameResult,
@@ -165,8 +166,22 @@ private fun UnlockedBanner(
     modifier: Modifier = Modifier,
 ) {
     if (unlocked.isEmpty()) return
+    UnlockBanner(result.style, unlocked, "Unlocked:", modifier.padding(top = 12.dp))
+}
+
+/**
+ * "[heading] Stars and Top hat!" next to a snake in [style] wearing [unlocked].
+ * Shared by the game-over cheer and the title screen's "already earned" note.
+ */
+@Composable
+internal fun UnlockBanner(
+    style: SnakeStyle,
+    unlocked: List<Unlock>,
+    heading: String,
+    modifier: Modifier = Modifier,
+) {
     val wearing =
-        unlocked.fold(result.style) { s, u ->
+        unlocked.fold(style) { s, u ->
             when (val item = u.item) {
                 is Hat -> s.copy(hat = item)
                 is Eyes -> s.copy(eyes = item)
@@ -175,11 +190,11 @@ private fun UnlockedBanner(
             }
         }
     val names = unlocked.joinToString(" and ") { (it.item as? Labelled)?.label ?: it.item.name }
-    Surface(modifier.padding(top = 12.dp), shape = RoundedCornerShape(24.dp), color = KidColors.Sunny) {
+    Surface(modifier, shape = RoundedCornerShape(24.dp), color = KidColors.Sunny) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             SnakePicture(wearing, Modifier.size(64.dp))
             Text(
-                "Unlocked: $names!",
+                "$heading $names!",
                 style = MaterialTheme.typography.titleLarge,
                 color = KidColors.Ink,
                 modifier = Modifier.padding(start = 10.dp),

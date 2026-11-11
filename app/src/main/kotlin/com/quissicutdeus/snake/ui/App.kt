@@ -142,6 +142,7 @@ fun SniddleApp(
     var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun play() {
+        me.dismissAlreadyEarned()
         round++
         screen = Screen.Play(round)
     }
@@ -149,13 +150,11 @@ fun SniddleApp(
     SniddleTheme {
         when (val s = screen) {
             Screen.Title -> {
-                TitleScreen(
-                    style = me.style,
+                TitleRoute(
+                    me,
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onHighScores = { screen = Screen.HighScores() },
-                    settings = me.settings,
-                    onSettingsChange = me::changeSettings,
                 )
             }
 
@@ -200,6 +199,25 @@ fun SniddleApp(
         // Back always leads home (the play screen handles back itself to pause).
         BackHandler(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
     }
+}
+
+/** The title screen, fed from the [Profile]: look, settings and any looks earned without a cheer. */
+@Composable
+private fun TitleRoute(
+    me: Profile,
+    onPlay: () -> Unit,
+    onMySnake: () -> Unit,
+    onHighScores: () -> Unit,
+) {
+    TitleScreen(
+        style = me.style,
+        onPlay = onPlay,
+        onMySnake = onMySnake,
+        onHighScores = onHighScores,
+        settings = me.settings,
+        onSettingsChange = me::changeSettings,
+        content = { AlreadyEarnedBanner(me.style, me.alreadyEarned, me::alreadyEarnedShown, me::dismissAlreadyEarned) },
+    )
 }
 
 /** My Snake, fed from the [Profile]: look, name (with names from the high scores) and unlocks. */

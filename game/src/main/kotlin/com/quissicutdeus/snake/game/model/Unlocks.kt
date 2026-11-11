@@ -87,6 +87,9 @@ object Unlocks {
         stats: Stats,
     ): Boolean = ruleFor(item)?.reachedBy(stats) ?: true
 
+    /** Every look that [stats] has unlocked, in [ALL] order. */
+    fun reachedBy(stats: Stats): List<Unlock> = ALL.filter { it.reachedBy(stats) }
+
     /** Looks that [after] has unlocked and [before] hadn't, in [ALL] order. */
     fun newlyUnlocked(
         before: Stats,

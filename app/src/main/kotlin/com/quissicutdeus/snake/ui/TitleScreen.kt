@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -25,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -38,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quissicutdeus.snake.ComposeCanvas2D
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.render.Camera
 import com.quissicutdeus.snake.game.render.Fx
 import com.quissicutdeus.snake.game.render.SceneRenderer
@@ -93,6 +98,8 @@ fun TitleScreen(
     settings: Settings,
     onSettingsChange: (Settings) -> Unit,
     modifier: Modifier = Modifier,
+    /** Extra content shown under the snake, e.g. [AlreadyEarnedBanner]. */
+    content: @Composable () -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
         ArenaBackground(Modifier.fillMaxSize())
@@ -116,6 +123,7 @@ fun TitleScreen(
                         ),
                     )
                     WigglingSnake(style, Modifier.size(width = 300.dp, height = if (landscape) 120.dp else 140.dp))
+                    content()
                 }
             }
             val buttons: @Composable () -> Unit = {
@@ -140,4 +148,31 @@ fun TitleScreen(
             }
         }
     }
+}
+
+/**
+ * "You've already earned: Top hat and Stars!", for looks unlocked without a
+ * cheer (by games played before unlocks existed). Tap to make it go away.
+ * [onShown] runs once it's on screen, so it's never shown again.
+ */
+@Composable
+fun AlreadyEarnedBanner(
+    style: SnakeStyle,
+    unlocked: List<Unlock>,
+    onShown: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (unlocked.isEmpty()) return
+    LaunchedEffect(unlocked) { onShown() }
+    UnlockBanner(
+        style,
+        unlocked,
+        "You've already earned:",
+        modifier
+            .padding(bottom = 8.dp)
+            .widthIn(max = 340.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .clickable(onClickLabel = "Close", onClick = onDismiss),
+    )
 }

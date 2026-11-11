@@ -34,6 +34,15 @@ class UnlocksTest {
         assertEquals("Reach length 200", Unlocks.ruleFor(Hat.WIZARD)?.goal)
     }
 
+    @Test fun reachedByListsEveryUnlockedLook() {
+        assertEquals(emptyList(), Unlocks.reachedBy(Stats()))
+        // High scores from before unlocks existed can already reach some goals.
+        val old = Stats(bestScore = 120, snakesEaten = 0, gamesPlayed = 10)
+        assertEquals(listOf(Hat.TOP_HAT, Pattern.STARS), Unlocks.reachedBy(old).map { it.item })
+        val after = old.after(score = 30, eaten = 12)
+        assertEquals(Unlocks.reachedBy(after) - Unlocks.reachedBy(old).toSet(), Unlocks.newlyUnlocked(old, after))
+    }
+
     @Test fun progressCountsUpToTheGoal() {
         val stats = Stats(bestScore = 150, snakesEaten = 7, gamesPlayed = 30)
         val wizard = Unlocks.ruleFor(Hat.WIZARD)!!

@@ -30,13 +30,37 @@ class Profile(
     var stats: Stats by mutableStateOf(storage.loadStats())
         private set
 
-    /** Counts a finished game. Returns the looks it unlocked (usually none). */
+    /**
+     * Looks already unlocked that nobody has cheered for yet, e.g. earned by
+     * games played before unlocks existed. Shown once on the title screen.
+     */
+    var alreadyEarned: List<Unlock> by mutableStateOf(
+        storage.loadAnnounced().let { told -> Unlocks.reachedBy(stats).filterNot { key(it) in told } },
+    )
+        private set
+
+    /** Counts a finished game. Returns the looks it unlocked (usually none), which the game-over screen cheers. */
     fun recordGame(result: GameResult): List<Unlock> {
         val before = stats
         stats = before.after(result.score, result.snakesEaten)
         storage.saveStats(stats)
-        return Unlocks.newlyUnlocked(before, stats)
+        return Unlocks.newlyUnlocked(before, stats).also(::announce)
     }
+
+    /** [alreadyEarned] has been shown, so it won't be shown again after this. */
+    fun alreadyEarnedShown() = announce(alreadyEarned)
+
+    /** Hides [alreadyEarned] (tapped away, or the kid went to play). */
+    fun dismissAlreadyEarned() {
+        alreadyEarned = emptyList()
+    }
+
+    private fun announce(unlocks: List<Unlock>) {
+        if (unlocks.isNotEmpty()) storage.saveAnnounced(storage.loadAnnounced() + unlocks.map(::key))
+    }
+
+    /** How an unlock is saved in [Storage.loadAnnounced], e.g. "Hat.TOP_HAT". */
+    private fun key(unlock: Unlock) = "${unlock.item.declaringJavaClass.simpleName}.${unlock.item.name}"
 
     fun changeSettings(new: Settings) {
         settings = new
