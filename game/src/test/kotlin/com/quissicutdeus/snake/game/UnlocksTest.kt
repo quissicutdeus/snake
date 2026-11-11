@@ -53,6 +53,21 @@ class UnlocksTest {
         assertEquals(10, Unlocks.ruleFor(Pattern.STARS)!!.progress(stats))
     }
 
+    @Test fun hintsSayHowMuchIsLeft() {
+        val stats = Stats(bestScore = 120, snakesEaten = 8, gamesPlayed = 7)
+        val wizard = Unlocks.ruleFor(Hat.WIZARD)!!
+        val hearts = Unlocks.ruleFor(Eyes.HEARTS)!!
+        val stars = Unlocks.ruleFor(Pattern.STARS)!!
+        assertEquals("80 more length to go!", wizard.hint(stats))
+        assertEquals("1 more length to go!", wizard.hint(stats.copy(bestScore = 199)))
+        assertEquals("Eat 2 more snakes!", hearts.hint(stats))
+        assertEquals("Eat 1 more snake!", hearts.hint(stats.copy(snakesEaten = 9)))
+        assertEquals("3 more games to go!", stars.hint(stats))
+        assertEquals("1 more game to go!", stars.hint(stats.copy(gamesPlayed = 9)))
+        assertEquals("10 more games to go!", stars.hint(Stats()))
+        assertEquals("You did it!", stars.hint(stats.copy(gamesPlayed = 30)))
+    }
+
     @Test fun surpriseMeOnlyPicksUnlockedLooks() {
         val fresh = Stats()
         val rng = Random(1)

@@ -7,6 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -15,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Pattern
@@ -252,6 +257,42 @@ class ScreenshotTest {
         }
         advance(800)
         snap(name)
+    }
+
+    /** Tapping a locked look wiggles it and says what's left, but never picks it. */
+    @Test fun tappingALockedLookSaysWhatsLeft() {
+        val picked = mutableListOf<SnakeStyle>()
+        show {
+            MySnakeScreen(
+                style,
+                { picked += it },
+                {},
+                name = "Caleb",
+                onNameChange = {},
+                knownNames = listOf("Caleb"),
+                stats = Stats(bestScore = 120, snakesEaten = 8, gamesPlayed = 7),
+            )
+        }
+        advance(800)
+        val hearts = compose.onNodeWithContentDescription("Heart eyes, locked: Eat 10 snakes. Eat 2 more snakes!")
+        hearts.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+        compose.onNodeWithText("Eat 2 more snakes!").assertDoesNotExist()
+
+        // Drag the choices panel up to the eyes by hand: performScrollTo waits for a
+        // scroll animation that never ends while the test drives the clock.
+        compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }
+        advance(1500)
+        hearts.performClick()
+        advance(500)
+        compose.onNodeWithText("Eat 2 more snakes!").assertExists()
+        compose.onNodeWithText("Eat 10 snakes").assertDoesNotExist()
+        assertEquals(emptyList<SnakeStyle>(), picked)
+        snap("my_snake_locked_hint")
+
+        advance(2500)
+        compose.onNodeWithText("Eat 2 more snakes!").assertDoesNotExist()
+        compose.onNodeWithText("Eat 10 snakes").assertExists()
+        assertEquals(emptyList<SnakeStyle>(), picked)
     }
 
     private fun gameOverScene(name: String) {

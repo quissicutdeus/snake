@@ -63,6 +63,17 @@ data class Unlock(
         )
 
     fun reachedBy(stats: Stats): Boolean = progress(stats) >= amount
+
+    /** A cheery nudge saying how much is left ("3 more games to go!"), for tapping a locked look. */
+    fun hint(stats: Stats): String {
+        val left = amount - progress(stats)
+        return when {
+            left <= 0 -> "You did it!"
+            kind == GoalKind.LENGTH -> "$left more length to go!"
+            kind == GoalKind.SNAKES -> "Eat $left more ${if (left == 1) "snake" else "snakes"}!"
+            else -> "$left more ${if (left == 1) "game" else "games"} to go!"
+        }
+    }
 }
 
 /**

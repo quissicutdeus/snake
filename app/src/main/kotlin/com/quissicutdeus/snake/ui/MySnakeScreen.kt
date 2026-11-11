@@ -1,5 +1,7 @@
 package com.quissicutdeus.snake.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,15 +31,24 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
@@ -50,6 +61,7 @@ import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Stats
 import com.quissicutdeus.snake.game.model.Unlocks
 import com.quissicutdeus.snake.game.sim.Scoreboard
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 private val COLOR_NAMES =
@@ -254,7 +266,8 @@ private fun <T> Choices(
 ) where T : Enum<T>, T : Labelled {
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
-            val lock = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }?.let { Lock(it.goal, it.progress(stats), it.target) }
+            val rule = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }
+            val lock = rule?.let { Lock(it.goal, it.progress(stats), it.target, it.hint(stats)) }
             Pill(option.label, option == selected, lock, { onPick(option) })
         }
     }
@@ -273,14 +286,22 @@ private fun NameChoices(
     }
 }
 
-/** A locked look's goal ("Play 10 games") and how far along it is ([have] of [need]). */
+/**
+ * A locked look's goal ("Play 10 games"), how far along it is ([have] of
+ * [need]), and what's left to do ([hint], "3 more games to go!").
+ */
 private class Lock(
     val goal: String,
     val have: Int,
     val need: Int,
+    val hint: String,
 )
 
-/** A rounded choice button; with a [lock] it's greyed out, shows the goal and progress, and can't be tapped. */
+/** How long a tapped locked look shows its hint, and how long it wiggles for. */
+private const val HINT_MS = 2200L
+private const val WIGGLE_MS = 400
+
+/** A rounded choice button; with a [lock] it's a [LockedPill] instead and can't be picked. */
 @Composable
 private fun Pill(
     label: String,
@@ -289,34 +310,85 @@ private fun Pill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val locked = lock != null
+    if (lock != null) {
+        LockedPill(label, isSelected, lock, modifier)
+        return
+    }
     Box(
         modifier
             .clip(RoundedCornerShape(50))
-            .background(
-                when {
-                    isSelected -> KidColors.Sky
-                    locked -> Color(0xFFEDEDED)
-                    else -> Color(0xFFE8F5E0)
-                },
-            ).semantics {
-                this.selected = isSelected
-                if (lock != null) contentDescription = "$label, locked: ${lock.goal}, ${lock.have} of ${lock.need} so far"
-            }.clickable(enabled = !locked, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = if (locked) 6.dp else 12.dp),
+            .background(if (isSelected) KidColors.Sky else Color(0xFFE8F5E0))
+            .semantics { this.selected = isSelected }
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        if (lock != null) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("🔒 $label", style = MaterialTheme.typography.titleMedium, color = Color(0xFF8A8A8A))
-                Text(lock.goal, style = MaterialTheme.typography.labelMedium, color = Color(0xFF8A8A8A))
-                ProgressBar(lock.have, lock.need)
+        Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
+    }
+}
+
+/**
+ * A greyed-out look with its goal and progress. Tapping it never picks it:
+ * it wiggles and briefly says what's left in place of the goal, so it
+ * doesn't feel broken.
+ */
+@Composable
+private fun LockedPill(
+    label: String,
+    isSelected: Boolean,
+    lock: Lock,
+    modifier: Modifier = Modifier,
+) {
+    var taps by remember { mutableIntStateOf(0) }
+    var hinting by remember { mutableStateOf(false) }
+    val wiggle = remember { Animatable(0f) }
+    LaunchedEffect(taps) {
+        if (taps == 0) return@LaunchedEffect
+        hinting = true
+        wiggle.snapTo(0f)
+        wiggle.animateTo(
+            0f,
+            keyframes {
+                durationMillis = WIGGLE_MS
+                -9f at 50
+                9f at 130
+                -6f at 210
+                6f at 290
+                -3f at 350
+            },
+        )
+        delay(HINT_MS - WIGGLE_MS)
+        hinting = false
+    }
+    val grey = Color(0xFF8A8A8A)
+    Box(
+        modifier
+            .graphicsLayer { translationX = wiggle.value.dp.toPx() }
+            .clip(RoundedCornerShape(50))
+            .background(if (isSelected) KidColors.Sky else Color(0xFFEDEDED))
+            .semantics {
+                selected = isSelected
+                contentDescription = "$label, locked: ${lock.goal}. ${lock.hint}"
+            }.clickable(role = Role.Button) { taps++ }
+            .padding(horizontal = 18.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("🔒 $label", style = MaterialTheme.typography.titleMedium, color = grey)
+            // Both lines take up room all the time so swapping them doesn't shuffle the other pills.
+            Box(contentAlignment = Alignment.Center) {
+                val goal = MaterialTheme.typography.labelMedium
+                val hint = goal.copy(fontWeight = FontWeight.Bold)
+                Text(lock.goal, Modifier.alpha(if (hinting) 0f else 1f).hideIf(hinting), style = goal, color = grey)
+                Text(lock.hint, Modifier.alpha(if (hinting) 1f else 0f).hideIf(!hinting), style = hint, color = KidColors.Berry)
             }
-        } else {
-            Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
+            ProgressBar(lock.have, lock.need)
         }
     }
 }
+
+/** Leaves this out of the accessibility tree (and test lookups) while [hidden]. */
+private fun Modifier.hideIf(hidden: Boolean): Modifier = if (hidden) clearAndSetSemantics {} else this
 
 /** "7 of 10": a little bar filling up toward a locked look's goal. */
 @Composable
