@@ -3,6 +3,7 @@ package com.quissicutdeus.snake.ui
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import com.quissicutdeus.snake.ComposeCanvas2D
+import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.audio.SoundCues
 import com.quissicutdeus.snake.game.model.Snake
@@ -29,28 +30,18 @@ data class KidResult(
     val biggestSeconds: Int,
     val timesGobbled: Int,
 ) {
-    /** The same as a one-player [GameResult], for the kid's unlocks. */
-    fun asGameResult(timestamp: Long) = GameResult(score, snakesEaten, style, timestamp, biggestSeconds = biggestSeconds)
+    /** The same as a one-player [GameResult] from [game], for the kid's unlocks. */
+    fun asGameResult(game: TogetherResult) =
+        GameResult(score, snakesEaten, style, game.timestamp, biggestSeconds = biggestSeconds, littleKid = game.littleKid)
 }
 
 /** How a two-player game went: the left kid first. */
 data class TogetherResult(
     val kids: List<KidResult>,
     val timestamp: Long,
+    /** Played gently (both kids are in little kid mode): their high scores get a 🐣. */
+    val littleKid: Boolean = false,
 )
-
-/** The id of a "Player 2" who isn't one of the kids on this phone. */
-const val GUEST_ID = -1
-
-/**
- * Two kids play at normal difficulty. Hook for little kid mode: once kids
- * have their own difficulty, use the easier one here only when both kids
- * have it switched on.
- */
-internal fun twoPlayerOptions() = SimOptions(season = holidaysToday())
-
-/** After the clock runs out, "Time's up!" shows this long before the end screen. */
-private const val TIME_UP_DELAY_SECONDS = 2f
 
 /** One kid's half of the screen: their own camera, effects, thumbstick, sounds and buzz. */
 internal class Half(
@@ -82,12 +73,14 @@ internal class TwoPlayerGame(
     val kids: List<PlayerCard>,
     newStick: () -> Thumbstick,
     seconds: Float,
+    /** Today's holidays and arena, and how gentle (see [Profile.togetherOptions]). */
+    options: SimOptions,
 ) {
     val sim =
         GameSim(
             playerStyle = kids[0].style,
             playerName = kids[0].label,
-            options = twoPlayerOptions(),
+            options = options,
             secondPlayer = SecondPlayer(kids[1].label, kids[1].style, seconds),
         )
     val halves = List(2) { Half(newStick()) }
@@ -115,7 +108,14 @@ internal class TwoPlayerGame(
                 val state = together.kids[i]
                 KidResult(card.id, card.label, card.style, s.score, s.snakesEaten, state.biggestSeconds.toInt(), state.timesGobbled)
             }
-        return TogetherResult(kidResults, System.currentTimeMillis())
+        return TogetherResult(kidResults, System.currentTimeMillis(), littleKid = sim.difficulty == Difficulty.LITTLE)
+    }
+
+    /** Ends the game early (bedtime) by handing [report] how it went, unless it's already over and reported. */
+    fun stop(report: (TogetherResult) -> Unit) {
+        if (reported) return
+        reported = true
+        report(result ?: result().also { result = it })
     }
 
     /** Once the clock has run out: the result is taken at once, and handed on after "Time's up!". */
@@ -229,5 +229,10 @@ internal class TwoPlayerGame(
         val next = changes.firstOrNull { it.pressed }
         half.pointer = next?.id
         if (next == null) stick.release() else stick.press(next.position.x, next.position.y)
+    }
+
+    private companion object {
+        /** After the clock runs out, "Time's up!" shows this long before the end screen. */
+        const val TIME_UP_DELAY_SECONDS = 2f
     }
 }

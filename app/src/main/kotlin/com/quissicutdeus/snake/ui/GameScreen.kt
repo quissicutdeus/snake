@@ -149,7 +149,7 @@ fun GameScreen(
     showTips: Boolean = false,
     onTipsDone: () -> Unit = {},
     /** The bedtime timer, if any: it counts the play and can stop the game at a calm moment. */
-    bedtime: GameBedtime? = null,
+    bedtime: GameBedtime<GameResult>? = null,
     /** This kid plays in little kid mode (a saved game carries on as it was saved, though). */
     littleKid: Boolean = false,
     /** Today's holidays (and birthday) and arena season, see [Profile.todaysOptions]. */

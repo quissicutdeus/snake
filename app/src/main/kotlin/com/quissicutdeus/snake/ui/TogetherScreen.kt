@@ -75,6 +75,9 @@ sealed interface TogetherScreen : Screen {
 private val TwoPlayerMinWidth = 840.dp
 private val TwoPlayerMinHeight = 400.dp
 
+/** The id of a "Player 2" who isn't one of the kids on this phone. */
+const val GUEST_ID = -1
+
 /** True when the window is wide enough for two halves to be playable. */
 @Composable
 internal fun roomForTwo(): Boolean {
@@ -82,57 +85,83 @@ internal fun roomForTwo(): Boolean {
     return with(LocalDensity.current) { size.width.toDp() >= TwoPlayerMinWidth && size.height.toDp() >= TwoPlayerMinHeight }
 }
 
-/** The two-player screens, fed from the [Profile]; [go] moves to another screen and [nextRound] numbers a new game. */
+/** What the two-player screens need from the app: the kid picked, saved data, the news card and the bedtime timer. */
+internal class Household(
+    val me: Profile,
+    val storage: Storage,
+    val notes: DeviceNotes,
+    val bedtime: Bedtime,
+)
+
+/**
+ * The two-player screens, fed from the [Household]; [go] moves to another
+ * screen and [nextRound] numbers a new game. A game starts like a
+ * one-player one: the title's cards are put away, and past bedtime it goes
+ * home (to the rest screen) instead.
+ */
 @Composable
 internal fun TogetherRoute(
     screen: TogetherScreen,
-    me: Profile,
-    storage: Storage,
+    home: Household,
+    speakers: Speakers,
     nextRound: () -> Int,
     go: (Screen) -> Unit,
-    playSound: (Sound) -> Unit,
-    playMusic: (Boolean) -> Unit,
 ) {
+    val me = home.me
+
+    fun start(kids: List<PlayerCard>) {
+        me.dismissAlreadyEarned()
+        home.notes.dismissNews()
+        go(if (home.bedtime.refresh()) Screen.Title else TogetherScreen.Play(nextRound(), kids))
+    }
     when (screen) {
         TogetherScreen.Pick -> {
-            PickPartnerRoute(
-                me,
-                onGo = { go(TogetherScreen.Play(nextRound(), it)) },
-                onAdd = { if (me.addPlayer()) go(TogetherScreen.AddKid) },
-                onBack = { go(Screen.Title) },
-            )
+            PickPartnerRoute(me, onGo = ::start, onAdd = { if (me.addPlayer()) go(TogetherScreen.AddKid) }, onBack = { go(Screen.Title) })
         }
 
         TogetherScreen.AddKid -> {
-            MySnakeRoute(me, storage, onDone = { go(TogetherScreen.Pick) })
+            MySnakeRoute(me, home.storage, onDone = { go(TogetherScreen.Pick) })
         }
 
         is TogetherScreen.Play -> {
-            TwoPlayerScreen(
-                key = screen.round,
-                kids = screen.kids,
-                onGameOver = { go(TogetherScreen.Over(it, recordTogether(me, storage, it))) },
-                onQuit = { go(Screen.Title) },
-                settings = me.settings,
-                onSettingsChange = me::changeSettings,
-                onSound = { if (me.settings.soundOn) playSound(it) },
-                onMusic = { playMusic(it && me.settings.soundOn && me.settings.musicOn) },
-            )
+            TogetherPlayRoute(screen, home, speakers, onGameOver = { go(TogetherScreen.Over(it, recordTogether(me, home.storage, it))) }) {
+                go(Screen.Title)
+            }
         }
 
         is TogetherScreen.Over -> {
             TogetherOverScreen(
                 result = screen.result,
                 unlocked = screen.unlocked,
-                onPlayAgain = {
-                    go(
-                        TogetherScreen.Play(nextRound(), screen.result.kids.map { PlayerCard(it.playerId, it.name, it.style) }),
-                    )
-                },
+                onPlayAgain = { start(screen.result.kids.map { PlayerCard(it.playerId, it.name, it.style) }) },
                 onHome = { go(Screen.Title) },
             )
         }
     }
+}
+
+/** A two-player game: today's options for both kids, the bedtime timer, and the shared sound switches. */
+@Composable
+private fun TogetherPlayRoute(
+    screen: TogetherScreen.Play,
+    home: Household,
+    speakers: Speakers,
+    onGameOver: (TogetherResult) -> Unit,
+    onHome: () -> Unit,
+) {
+    val me = home.me
+    TwoPlayerScreen(
+        key = screen.round,
+        kids = screen.kids,
+        onGameOver = onGameOver,
+        onQuit = onHome,
+        settings = me.settings,
+        onSettingsChange = me::changeSettings,
+        onSound = { if (me.settings.soundOn) speakers.playSound(it) },
+        onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+        options = remember(screen.round) { me.togetherOptions(screen.kids[1].id) },
+        bedtime = home.bedtime.forTogether(record = { recordTogether(me, home.storage, it) }, onStopped = onHome),
+    )
 }
 
 /**
@@ -144,13 +173,15 @@ internal fun recordTogether(
     me: Profile,
     storage: Storage,
     result: TogetherResult,
-    season: Set<Holiday> = holidaysToday(),
+    /** The holidays on; null for today's, with each kid's own birthday. */
+    season: Set<Holiday>? = null,
 ): List<List<Unlock>> {
-    val unlocked = result.kids.map { me.recordGameFor(it.playerId, it.asGameResult(result.timestamp), season) }
+    val unlocked = result.kids.map { me.recordGameFor(it.playerId, it.asGameResult(result), season) }
     result.kids.forEachIndexed { i, kid ->
         if (Scoreboard.qualifies(storage.loadScores(), kid.score)) {
             // Each entry needs its own timestamp (it identifies the entry).
-            storage.addScore(ScoreEntry(Scoreboard.cleanName(kid.name), kid.score, kid.snakesEaten, kid.style, result.timestamp + i))
+            val name = Scoreboard.cleanName(kid.name)
+            storage.addScore(ScoreEntry(name, kid.score, kid.snakesEaten, kid.style, result.timestamp + i, result.littleKid))
         }
     }
     return unlocked

@@ -82,10 +82,27 @@ class Bedtime(
 
     /** The timer for a game; [onStopped] runs after it stops one (see [gameStopped]). */
     fun forGame(onStopped: () -> Unit) =
-        GameBedtime(clock) {
+        GameBedtime<GameResult>(clock) {
             gameStopped(it)
             onStopped()
         }
+
+    /**
+     * The timer for a two-player game. A game it stops counts for both kids
+     * through [record] (stats, unlocks, high scores), and the rest screen
+     * shows how it went for the kid picked on the title screen; then
+     * [onStopped] runs, as for one kid.
+     */
+    fun forTogether(
+        record: (TogetherResult) -> List<List<Unlock>>,
+        onStopped: () -> Unit,
+    ) = GameBedtime<TogetherResult>(clock) { result ->
+        clock.flush()
+        val unlocked = record(result)
+        lastGame = BedtimeGame(result.kids[0].asGameResult(result), unlocked.firstOrNull().orEmpty())
+        refresh()
+        onStopped()
+    }
 
     /**
      * Bedtime stopped a game: it counts like any finished game (stats and
@@ -113,9 +130,9 @@ class Bedtime(
 }
 
 /** What a game needs from the bedtime timer: the [clock] to count on, and [onStop] for a game it stopped. */
-class GameBedtime(
+class GameBedtime<R>(
     val clock: PlayClock,
-    val onStop: (GameResult) -> Unit,
+    val onStop: (R) -> Unit,
 )
 
 /**
@@ -123,8 +140,8 @@ class GameBedtime(
  * [WARN_MS] is left, and once time's up asks the game to stop at the first
  * calm moment (see [calm]), or after [HARD_STOP_SECONDS] whatever happens.
  */
-class BedtimeInGame(
-    var hooks: GameBedtime,
+class BedtimeInGame<R>(
+    var hooks: GameBedtime<R>,
 ) {
     /** The heads-up to show, if any. */
     var note: String? by mutableStateOf(null)
@@ -146,7 +163,7 @@ class BedtimeInGame(
         sim: GameSim,
         dt: Float,
         paused: Boolean,
-        stop: ((GameResult) -> Unit) -> Unit,
+        stop: ((R) -> Unit) -> Unit,
     ) {
         val running = !paused && !sim.gameOver
         hidden = !running
@@ -182,11 +199,11 @@ class BedtimeInGame(
         noteSeconds = NOTE_SECONDS
     }
 
-    /** Not mid-fight: the player isn't blinking from a bump and no bigger snake is coming for them. */
-    private fun calm(sim: GameSim): Boolean {
-        val p = sim.player ?: return true
-        return p.alive && p.invulnerable <= 0f && sim.dangers().isEmpty()
-    }
+    /**
+     * Not mid-fight: no player is blinking from a bump (or waiting to come
+     * back, with two kids) and no bigger snake is coming for any of them.
+     */
+    private fun calm(sim: GameSim): Boolean = sim.players.all { p -> p.alive && p.invulnerable <= 0f && sim.dangers(p).isEmpty() }
 
     companion object {
         /** The heads-up comes this long before time's up. */
@@ -206,11 +223,11 @@ class BedtimeInGame(
  * goes away.
  */
 @Composable
-internal fun rememberBedtimeInGame(
+internal fun <R> rememberBedtimeInGame(
     key: Int,
-    hooks: GameBedtime?,
-): BedtimeInGame? {
-    val nap = remember(key, hooks?.clock) { hooks?.let(::BedtimeInGame) }
+    hooks: GameBedtime<R>?,
+): BedtimeInGame<R>? {
+    val nap = remember(key, hooks?.clock) { hooks?.let { BedtimeInGame(it) } }
     // The newest hooks (they're made afresh each time the app redraws).
     if (hooks != null) nap?.hooks = hooks
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { nap?.hooks?.clock?.flush() }
@@ -221,7 +238,7 @@ internal fun rememberBedtimeInGame(
 /** "2 minutes left!" at the top of the game, under the pause button. */
 @Composable
 internal fun BedtimeNote(
-    nap: BedtimeInGame?,
+    nap: BedtimeInGame<*>?,
     modifier: Modifier = Modifier,
 ) {
     val text = nap?.note ?: return

@@ -52,6 +52,7 @@ import com.quissicutdeus.snake.game.render.HudInsets
 import com.quissicutdeus.snake.game.render.SceneRenderer
 import com.quissicutdeus.snake.game.render.TwoPlayerArt
 import com.quissicutdeus.snake.game.sim.GameSim
+import com.quissicutdeus.snake.game.sim.SimOptions
 import com.quissicutdeus.snake.game.sim.Thumbstick
 import kotlin.math.ceil
 
@@ -83,6 +84,10 @@ fun TwoPlayerScreen(
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
     onMusic: (Boolean) -> Unit = {},
+    /** Today's holidays and arena, and how gentle (see [Profile.togetherOptions]). */
+    options: SimOptions = SimOptions(),
+    /** The bedtime timer, if any: it counts the play and can stop the game at a calm moment. */
+    bedtime: GameBedtime<TogetherResult>? = null,
     seconds: Float = GameConfig.TWO_PLAYER_SECONDS,
     prepare: (GameSim) -> Unit = {},
 ) {
@@ -90,8 +95,9 @@ fun TwoPlayerScreen(
     val game =
         remember(key) {
             val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
-            TwoPlayerGame(kids, newStick, seconds).also { prepare(it.sim) }
+            TwoPlayerGame(kids, newStick, seconds, options).also { prepare(it.sim) }
         }
+    val nap = rememberBedtimeInGame(key, bedtime)
     var paused by remember(key) { mutableStateOf(false) }
     var secondsLeft by remember(key) { mutableIntStateOf(ceil(seconds).toInt()) }
     var frame by remember { mutableIntStateOf(0) }
@@ -115,6 +121,7 @@ fun TwoPlayerScreen(
                 val buzz = game.step(dt, paused, currentOnSound)
                 if (buzz != null && buzzOn) view.performHapticFeedback(hapticFor(buzz))
                 secondsLeft = ceil(game.timeLeft).toInt()
+                nap?.onFrame(game.sim, dt, paused, game::stop)
                 game.finish(currentOnGameOver)
                 game.updateMusic(paused, currentOnMusic)
                 frame++
@@ -126,6 +133,8 @@ fun TwoPlayerScreen(
         Halves(game, { frame }, Modifier.fillMaxSize())
         TopMiddle(secondsLeft, showPause = !paused && secondsLeft > 0, onPause = { paused = true })
         if (secondsLeft == 0) TimeUp()
+        // Under the shared clock.
+        BedtimeNote(nap, Modifier.align(Alignment.TopCenter).padding(top = 40.dp))
         if (paused) PauseOverlay(settings, onSettingsChange, onResume = { paused = false }, onQuit = onQuit)
     }
 }

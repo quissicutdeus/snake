@@ -180,7 +180,7 @@ fun SniddleApp(
             }
 
             is TogetherScreen -> {
-                TogetherRoute(s, me, storage, nextRound = { ++round }, go = { screen = it }, playSound, playMusic)
+                TogetherRoute(s, Household(me, storage, notes, bedtime), Speakers(playSound, playMusic), { ++round }) { screen = it }
             }
 
             is Screen.Play -> {
@@ -225,7 +225,7 @@ fun SniddleApp(
 }
 
 /** Where the game's sound effects and music go. */
-private class Speakers(
+internal class Speakers(
     val playSound: (Sound) -> Unit,
     val playMusic: (Boolean) -> Unit,
 )
@@ -277,7 +277,7 @@ private fun TitleRoute(
     TitleScreen(
         style = me.style,
         onPlay = onPlay,
-        onPlayTogether = { go(TogetherScreen.Pick) }.takeIf { roomForTwo() },
+        onPlayTogether = { go(if (bedtime.refresh()) Screen.Title else TogetherScreen.Pick) }.takeIf { roomForTwo() },
         onMySnake = onMySnake,
         onHighScores = { go(Screen.HighScores()) },
         settings = me.settings,

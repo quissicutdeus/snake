@@ -132,13 +132,14 @@ class Profile(
     fun recordGameFor(
         id: Int,
         result: GameResult,
-        season: Set<Holiday> = holidaysToday(),
+        /** The holidays on; null for today's, with that kid's own birthday. */
+        season: Set<Holiday>? = null,
     ): List<Unlock> {
-        if (id == playerId) return recordGame(result, season)
+        if (id == playerId) return recordGame(result, season ?: holidaysToday(birthday, today()))
         if (players.none { it.id == id }) return emptyList()
         val kid = storage.player(id)
         val before = kid.loadStats()
-        val after = before.after(result.score, result.snakesEaten, season)
+        val after = before.after(result.score, result.snakesEaten, season ?: holidaysToday(kid.loadBirthday(), today()))
         kid.saveStats(after)
         val unlocked = Unlocks.newlyUnlocked(before, after)
         if (unlocked.isNotEmpty()) kid.saveAnnounced(kid.loadAnnounced() + unlocked.map(::key))
@@ -186,6 +187,20 @@ class Profile(
 
     /** A game for this kid today: the holidays that are on (and their birthday), on this season's arena. */
     fun todaysOptions(): SimOptions = todaysOptions(birthday, today())
+
+    /**
+     * A two-player game for this kid and kid [partnerId] ([GUEST_ID] for a
+     * "Player 2" who isn't on the phone) today: everyone's holidays, with
+     * either kid's birthday, on this season's arena. Gentle (little kid mode)
+     * only when both kids have it on; a guest counts as not little.
+     */
+    fun togetherOptions(partnerId: Int): SimOptions {
+        val partner = storage.player(partnerId).takeIf { players.any { it.id == partnerId } }
+        val mine = todaysOptions()
+        val theirs = holidaysToday(partner?.loadBirthday(), today())
+        val bothLittle = littleKid && partner?.loadLittleKid() == true
+        return mine.copy(season = mine.season + theirs, difficulty = difficultyFor(bothLittle))
+    }
 
     fun changeSnakeName(new: String) {
         snakeName = new

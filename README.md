@@ -128,6 +128,10 @@ own snake with its own hearts, length and warning arrows.
   lengths and a cheer for both. Each kid's best length goes on the "Biggest
   snakes" list under their own name if it made it, and counts toward their
   own unlocked looks.
+- It's the gentle little-kid game only when **both** kids have little kid
+  mode on (a "Player 2" guest counts as not little), and the computer snakes
+  dress up for either kid's birthday. Two-player games count toward the
+  bedtime timer like any other, and stop at a calm moment when it runs out.
 - Pause stops both halves. Unlike a one-player game, a two-player game
   isn't kept if the phone closes Sniddle in the background: you start from
   the title screen again.

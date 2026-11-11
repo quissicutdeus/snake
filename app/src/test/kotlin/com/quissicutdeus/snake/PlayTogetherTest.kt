@@ -11,8 +11,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import com.quissicutdeus.snake.game.Difficulty
+import com.quissicutdeus.snake.game.model.Birthday
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
+import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Stats
@@ -22,6 +25,7 @@ import com.quissicutdeus.snake.ui.GUEST_ID
 import com.quissicutdeus.snake.ui.KidResult
 import com.quissicutdeus.snake.ui.PlayerCard
 import com.quissicutdeus.snake.ui.Profile
+import com.quissicutdeus.snake.ui.Settings
 import com.quissicutdeus.snake.ui.SniddleApp
 import com.quissicutdeus.snake.ui.TogetherOverScreen
 import com.quissicutdeus.snake.ui.TogetherResult
@@ -33,6 +37,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
+import java.time.LocalDate
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -222,13 +227,13 @@ class PlayTogetherTest : ScreenTest() {
                     kid.hearts = 1
                     // Only Noodle nearby, so it is Noodle who does it.
                     s.world.snakes.removeAll { !it.isPlayer }
-                    // Right in front of her, coming her way.
+                    // Nose to nose with her: the first step is the bite.
                     s.addSnake(
                         "Noodle",
                         sirNoodles,
                         isPlayer = false,
                         x = kid.x,
-                        y = kid.y - 140f,
+                        y = kid.y - 45f,
                         heading = (PI / 2).toFloat(),
                         length = 700f,
                     )
@@ -295,6 +300,48 @@ class PlayTogetherTest : ScreenTest() {
 
         val guest = TogetherResult(listOf(result.kids[0], KidResult(GUEST_ID, "Player 2", mya, 400, 9, 0, 0)), 6000L)
         assertEquals(listOf(emptyList(), emptyList<Any>()), recordTogether(me, storage, guest, season = emptySet()))
+    }
+
+    /** Gentle only when both kids have little kid mode on (a guest isn't little); both kids' holidays and the season's arena. */
+    @Test fun twoPlayerOptionsFollowBothKids() {
+        seedKids(three = false)
+        val june2 = LocalDate.of(2026, 6, 2)
+        storage.player(1).saveBirthday(Birthday(6, 2))
+        val me = Profile(storage) { june2 }
+        assertEquals(Difficulty.NORMAL, me.togetherOptions(1).difficulty)
+        me.changeLittleKid(true)
+        assertEquals("only Caleb is little", Difficulty.NORMAL, me.togetherOptions(1).difficulty)
+        assertEquals("a guest isn't little", Difficulty.NORMAL, me.togetherOptions(GUEST_ID).difficulty)
+        storage.player(1).saveLittleKid(true)
+        assertEquals(Difficulty.LITTLE, me.togetherOptions(1).difficulty)
+        // Mya's birthday dresses up the computer snakes, on the season's arena, like a one-player game on her birthday.
+        assertTrue(Holiday.BIRTHDAY in me.togetherOptions(1).season)
+        assertFalse(Holiday.BIRTHDAY in me.togetherOptions(GUEST_ID).season)
+        assertEquals(me.todaysOptions().arena, me.togetherOptions(1).arena)
+    }
+
+    /** Bedtime counts a two-player game too, stops it at a calm moment, counts it for both kids and shows the rest screen. */
+    @Test fun bedtimeStopsATwoPlayerGame() {
+        seedKids(three = false)
+        storage.saveSettings(Settings(bedtimeMinutes = 15))
+        storage.playDay = PlayDay(LocalDate.now().toEpochDay(), 15 * 60_000L - 500L).encode()
+        launchApp()
+        compose.onNodeWithText("Play together").performClick()
+        advance(500)
+        compose.onNodeWithText("Go!").performClick()
+        advance(500)
+        compose.onNodeWithContentDescription("Caleb's half", substring = true).assertExists()
+        val rest = "Time to rest, snake! 😴"
+        var waited = 0
+        while (waited < 70_000 && runCatching { compose.onNodeWithText(rest).assertExists() }.isFailure) {
+            advance(500)
+            waited += 500
+        }
+        compose.onNodeWithText(rest).assertExists()
+        assertEquals(1, storage.player(0).loadStats().gamesPlayed)
+        assertEquals(1, storage.player(1).loadStats().gamesPlayed)
+        compose.onNodeWithText("Play together").assertDoesNotExist()
+        snap("together_bedtime_rest_tablet")
     }
 
     private fun endScreen(name: String) {
