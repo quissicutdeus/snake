@@ -13,11 +13,7 @@
         android:scaleY="0.07158"
         android:translateX="-466"
         android:translateY="-394">
-        <!-- Pellet -->
-        <path
-            android:pathData="M784,188 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0 Z"
-            android:fillColor="#FFFFFFFF" />
-        <!-- Body and tail (the body starts just clear of the eyes, overlapping the head) -->
+        <!-- Slime trail (it starts just clear of the eyes, overlapping the head) -->
         <path
             android:pathData="M 340 740 C 300 705, 255 690, 205 700"
             android:strokeColor="#FFFFFFFF"
@@ -36,12 +32,18 @@
         <path
             android:pathData="M651,286 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M725,268 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z"
             android:fillColor="#FFFFFFFF" />
-        <!-- Tongue -->
+        <!-- Shell -->
         <path
-            android:pathData="M778,252 L800,232 M800,232 L820,236 M800,232 L804,212"
+            android:pathData="M408,250 a104,104 0 1,0 208,0 a104,104 0 1,0 -208,0 Z"
+            android:fillColor="#FFFFFFFF" />
+        <!-- Feelers -->
+        <path
+            android:pathData="M756,250 L822,172 M786,306 L884,266"
             android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="10"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
+            android:strokeWidth="22"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M796,172 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z M858,266 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z"
+            android:fillColor="#FFFFFFFF" />
     </group>
 </vector>

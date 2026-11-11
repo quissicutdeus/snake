@@ -6,7 +6,8 @@
 Path2D :: public final void forEach(
 SpatialGrid :: public final void query(
 SpatialGrid :: public final void forEachInBox(
+SnailArt :: private final void strokeRuns(
 
 # One-player stepping with a single input: the app steps through update(), but
 # the rule tests, previews and the benchmark step the world one tick at a time.
-GameSim :: public final void step(com.quissicutdeus.snake.game.sim.SteerInput)
+GameSim :: public final void step(com.quissicutdeus.sniddle.game.sim.SteerInput)

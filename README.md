@@ -1,17 +1,19 @@
 # Sniddle
 
-A cartoony snake game for kids, made for our family's Pixel phones and tablets.
+A cartoony snail game for kids, made for our family's phones and tablets.
+Every snail leaves a slime trail behind it, and the longer your trail, the
+bigger you are.
 **No ads, no purchases, no accounts, no internet** — the app asks for no
 permissions at all and works fully offline.
 
-Grow by eating food dots, gobble up smaller snakes, and steer clear of bigger
+Grow by eating food dots, gobble up smaller snails, and steer clear of bigger
 ones. Steer with your thumb, anywhere on the screen.
 
 | Pick who's playing | Playing |
 | --- | --- |
-| ![Title screen with a snake for each kid](docs/screenshots/title.png) | ![A game in progress, with the biggest-snakes list](docs/screenshots/playing.png) |
-| **Dress up your snake** | **Game over** |
-| ![My Snake: colours, patterns, eyes and hats](docs/screenshots/my_snake.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
+| ![Title screen with a snail for each kid](docs/screenshots/title.png) | ![A game in progress, with the biggest-snails list](docs/screenshots/playing.png) |
+| **Dress up your snail** | **Game over** |
+| ![My Snail: colours, patterns, eyes and hats](docs/screenshots/my_snail.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
 
 ![Every hat, including the holiday ones](docs/screenshots/hats.png)
 
@@ -35,24 +37,25 @@ shrunk for the README. Swap in fresh ones when a screen changes.
 
 - **Steer**: put your thumb down anywhere and drag it the way you want to go —
   a little ring shows where you started. To turn around, just drag back the
-  other way; you never have to reach across the screen. Let go and the snake
+  other way; you never have to reach across the screen. Let go and the snail
   keeps going straight.
-- **Grow**: eat the food dots. Your **length** is your score.
-- **Bigger = slower.** Small snakes are quick; big snakes are strong.
-- **Faces tell you who's who**: a snake that looks *scared* is smaller than you
-  (go get it!). A snake with an *angry face and a red outline* is bigger (run!).
-  Smiling snakes are about your size — you just bounce off each other.
-- **Bite a smaller snake's head** → you eat it whole and grow a lot.
-- **Bite a smaller snake's body** → you snip its tail off. The tail falls apart
-  into pieces anyone can eat.
-- **Bump heads with a bigger snake** → you bounce back and lose a heart ❤️,
+- **Grow**: eat the food dots and your slime trail gets longer. Its **length**
+  is your score.
+- **Bigger = slower.** Small snails are quick; big snails are strong.
+- **Faces tell you who's who**: a snail that looks *scared* is smaller than you
+  (go get it!). A snail with an *angry face and a red outline* is bigger (run!).
+  Smiling snails are about your size — you just bounce off each other.
+- **Bite a smaller snail's head** → you eat it whole and grow a lot.
+- **Bite a smaller snail's slime trail** → you snip it off. The loose trail
+  falls apart into pieces anyone can eat.
+- **Bump heads with a bigger snail** → you bounce back and lose a heart ❤️,
   then blink for a moment (you can't be hurt while blinking).
-- **Run into a bigger snake's body** → you just bounce off. Only a bigger
-  snake's mouth can hurt you, so you always see who's after you.
+- **Run into a bigger snail's slime trail** → you just bounce off. Only a bigger
+  snail's mouth can hurt you, so you always see who's after you.
 - **A red arrow with an angry face** at the edge of the screen means a bigger
-  snake is coming your way from off-screen. Get moving!
-- **A bigger snake bites your body** → your tail falls off. Go back and eat it!
-- **Become the biggest snake** in the arena and you get a fanfare, confetti
+  snail is coming your way from off-screen. Get moving!
+- **A bigger snail bites your slime trail** → the end falls off. Go back and eat it!
+- **Become the biggest snail** in the arena and you get a fanfare, confetti
   and a crown next to your length for as long as you stay on top.
 - Lose all 3 hearts and you get gobbled up. Game over — put your name on the
   high-score list!
@@ -63,9 +66,9 @@ your score:
 
 | Power-up | Looks like | What it does |
 | --- | --- | --- |
-| **Super Strength** | throbbing red ball with a barbell | You win every fight: eat or snip snakes *bigger* than you. Everyone gets scared and runs. |
+| **Super Strength** | throbbing red ball with a barbell | You win every fight: eat or snip snails *bigger* than you. Everyone gets scared and runs. |
 | **Super Speed** | flickering yellow ball with a lightning bolt | Much faster and turns quicker, with a sparkle trail. |
-| **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
+| **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snails bounce off — *CLANG!* |
 
 Sound effects go with the big moments (*nom-nom*, *boing*, *clang*, a
 power-up jingle, a fanfare when you become the biggest, a sad *wah-wah* when you're gobbled) and a little pop for
@@ -78,7 +81,7 @@ phone's media volume sets how loud, and its own *Vibration & haptics* setting
 can switch the buzz off too.
 
 Each kid's first game shows three quick tips along the bottom (steer, eat
-dots, bigger snakes bite), each moving on by itself when the kid does the
+dots, bigger snails bite), each moving on by itself when the kid does the
 thing. Kids who have finished a game, including everyone who played before
 this update, never see them. After
 an update, the title screen shows a **New!** card once, listing what's new
@@ -87,22 +90,22 @@ screen has no room for every line, it shows the newest ones.
 
 Switching to another app pauses the game. If the phone closes Sniddle in the
 background while you're away, the game is still there when you come back:
-paused, with your snake just as long, the same score and hearts. The other
-snakes and food are new, and you blink safe for a few seconds.
+paused, with your snail just as long, the same score and hearts. The other
+snails and food are new, and you blink safe for a few seconds.
 
-**Brothers and sisters each get their own snake.** Tap **+ Add player** on
-the title screen and a new kid gets a fresh snake to name and dress up. After
-that the title screen shows a little picture of everyone's snake: tap yours
+**Brothers and sisters each get their own snail.** Tap **+ Add player** on
+the title screen and a new kid gets a fresh snail to name and dress up. After
+that the title screen shows a little picture of everyone's snail: tap yours
 before you play. Each kid has their own name, look and unlocked looks (up to
-four kids per phone); the sound switches and the "Biggest snakes" list are
+four kids per phone); the sound switches and the "Biggest snails" list are
 shared. The phone remembers who played last. To take a kid off the phone, pick
-them, open My Snake and tap **Remove player** at the bottom (it asks first;
+them, open My Snail and tap **Remove player** at the bottom (it asks first;
 their high scores stay, and the last kid can't be removed).
 
-**Little kid mode 🐣** is a switch in each kid's My Snake, off until a grown-up
+**Little kid mode 🐣** is a switch in each kid's My Snail, off until a grown-up
 (or the kid) turns it on. It's the same game, just gentler, for the youngest:
-4 hearts instead of 3, half again as much food, more of the other snakes
-smaller than you (about 3 in 4 instead of 3 in 5), and bigger snakes that
+4 hearts instead of 3, half again as much food, more of the other snails
+smaller than you (about 3 in 4 instead of 3 in 5), and bigger snails that
 notice you from less far away, chase you less often, give up sooner and
 don't aim ahead of you. They can still bite and gobble you, just less often.
 Little-kid games go on the same high-score list with a 🐣 next to the name, and
@@ -117,19 +120,19 @@ screen plays on the left; the next screen asks who plays on the right
 one kid is on the phone, or **Add player** to make a new one). Each kid
 steers by putting a thumb down on their own half (a finger belongs to the
 half it started in, even if it slides across), and each half follows its
-own snake with its own hearts, length and warning arrows.
+own snail with its own hearts, length and warning arrows.
 
 - The usual rules hold between the two kids too: a bigger head gobbles a
   smaller one. But a gobbled kid isn't out: "Oops! Back in 3…", and they
-  come back somewhere quiet as a fresh small snake, blinking safe for a
-  moment. Their best length and snakes eaten so far still count.
+  come back somewhere quiet as a fresh small snail, blinking safe for a
+  moment. Their best length and snails eaten so far still count.
 - The game lasts **3 minutes** (the clock under the pause button), then
-  *Time's up! Who's biggest?* The end screen shows both snakes, both
+  *Time's up! Who's biggest?* The end screen shows both snails, both
   lengths and a cheer for both. Each kid's best length goes on the "Biggest
-  snakes" list under their own name if it made it, and counts toward their
+  snails" list under their own name if it made it, and counts toward their
   own unlocked looks.
 - It's the gentle little-kid game only when **both** kids have little kid
-  mode on (a "Player 2" guest counts as not little), and the computer snakes
+  mode on (a "Player 2" guest counts as not little), and the computer snails
   dress up for either kid's birthday. Two-player games count toward the
   bedtime timer like any other, and stop at a calm moment when it runs out.
 - Pause stops both halves. Unlike a one-player game, a two-player game
@@ -138,9 +141,9 @@ own snake with its own hearts, length and warning arrows.
 
 | Two kids, one screen | Who's biggest? |
 | --- | --- |
-| ![Two halves, each following its own kid's snake](docs/screenshots/play_together.png) | ![End of a two-player game: both snakes and lengths](docs/screenshots/play_together_over.png) |
+| ![Two halves, each following its own kid's snail](docs/screenshots/play_together.png) | ![End of a two-player game: both snails and lengths](docs/screenshots/play_together_over.png) |
 
-**My Snake** lets you name your snake (the name shows in the "Biggest snakes"
+**My Snail** lets you name your snail (the name shows in the "Biggest snails"
 list, and is the first one offered when you get a high score) and pick
 colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
 hat, and set their birthday (just the month and day; tap it again to change
@@ -152,16 +155,16 @@ cheers when you get one:
 | --- | --- |
 | Top hat | Reach length 100 |
 | Stars pattern | Play 10 games |
-| Heart eyes | Eat 10 snakes (all games together) |
+| Heart eyes | Eat 10 snails (all games together) |
 | Wizard hat | Reach length 200 |
-| Viking horns | Eat 40 snakes (all games together) |
+| Viking horns | Eat 40 snails (all games together) |
 
 Games played before this existed count too (from the high-score list), for the
 first kid on the phone. A new kid starts from zero.
 
 Holiday looks come from playing one game while the holiday is on, and then
 they stay for good. Until then they say when to come back. While a holiday
-is on, lots of the computer snakes dress up for it too:
+is on, lots of the computer snails dress up for it too:
 
 | Look | When |
 | --- | --- |
@@ -172,16 +175,16 @@ is on, lots of the computer snakes dress up for it too:
 | Hearts pattern | Valentine's Day (7–14 Feb) |
 | Shamrock hat | St Patrick's Day (10–17 Mar) |
 | Bunny ears | Easter: the Sunday before Easter through Easter Monday (worked out for each year) |
-| Birthday cake hat | The kid's own birthday, if they've set it in My Snake |
+| Birthday cake hat | The kid's own birthday, if they've set it in My Snail |
 
 **Birthdays.** On a kid's birthday, picking them on the title screen sets
-off confetti and a "Happy birthday!" with their snake's name, the computer
-snakes in their games wear lots of party hats, and playing a game gets them
+off confetti and a "Happy birthday!" with their snail's name, the computer
+snails in their games wear lots of party hats, and playing a game gets them
 the birthday cake hat for good. A 29 February birthday is celebrated on
 28 February in other years.
 
 The game-over screen also shows who gobbled you, and how long you were the
-biggest snake.
+biggest snail.
 
 ## For grown-ups
 
@@ -195,11 +198,11 @@ question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
   It adds up for the whole phone (brothers and sisters share it) and starts
   again at midnight. Closing the app, or the phone closing it, doesn't reset it.
 - Two minutes before the end a "2 minutes left!" note pops up in the game.
-- When time's up, the game ends at the first calm moment (no bigger snake
+- When time's up, the game ends at the first calm moment (no bigger snail
   coming, not mid-bump; at most a minute later). It counts like any finished
-  game, and a high score goes on the list under the snake's name. Then the kid's
-  snake curls up asleep: "Time to rest, snake! 😴 See you tomorrow!" Play is
-  gone until tomorrow; My Snake and the high scores still work.
+  game, and a high score goes on the list under the snail's name. Then the kid's
+  snail curls up asleep: "Time to rest, snail! 😴 See you tomorrow!" Play is
+  gone until tomorrow; My Snail and the high scores still work.
 - **Grown-ups: 10 more minutes** on that screen gives extra time today,
   after the same question.
 - Turning the phone's clock back doesn't give more time. (Setting it ahead to
@@ -224,14 +227,18 @@ Sniddle is still a **beta** (0.x): every push to `main` that passes
 rules or CI publishes nothing, so phones don't get an update with nothing new.
 Releases use [semver](https://semver.org): you set MAJOR.MINOR as `appVersion`
 in [`gradle.properties`](gradle.properties), and CI adds the next patch number
-(`v0.1.0`, `v0.1.1`, …). Change `appVersion` to `0.2`, and later `1.0`, to start
+(`v0.2.0`, `v0.2.1`, …). Change `appVersion` to `0.3`, and later `1.0`, to start
 a new series. **Run workflow** on the
 [Build workflow page](../../actions/workflows/build.yml) makes a release on demand
 from any branch. Separately, the build number is the app's version code, and every
 build is signed with the same key ([`app/debug.keystore`](app/debug.keystore),
 committed on purpose; it is not secret and not for the Play Store), so a new
 release **installs over the old one and keeps the high scores**. (A local
-`0.1-dev` build can't replace a newer release; uninstall first.)
+`0.2-dev` build can't replace a newer release; uninstall first.)
+
+The one exception: releases before 0.2 were the snake game, with a different
+app ID. Android treats 0.2 as a new app, so it installs beside the old one
+and starts with empty high scores; uninstall the old Sniddle by hand.
 
 ## Build it yourself
 
@@ -262,7 +269,7 @@ Handy extras that need no phone:
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
 Jetpack Compose (BOM 2026.09), compileSdk 37.2 / targetSdk 37 / minSdk 30.
 Versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml). The
-app ID / namespace is `com.quissicutdeus.snake` (from snake.quissicutdeus.com).
+app ID / namespace is `com.quissicutdeus.sniddle`.
 
 ## Linters
 
@@ -281,11 +288,11 @@ Every rule that is switched off or loosened is explained next to the setting.
 ## Tune the game
 
 All gameplay numbers live in one file (detekt makes sure they stay there):
-[`game/src/main/kotlin/com/quissicutdeus/snake/game/GameConfig.kt`](game/src/main/kotlin/com/quissicutdeus/snake/game/GameConfig.kt).
+[`game/src/main/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt`](game/src/main/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt).
 After a change, run `./gradlew :game:test :game:balanceReport` to see how games go.
 The few numbers that make little kid mode gentler (hearts, food, the share of
-smaller snakes, how bigger snakes chase you) are in
-[`Difficulty.kt`](game/src/main/kotlin/com/quissicutdeus/snake/game/Difficulty.kt)
+smaller snails, how bigger snails chase you) are in
+[`Difficulty.kt`](game/src/main/kotlin/com/quissicutdeus/sniddle/game/Difficulty.kt)
 next to it; `LittleKidTest` checks it stays gentler than a normal game.
 
 | Want… | Change |
@@ -293,10 +300,10 @@ next to it; `LittleKidTest` checks it stays gentler than a normal game.
 | Easier | more `PLAYER_HEARTS`, longer `HURT_INVULNERABLE_SECONDS`, lower `AI_AGGRESSION` or `AI_SPEED_FACTOR`, higher `SMALLER_FRACTION` |
 | Harder | the opposite, or more `AI_TARGET_COUNT` |
 | Faster growth | `PELLET_VALUE`, `PELLET_COUNT`, `EAT_WHOLE_GAIN` |
-| Faster / slower snakes | `MAX_SPEED`, `SPEED_FLOOR_FRACTION`, `TURN_RATE` |
+| Faster / slower snails | `MAX_SPEED`, `SPEED_FLOOR_FRACTION`, `TURN_RATE` |
 | Bigger arena | `ARENA_WIDTH`, `ARENA_HEIGHT` (and more `PELLET_COUNT`) |
 | See more / less of the arena | `BASE_VIEW_SPAN` |
-| Fatter / thinner snakes | `START_RADIUS`, `RADIUS_GROWTH_EXPONENT` |
+| Fatter / thinner snails | `START_RADIUS`, `RADIUS_GROWTH_EXPONENT` |
 | More / fewer power-ups | `POWER_UP_MAX`, `POWER_UP_INTERVAL`, `POWER_UP_LIFETIME` |
 | Longer / shorter powers | `STRENGTH_SECONDS`, `SPEED_SECONDS`, `ARMOR_SECONDS`, `SPEED_POWER_FACTOR` |
 
@@ -304,33 +311,36 @@ next to it; `LittleKidTest` checks it stays gentler than a normal game.
 
 ```text
 game/   pure Kotlin, no Android: all rules, AI and drawing code
-  model/   Snake (body follows the head's trail), food, SnakeStyle, scores,
-           Holiday (which are on for a date, and dressing computer snakes
+  model/   Snail (its slime trail is the path its head took), food,
+           SnailStyle, scores,
+           Holiday (which are on for a date, and dressing computer snails
            up), Dates (leap years, Easter, Birthday), ArenaSeason
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
            Rules, PowerUps, Ai, Spawner, Danger (warning arrows), Biggest
            (who's on top), Scoreboard, SavedRun (a game to carry on after
            Android closes the app), TwoPlayer (a second kid in the same
            world: comebacks, the shared clock, each kid's crown)
-  render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
+  render/  Canvas2D (tiny drawing interface), SnailArt (a whole snail: its slime trail, then
+           SnailBodyArt, the snail at the front) / FaceArt / HatArt /
            FoodArt / PowerUpArt, HolidayHatArt / CalendarArt (holiday looks),
            SceneRenderer + ArenaArt (the floor, per season) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),
-           PosedSnake
+           PosedSnail
   audio/   Synth (makes every sound effect from scratch), Music (the game
            tune, same way), SoundCues (which sound when)
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
-  ui/               Title, Game (frame loop + thumbstick + pause),
-                    Game over ("Who played?"), High scores, My Snake,
+  ui/               Title, GameLoop (the frame loop every game runs on, and
+                    a Seat per kid: camera, effects, thumbstick, sounds),
+                    Game (one seat + pause),
+                    Game over ("Who played?"), High scores, My Snail,
                     WhoIsPlaying (pick a kid), Profile (the kid playing,
                     and today's holidays, birthday and arena season: the
                     only place the date is read), BirthdaySetting (the
                     picker), BirthdayCheer (title-screen cheer + confetti),
                     TwoPlayerScreen / TwoPlayerGame (split screen: two
-                    halves, each with its own camera, effects and
-                    thumbstick), TogetherScreen (picking the second kid,
+                    seats, one per half), TogetherScreen (picking the second kid,
                     recording both), TogetherOverScreen
   Storage           shared: top-10 scores, names, settings, who's playing;
                     SavedPlayer: each kid's look, name, birthday, unlock totals
@@ -351,14 +361,18 @@ the last two steps so motion stays smooth on 90/120 Hz Pixel screens. Because
 the game logic and art don't depend on Android, an iOS version could reuse them
 one day.
 
-A two-player game is one `GameSim` with two player snakes, so the kids can
+A two-player game is one `GameSim` with two player snails, so the kids can
 meet and gobble each other. The screen is two Compose canvases side by side,
 each clipped to its half; the renderer draws the whole world once per half,
 from that kid's point of view (`SceneRenderer.draw(..., me = kid)`). That is
 about twice the drawing of one full screen: `:game:benchmark` ends with a
 tablet comparison (two 1280x1600 halves vs one 2560x1600 screen).
-One-player code is untouched by it: `player` is still the first kid, and the
-benchmark's checksum of a one-player game didn't change.
+Both kinds of game run on the same `GameLoop`; a one-player game is simply one
+seat that fills the screen.
+
+In the code a snail's slime trail is its "body" or "tail" (the head moves and
+the trail is the path it took). A trail is drawn as a few thick round-ended
+lines (only the part on screen), not a circle per body circle.
 
 `app/src/main/baseline-prof.txt` lists the app's code for Android to compile
 ahead of time at install (profileinstaller does this for sideloaded APKs too),

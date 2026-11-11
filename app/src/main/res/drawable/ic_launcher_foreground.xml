@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Sniddle: a happy green snake and a pellet. Converted from sniddle-icon.svg; the background is @color/ic_launcher_background. -->
+<!-- Sniddle: a happy green snail at the front of its S-shaped slime trail. The background is @color/ic_launcher_background. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -13,16 +13,6 @@
         android:scaleY="0.07158"
         android:translateX="-466"
         android:translateY="-394">
-        <!-- Pellet -->
-        <path
-            android:pathData="M758,188 a64,64 0 1,0 128,0 a64,64 0 1,0 -128,0 Z"
-            android:fillColor="#2EFFB020" />
-        <path
-            android:pathData="M784,188 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0 Z"
-            android:fillColor="#FFFFB020" />
-        <path
-            android:pathData="M797,174 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 Z"
-            android:fillColor="#8CFFFFFF" />
         <!-- Body shadow -->
         <group android:translateX="0" android:translateY="16">
             <path
@@ -38,33 +28,57 @@
             <path
                 android:pathData="M586,318 a104,104 0 1,0 208,0 a104,104 0 1,0 -208,0 Z"
                 android:fillColor="#FF3FA83A" />
+            <path
+                android:pathData="M418,262 a122,122 0 1,0 244,0 a122,122 0 1,0 -244,0 Z"
+                android:fillColor="#FFC97A12" />
         </group>
-        <!-- Body -->
+        <!-- Slime trail -->
         <path
             android:pathData="M 340 740 C 300 705, 255 690, 205 700"
-            android:strokeColor="#FF7CF25B"
+            android:strokeColor="#FFC4F7B4"
             android:strokeWidth="96"
             android:strokeLineCap="round" />
         <path
             android:pathData="M 680 330 C 600 250, 380 250, 360 380 C 340 510, 680 500, 680 650 C 680 800, 430 820, 340 740"
-            android:strokeColor="#FF7CF25B"
+            android:strokeColor="#FFC4F7B4"
             android:strokeWidth="150"
             android:strokeLineCap="round" />
         <!-- highlight dots (stroke-dasharray in the SVG) -->
         <path
             android:pathData="M623,290 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M560.79,269.47 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M494.96,267.6 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M430.63,281.47 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M374.96,315.95 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M344.21,373.29 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M359.7,434.66 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M413.27,472.55 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M473.75,498.92 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M535.01,523.48 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M594.22,552.51 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M644.35,594.8 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M662.83,656.67 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M641.17,717.98 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M589.93,758.56 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M526.92,777.38 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M461.1,780.17 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M396,769.92 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z M334.13,747.29 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0 Z"
-            android:fillColor="#B2D4FFB8" />
+            android:fillColor="#CCFFFFFF" />
+        <!-- The snail's own body, from the head back under the shell -->
+        <path
+            android:pathData="M 680 330 C 620 270, 480 255, 400 310"
+            android:strokeColor="#FF7CF25B"
+            android:strokeWidth="150"
+            android:strokeLineCap="round" />
+        <!-- Shell -->
+        <path
+            android:pathData="M418,262 a122,122 0 1,0 244,0 a122,122 0 1,0 -244,0 Z"
+            android:fillColor="#FFFFB020" />
+        <path
+            android:pathData="M631.7,228.6 L635.3,257.2 L630.5,284.9 L617.9,309.4 L599.1,328.6 L576.0,341.1 L550.9,346.1 L526.1,343.5 L503.7,333.9 L485.6,318.5 L473.3,299.0 L467.5,277.3 L468.3,255.5 L475.4,235.5 L487.7,219.0 L503.8,207.3 L522.1,201.1 L540.7,200.7 L558.1,205.7 L572.6,215.2 L583.3,228.2 L589.3,243.2 L590.5,258.6 L587.2,273.2 L580.0,285.5 L569.9,294.6 L558.1,300.0 L545.8,301.5 L534.2,299.4 L524.4,294.1 L517.1,286.5 L512.8,277.7 L511.4,268.5 L512.9,260.0 L516.7,252.9 L522.1,247.8 L528.3,244.9 L534.5,244.2 L539.9,245.5 L544.2,248.3 L546.8,251.9"
+            android:strokeColor="#FFC97A12"
+            android:strokeWidth="18"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M466,206 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0 Z"
+            android:fillColor="#8CFFFFFF" />
+        <!-- Feelers -->
+        <path
+            android:pathData="M 756 250 L 822 172 M 786 306 L 884 266"
+            android:strokeColor="#FF7CF25B"
+            android:strokeWidth="22"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M796,172 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z M858,266 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z"
+            android:fillColor="#FF7CF25B" />
         <!-- Head -->
         <path
             android:pathData="M586,318 a104,104 0 1,0 208,0 a104,104 0 1,0 -208,0 Z"
             android:fillColor="#FF7CF25B" />
-        <!-- Tongue -->
-        <path
-            android:pathData="M 778 252 L 800 232 M 800 232 L 820 236 M 800 232 L 804 212"
-            android:strokeColor="#FFFF4D6D"
-            android:strokeWidth="10"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
         <!-- Eyes -->
         <path
             android:pathData="M624,296 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0 Z"

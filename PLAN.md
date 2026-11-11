@@ -1,5 +1,9 @@
 # Sniddle (originally "Snake Arena") — kid-friendly snake game for Android
 
+> These are the original design notes, kept for history. Since then the snakes
+> have become snails with slime trails, sound and two-player games have been
+> added, and the app supports Android 11 and newer. The README is current.
+
 ## Context
 
 Mobile games for kids are full of microtransactions and paywalls. This is a

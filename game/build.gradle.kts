@@ -56,7 +56,7 @@ tasks.register<JavaExec>("renderPreviews") {
     group = "verification"
     description = "Renders PNG previews of the game art into build/previews."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.quissicutdeus.snake.game.preview.RenderPreviewsKt")
+    mainClass.set("com.quissicutdeus.sniddle.game.preview.RenderPreviewsKt")
     args(
         layout.buildDirectory
             .dir("previews")
@@ -72,7 +72,7 @@ tasks.register<JavaExec>("soundPreviews") {
     group = "verification"
     description = "Writes the synthesized sound effects as WAV files into build/sounds."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.quissicutdeus.snake.game.preview.SoundPreviewsKt")
+    mainClass.set("com.quissicutdeus.sniddle.game.preview.SoundPreviewsKt")
     args(
         layout.buildDirectory
             .dir("sounds")
@@ -87,7 +87,7 @@ tasks.register<JavaExec>("balanceReport") {
     group = "verification"
     description = "Prints how bot-played games go with the current GameConfig."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.quissicutdeus.snake.game.preview.BalanceReportKt")
+    mainClass.set("com.quissicutdeus.sniddle.game.preview.BalanceReportKt")
 }
 
 // Times the simulation step and the renderer's own work, and prints a checksum
@@ -97,5 +97,5 @@ tasks.register<JavaExec>("benchmark") {
     group = "verification"
     description = "Times GameSim.step() and SceneRenderer.draw() on the JVM."
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("com.quissicutdeus.snake.game.preview.BenchmarkKt")
+    mainClass.set("com.quissicutdeus.sniddle.game.preview.BenchmarkKt")
 }

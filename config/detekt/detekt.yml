@@ -5,7 +5,7 @@ config:
 
 complexity:
   TooManyFunctions:
-    # Canvas2D is a drawing interface (one function per primitive) and Snake /
+    # Canvas2D is a drawing interface (one function per primitive) and Snail /
     # GameSim are the core classes; splitting them would only scatter them.
     allowedFunctionsPerClass: 20
     allowedFunctionsPerInterface: 20

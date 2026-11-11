@@ -84,6 +84,18 @@ jobs:
       - name: Install Android SDK packages
         run: *sdk
 
+      # The Android jars Robolectric runs the screen tests on (about 300 MB).
+      # It fetches them itself into ~/.m2, which the Gradle cache above doesn't
+      # cover; kept here so a test run doesn't depend on the download mirror
+      # being up. The key changes with the Robolectric version; a test that
+      # asks for another Android version (@Config(sdk = ...)) downloads that
+      # jar every run until the key next changes.
+      - name: Cache Robolectric's Android jars
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
       - name: Pick the release version (appVersion + next unused patch)
         id: version
         run: |
@@ -210,6 +222,7 @@ jobs:
           **Install:** open this page on the phone, tap **sniddle.apk**, then open
           the download and allow installing apps from that source when Android asks.
           It installs over any earlier version and keeps the high scores.
+          (Versions before 0.2 are a separate app: uninstall that one by hand.)
 
           Built from $GITHUB_SHA.
           NOTES

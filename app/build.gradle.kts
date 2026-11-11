@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quissicutdeus.snake"
+    namespace = "com.quissicutdeus.sniddle"
     // Newest stable platform (Android 17, minor release 2).
     compileSdk {
         version =
@@ -17,7 +17,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.quissicutdeus.snake"
+        applicationId = "com.quissicutdeus.sniddle"
         // Android 11+: all recent Pixels and older Samsungs such as the Galaxy
         // Note 10 / Note 20. (Below 30 the CONFIRM/REJECT haptics don't exist.)
         minSdk = 30
@@ -157,7 +157,7 @@ tasks.register("deadCode") {
     val usageFile = deadCodeUsage
     val allowFile = deadCodeAllowlist
     doLast {
-        val ours = "com.quissicutdeus.snake."
+        val ours = "com.quissicutdeus.sniddle."
         // Compiler-generated members that are never "dead code" you could delete.
         val generated =
             listOf(
