@@ -139,7 +139,7 @@ private fun GameOverStats(
                     MaterialTheme.typography.titleLarge,
                 )
                 if (result.biggestSeconds > 0) {
-                    ShadowText("👑 Biggest snake for ${duration(result.biggestSeconds)}!", MaterialTheme.typography.titleLarge)
+                    ShadowText("👑 Biggest for ${duration(result.biggestSeconds)}!", MaterialTheme.typography.titleMedium)
                 }
             }
         }
