@@ -35,12 +35,15 @@ fun SettingsButtons(
     onChange: (Settings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Sound off silences the music too, so the music button shows off then, and
+    // turning music on brings the sound back with it.
+    val musicPlays = settings.soundOn && settings.musicOn
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         SwitchButton(
-            on = settings.musicOn,
+            on = musicPlays,
             name = "Music",
-            onToggle = { onChange(settings.copy(musicOn = !settings.musicOn)) },
-        ) { drawMusic(settings.musicOn) }
+            onToggle = { onChange(if (musicPlays) settings.copy(musicOn = false) else settings.copy(musicOn = true, soundOn = true)) },
+        ) { drawMusic(musicPlays) }
         SwitchButton(
             on = settings.buzzOn,
             name = "Buzz",

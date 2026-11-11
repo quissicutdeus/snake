@@ -120,8 +120,15 @@ class ScreenshotTest {
         compose.onNodeWithContentDescription("Sound on. Tap to turn it off.").performClick()
         advance(100)
         compose.onNodeWithContentDescription("Sound off. Tap to turn it on.").assertExists()
+        // Sound off silences the music, so the music button shows off too.
+        compose.onNodeWithContentDescription("Music off. Tap to turn it on.").assertExists()
         assertEquals(Settings(soundOn = false, buzzOn = true), storage.loadSettings())
         snap(name)
+        // Turning the music back on brings the sound back with it.
+        compose.onNodeWithContentDescription("Music off. Tap to turn it on.").performClick()
+        advance(100)
+        compose.onNodeWithContentDescription("Sound on. Tap to turn it off.").assertExists()
+        assertEquals(Settings(), storage.loadSettings())
     }
 
     /**
