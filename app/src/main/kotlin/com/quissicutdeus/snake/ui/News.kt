@@ -18,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -40,6 +43,7 @@ val WhatsNew: List<News> =
         News(1, "🎅", "Holiday hats to win!"),
         News(2, "🧒", "Every kid gets their own snake!"),
         News(3, "🐣", "Little kid mode in My Snake!"),
+        News(4, "🎂", "Birthday hats and bunny ears!"),
     )
 
 /**
@@ -80,7 +84,7 @@ fun WhatsNewCard(
                     .background(KidColors.Berry)
                     .padding(horizontal = 10.dp, vertical = 4.dp),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        NewestThatFit(2.dp) {
             news.forEach { item ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(item.emoji, fontSize = 24.sp)
@@ -91,6 +95,39 @@ fun WhatsNewCard(
                         modifier = Modifier.padding(start = 8.dp),
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Lines one under another, [gap] apart, oldest first; when there isn't room
+ * for them all (a short phone in landscape, with every kid's picture above),
+ * the oldest are left out, so the newest always shows.
+ */
+@Composable
+private fun NewestThatFit(
+    gap: Dp,
+    content: @Composable () -> Unit,
+) {
+    Layout(content) { measurables, constraints ->
+        val gapPx = gap.roundToPx()
+        val lines = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0, maxHeight = Constraints.Infinity)) }
+        var first = lines.size
+        var height = 0
+        while (first > 0) {
+            val more = lines[first - 1].height + if (first < lines.size) gapPx else 0
+            if (first < lines.size && height + more > constraints.maxHeight) break
+            height += more
+            first--
+        }
+        val shown = lines.subList(first, lines.size)
+        val width = (shown.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
+        layout(width, height.coerceIn(constraints.minHeight, constraints.maxHeight)) {
+            var y = 0
+            shown.forEach {
+                it.placeRelative(0, y)
+                y += it.height + gapPx
             }
         }
     }

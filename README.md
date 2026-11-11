@@ -17,6 +17,12 @@ ones. Steer with your thumb, anywhere on the screen.
 
 ![Every pattern](docs/screenshots/patterns.png)
 
+The arena changes with the seasons: grass and flowers in spring and summer,
+golden grass with fallen leaves in October and November, and snow from
+December to February.
+
+![The arena in summer, autumn and winter](docs/screenshots/seasons.png)
+
 A kid's first game shows a few tips along the bottom:
 
 ![First-game tip: drag anywhere to steer](docs/screenshots/first_game_tip.png)
@@ -76,7 +82,8 @@ dots, bigger snakes bite), each moving on by itself when the kid does the
 thing. Kids who have finished a game, including everyone who played before
 this update, never see them. After
 an update, the title screen shows a **New!** card once, listing what's new
-(tap it or Play to put it away; a fresh install skips it).
+(tap it or Play to put it away; a fresh install skips it). When a short
+screen has no room for every line, it shows the newest ones.
 
 Switching to another app pauses the game. If the phone closes Sniddle in the
 background while you're away, the game is still there when you come back:
@@ -105,7 +112,8 @@ back after Android closed the app carries on just as gentle as it started.
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
 list, and is the first one offered when you get a high score) and pick
 colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
-hat. A few extra looks are earned by playing: a locked
+hat, and set their birthday (just the month and day; tap it again to change
+it or take it away). A few extra looks are earned by playing: a locked
 one shows its goal and a bar filling up toward it, and the game-over screen
 cheers when you get one:
 
@@ -130,6 +138,16 @@ is on, lots of the computer snakes dress up for it too:
 | Turkey hat | November |
 | Santa hat | December |
 | Red, white & blue pattern and Star hat | Presidents' Day (12–22 Feb), Memorial Day to the 4th of July (20 May–10 Jul), Veterans Day (8–14 Nov) |
+| Hearts pattern | Valentine's Day (7–14 Feb) |
+| Shamrock hat | St Patrick's Day (10–17 Mar) |
+| Bunny ears | Easter: the Sunday before Easter through Easter Monday (worked out for each year) |
+| Birthday cake hat | The kid's own birthday, if they've set it in My Snake |
+
+**Birthdays.** On a kid's birthday, picking them on the title screen sets
+off confetti and a "Happy birthday!" with their snake's name, the computer
+snakes in their games wear lots of party hats, and playing a game gets them
+the birthday cake hat for good. A 29 February birthday is celebrated on
+28 February in other years.
 
 The game-over screen also shows who gobbled you, and how long you were the
 biggest snake.
@@ -207,6 +225,7 @@ Handy extras that need no phone:
 ./gradlew :game:balanceReport    # bot-played games: survival time, score, size mix
 ./gradlew :game:soundPreviews    # every effect + the music loop as WAVs -> game/build/sounds/
 ./gradlew :game:benchmark        # time per sim step and per frame, plus a checksum of the final world
+                                 #   (--args=AUTUMN or --args=SNOW draws that season's arena)
 ```
 
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
@@ -254,13 +273,16 @@ next to it; `LittleKidTest` checks it stays gentler than a normal game.
 
 ```text
 game/   pure Kotlin, no Android: all rules, AI and drawing code
-  model/   Snake (body follows the head's trail), food, SnakeStyle, scores
+  model/   Snake (body follows the head's trail), food, SnakeStyle, scores,
+           Holiday (which are on for a date, and dressing computer snakes
+           up), Dates (leap years, Easter, Birthday), ArenaSeason
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
            Rules, PowerUps, Ai, Spawner, Danger (warning arrows), Biggest
            (who's on top), Scoreboard, SavedRun (a game to carry on after
            Android closes the app)
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
-           FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
+           FoodArt / PowerUpArt, HolidayHatArt / CalendarArt (holiday looks),
+           SceneRenderer + ArenaArt (the floor, per season) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),
            PosedSnake
   audio/   Synth (makes every sound effect from scratch), Music (the game
@@ -270,9 +292,12 @@ app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
   ui/               Title, Game (frame loop + thumbstick + pause),
                     Game over ("Who played?"), High scores, My Snake,
-                    WhoIsPlaying (pick a kid), Profile (the kid playing)
+                    WhoIsPlaying (pick a kid), Profile (the kid playing,
+                    and today's holidays, birthday and arena season: the
+                    only place the date is read), BirthdaySetting (the
+                    picker), BirthdayCheer (title-screen cheer + confetti)
   Storage           shared: top-10 scores, names, settings, who's playing;
-                    SavedPlayer: each kid's look, name, unlock totals
+                    SavedPlayer: each kid's look, name, birthday, unlock totals
                     (SharedPreferences; the first kid keeps the keys from
                     before players existed, so updates lose nothing);
                     also the newest news seen, per phone
