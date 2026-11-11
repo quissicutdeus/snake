@@ -37,6 +37,7 @@ fun main(args: Array<String>) {
     curls(out)
     powerUps(out)
     dangerArrows(out)
+    biggestSnake(out)
     println("Previews written to ${out.absolutePath}")
 }
 
@@ -107,6 +108,34 @@ private fun dangerArrows(out: File) {
     val c = Java2DCanvas(W, H)
     SceneRenderer.draw(c, sim, cam, Fx(), 0.2f)
     c.writePng(File(out, "danger_arrows.png"))
+}
+
+/** The player has just become the biggest snake: confetti, a cheer, and a crown by the length. */
+private fun biggestSnake(out: File) {
+    val sim = GameSim(seed = 6, options = SimOptions(aiCount = 0, pelletCount = 160, spawnPlayer = false, powerUps = false))
+    val p =
+        sim.addSnake(
+            "You",
+            SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES, hat = Hat.PARTY),
+            true,
+            2000f,
+            2000f,
+            0.3f,
+            900f,
+        )
+    nearby(sim, "Squiggle", 600f, 2350f, 1800f, 2.6f)
+    nearby(sim, "Lil' Fang", 400f, 1600f, 2250f, -0.4f)
+    val fx = Fx()
+    val cam = Camera()
+    cam.snapTo(p.x, p.y, p.radius, W.toFloat(), H.toFloat())
+    repeat(20) {
+        sim.update(GameConfig.STEP, SteerInput())
+        fx.onEvents(sim, sim.events)
+        fx.update(GameConfig.STEP)
+    }
+    val c = Java2DCanvas(W, H)
+    SceneRenderer.draw(c, sim, cam, fx, 0.3f, HudInsets())
+    c.writePng(File(out, "biggest_snake.png"))
 }
 
 /** A big player has just bitten through an AI snake: the tail lies on the ground in pieces. */

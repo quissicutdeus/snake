@@ -122,6 +122,11 @@ object GameConfig {
     /** At most this many warning arrows at once (nearest first). */
     const val MAX_DANGER_ARROWS = 3
 
+    // ---- Biggest snake ------------------------------------------------------
+
+    /** Becoming the biggest snake again cheers only if the last cheer was at least this long ago. */
+    const val BIGGEST_CHEER_GAP_SECONDS = 30f
+
     // ---- AI ----------------------------------------------------------------
     const val AI_THINK_INTERVAL = 0.15f
     const val AI_FLEE_RADIUS = 300f

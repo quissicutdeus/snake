@@ -104,6 +104,12 @@ private class GameHolder(
     }
 
     var reported = false
+
+    /** How the game went, for the game-over screen. */
+    fun result(): GameResult {
+        val p = sim.player!!
+        return GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), sim.eatenBy, sim.biggestSeconds.toInt())
+    }
 }
 
 /** Size of the round pause button at the top centre (the HUD keeps clear of it). */
@@ -163,8 +169,7 @@ fun GameScreen(
                 if (buzz != null && buzzOn) view.performHapticFeedback(hapticFor(buzz))
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
-                    val p = game.sim.player!!
-                    currentOnGameOver(GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), game.sim.eatenBy))
+                    currentOnGameOver(game.result())
                 }
                 game.updateMusic(paused, currentOnMusic)
                 frame++

@@ -24,6 +24,8 @@ data class GameResult(
     val timestamp: Long,
     /** The snake that ate the player (null if unknown, e.g. a game saved by an older version). */
     val eater: Eater? = null,
+    /** Whole seconds the player was the biggest snake in the arena. */
+    val biggestSeconds: Int = 0,
 )
 
 sealed interface Screen {
@@ -62,7 +64,7 @@ private val ScreenSaver: Saver<Screen, String> =
                 is Screen.GameOver -> {
                     with(screen.result) {
                         val by = eater?.let { "|${it.style.encode()}|${it.name}" } ?: ""
-                        "over|$score|$snakesEaten|$timestamp|${style.encode()}$by"
+                        "over|$score|$snakesEaten|$timestamp|$biggestSeconds|${style.encode()}$by"
                     }
                 }
 
@@ -79,8 +81,8 @@ private val ScreenSaver: Saver<Screen, String> =
     )
 
 private fun decodeScreen(text: String): Screen? {
-    // The eater's name is last and may contain '|', so split at most 7 ways.
-    val p = text.split('|', limit = 7)
+    // The eater's name is last and may contain '|', so split at most 8 ways.
+    val p = text.split('|', limit = 8)
     return when (p[0]) {
         "title" -> {
             Screen.Title
@@ -91,14 +93,7 @@ private fun decodeScreen(text: String): Screen? {
         }
 
         "over" -> {
-            val score = p.getOrNull(1)?.toIntOrNull()
-            val eaten = p.getOrNull(2)?.toIntOrNull()
-            val time = p.getOrNull(3)?.toLongOrNull()
-            if (score == null || eaten == null || time == null) {
-                null
-            } else {
-                Screen.GameOver(GameResult(score, eaten, SnakeStyle.decode(p.getOrNull(4)), time, eaterAt(p)))
-            }
+            gameOverAt(p)
         }
 
         "mysnake" -> {
@@ -115,10 +110,19 @@ private fun decodeScreen(text: String): Screen? {
     }
 }
 
-/** The eater saved after the result (fields 5 and 6), if any: older saves have none. */
+/** "over|score|eaten|time|biggest|style[|eaterStyle|eaterName]", already split; null if unreadable. */
+private fun gameOverAt(p: List<String>): Screen? {
+    val score = p.getOrNull(1)?.toIntOrNull() ?: return null
+    val eaten = p.getOrNull(2)?.toIntOrNull() ?: return null
+    val time = p.getOrNull(3)?.toLongOrNull() ?: return null
+    val biggest = p.getOrNull(4)?.toIntOrNull() ?: return null
+    return Screen.GameOver(GameResult(score, eaten, SnakeStyle.decode(p.getOrNull(5)), time, eaterAt(p), biggest))
+}
+
+/** The eater saved after the result (fields 6 and 7), if any. */
 private fun eaterAt(p: List<String>): Eater? {
-    val style = p.getOrNull(5) ?: return null
-    val name = p.getOrNull(6) ?: return null
+    val style = p.getOrNull(6) ?: return null
+    val name = p.getOrNull(7) ?: return null
     return Eater(name, SnakeStyle.decode(style))
 }
 

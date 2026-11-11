@@ -76,6 +76,7 @@ class Fx(
                 is GameEvent.PlayerEaten -> playerEaten(e)
                 is GameEvent.PowerUpTaken -> powerUpTaken(e)
                 is GameEvent.Blocked -> if (e.snakeId == pid) blocked(e)
+                is GameEvent.BecameBiggest -> becameBiggest(e)
             }
         }
     }
@@ -125,6 +126,14 @@ class Fx(
         val col = PowerUpArt.color(e.type)
         burst(e.x, e.y, col, count = 30, speed = 260f, size = 7f, life = 0.9f)
         word("${e.type.label.uppercase()}!", e.x, e.y, col, 30f)
+        addShake(6f)
+    }
+
+    /** The player became the biggest snake: gold and white confetti and a cheer. */
+    private fun becameBiggest(e: GameEvent.BecameBiggest) {
+        burst(e.x, e.y, Colors.GOLD, count = 36, speed = 300f, size = 7f, life = 1f)
+        burst(e.x, e.y, 0xFFFFFFFF.toInt(), count = 14, speed = 220f, size = 5f, life = 0.8f)
+        word("BIGGEST SNAKE!", e.x, e.y, Colors.GOLD, 32f)
         addShake(6f)
     }
 

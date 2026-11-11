@@ -71,6 +71,18 @@ class GameSim(
     var eatenBy: Eater? = null
         internal set
 
+    /** True while the player is the biggest snake in the arena (see [trackBiggest]). */
+    var playerOnTop = false
+        internal set
+
+    /** Seconds the player has been the biggest snake this game. */
+    var biggestSeconds = 0f
+        internal set
+
+    /** Seconds since the last "biggest snake" cheer. */
+    var sinceBiggestCheer = Float.MAX_VALUE
+        internal set
+
     init {
         repeat(options.pelletCount) { world.pellets.add(randomPellet()) }
         if (resume != null) {
@@ -89,13 +101,15 @@ class GameSim(
         spawner.fill(this)
         placeStartingPowerUps()
         grid.build(world.snakes)
+        // Already on top at the start (or on coming back) is no news: no cheer.
+        playerOnTop = player?.let { isBiggest(it) } ?: false
     }
 
     /** The player's game so far, or null once it is over (nothing left to carry on). */
     fun snapshot(): SavedRun? {
         val p = player ?: return null
         if (gameOver || !p.alive) return null
-        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList())
+        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList(), biggestSeconds)
     }
 
     /**
@@ -111,6 +125,7 @@ class GameSim(
         s.hearts = run.hearts
         s.snakesEaten = run.snakesEaten
         s.invulnerable = GameConfig.RESUME_INVULNERABLE_SECONDS
+        biggestSeconds = run.biggestSeconds
         val coil = Coil.around(cx, cy, s.radius, s.length + GameConfig.TRAIL_SPACING * 2)
         s.setPose(coil.xs, coil.ys, coil.count, coil.heading)
     }
@@ -168,6 +183,7 @@ class GameSim(
         // 4. Clean up and refill.
         world.snakes.removeAll { !it.alive && !it.isPlayer }
         spawner.update(this, dt)
+        trackBiggest(dt)
     }
 
     fun addSnake(

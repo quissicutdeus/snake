@@ -10,7 +10,7 @@ enum class Buzz {
     /** BOING, SNIP or CLANG. */
     THUD,
 
-    /** CHOMP (ate a snake) or grabbed a power-up. */
+    /** CHOMP (ate a snake), grabbed a power-up, or became the biggest snake. */
     CHEER,
 
     /** OUCH, or lost the tail. */
@@ -68,6 +68,8 @@ class Haptics {
             is GameEvent.PlayerEaten -> Buzz.GOBBLED
 
             is GameEvent.PowerUpTaken -> Buzz.CHEER
+
+            is GameEvent.BecameBiggest -> Buzz.CHEER
 
             is GameEvent.AteSnake -> Buzz.CHEER.takeIf { e.eaterId == pid }
 

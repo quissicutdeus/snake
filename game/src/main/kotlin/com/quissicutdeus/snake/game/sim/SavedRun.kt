@@ -18,6 +18,8 @@ data class SavedRun(
     val snakesEaten: Int,
     /** Seconds left of each power, indexed by [PowerType.ordinal]. */
     val powers: List<Float>,
+    /** Seconds spent as the biggest snake so far. */
+    val biggestSeconds: Float = 0f,
 ) {
     /** A short text form (a few dozen characters), read back by [decode]. */
     fun encode(): String =
@@ -28,14 +30,18 @@ data class SavedRun(
             hearts.toString(),
             snakesEaten.toString(),
             powers.joinToString(","),
+            biggestSeconds.toString(),
             style.encode(),
             name,
         ).joinToString(SEP)
 
     companion object {
-        private const val VERSION = "run1"
+        private const val VERSION = "run2"
         private const val SEP = ";"
-        private const val FIELDS = 8
+        private const val FIELDS = 9
+
+        /** The version before "biggest snake" time was kept: one field fewer. */
+        private const val OLD_VERSION = "run1"
 
         // Positions in the saved text (see encode()).
         private const val F_LENGTH = 1
@@ -43,24 +49,32 @@ data class SavedRun(
         private const val F_HEARTS = 3
         private const val F_EATEN = 4
         private const val F_POWERS = 5
-        private const val F_STYLE = 6
-        private const val F_NAME = 7
+        private const val F_BIGGEST = 6
 
-        /** Reads [encode] output; null for anything unreadable or from another version. */
+        /** Reads [encode] output (or the older "run1" form); null for anything unreadable. */
         fun decode(text: String?): SavedRun? {
-            // The name is last and may itself contain the separator, so split at most FIELDS ways.
-            val p = text?.split(SEP, limit = FIELDS) ?: return null
-            if (p.size != FIELDS || p[0] != VERSION) return null
+            val version = text?.substringBefore(SEP)
+            val fields =
+                when (version) {
+                    VERSION -> FIELDS
+                    OLD_VERSION -> FIELDS - 1
+                    else -> return null
+                }
+            // The name is last and may itself contain the separator, so split at most `fields` ways.
+            val p = text.split(SEP, limit = fields)
+            if (p.size != fields) return null
             val powers = p[F_POWERS].split(',').map { it.toFloatOrNull() ?: return null }
+            val biggest = if (version == VERSION) p[F_BIGGEST].toFloatOrNull() ?: return null else 0f
             val run =
                 SavedRun(
-                    name = p[F_NAME],
-                    style = SnakeStyle.decode(p[F_STYLE]),
+                    name = p[fields - 1],
+                    style = SnakeStyle.decode(p[fields - 2]),
                     length = p[F_LENGTH].toFloatOrNull() ?: return null,
                     bestLength = p[F_BEST].toFloatOrNull() ?: return null,
                     hearts = p[F_HEARTS].toIntOrNull() ?: return null,
                     snakesEaten = p[F_EATEN].toIntOrNull() ?: return null,
                     powers = powers,
+                    biggestSeconds = biggest,
                 )
             return run.takeIf { it.isSane() }
         }
@@ -68,6 +82,7 @@ data class SavedRun(
         private fun SavedRun.isSane(): Boolean =
             length.isFinite() && length >= GameConfig.MIN_LENGTH && bestLength >= length &&
                 hearts in 1..GameConfig.PLAYER_HEARTS && snakesEaten >= 0 &&
-                powers.size == PowerType.entries.size && powers.all { it.isFinite() && it >= 0f }
+                powers.size == PowerType.entries.size && powers.all { it.isFinite() && it >= 0f } &&
+                biggestSeconds.isFinite() && biggestSeconds >= 0f
     }
 }

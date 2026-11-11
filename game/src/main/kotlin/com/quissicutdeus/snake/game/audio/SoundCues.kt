@@ -74,6 +74,7 @@ class SoundCues {
     ): Sound? =
         when (e) {
             is GameEvent.PlayerEaten -> Sound.GOBBLED
+            is GameEvent.BecameBiggest -> Sound.FANFARE
             is GameEvent.PowerUpTaken -> Sound.POWER_UP
             is GameEvent.AteSnake -> Sound.CHOMP.takeIf { e.eaterId == pid }
             is GameEvent.TailCut -> tailCut(e, pid)
@@ -120,6 +121,7 @@ class SoundCues {
             listOf(
                 Sound.GOBBLED,
                 Sound.OUCH,
+                Sound.FANFARE,
                 Sound.CHOMP,
                 Sound.POWER_UP,
                 Sound.CLANG,

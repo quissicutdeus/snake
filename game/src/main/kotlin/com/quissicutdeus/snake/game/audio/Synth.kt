@@ -38,6 +38,9 @@ enum class Sound {
 
     /** Gobbled: a slide down and a sad "wah-wah". */
     GOBBLED,
+
+    /** Became the biggest snake: a little fanfare. */
+    FANFARE,
 }
 
 /**
@@ -68,6 +71,7 @@ object Synth {
             Sound.OUCH -> s.tone(0f, 0.26f, 620f, 240f, Wave.SQUARE, 0.35f, decay = 6f)
             Sound.POWER_UP -> powerUp(s)
             Sound.GOBBLED -> gobbled(s)
+            Sound.FANFARE -> fanfare(s)
         }
         return s.toPcm(MASTER * loudness(sound))
     }
@@ -78,7 +82,7 @@ object Synth {
             Sound.PELLET_LOW, Sound.PELLET_MID, Sound.PELLET_HIGH -> 0.35f
             Sound.WALL -> 0.5f
             Sound.SNIP, Sound.BOING, Sound.CLANG -> 0.8f
-            Sound.CHOMP, Sound.OUCH, Sound.POWER_UP, Sound.GOBBLED -> 1f
+            Sound.CHOMP, Sound.OUCH, Sound.POWER_UP, Sound.GOBBLED, Sound.FANFARE -> 1f
         }
 
     private fun pellet(
@@ -117,6 +121,16 @@ object Synth {
         notes.forEachIndexed { i, f ->
             s.tone(i * 0.07f, if (i == notes.lastIndex) 0.22f else 0.08f, f, f, Wave.TRIANGLE, 0.5f, decay = 8f)
         }
+    }
+
+    /** "Ta-da-da-daaa": G G G, then a long high C over a C chord, with a bright square lead. */
+    private fun fanfare(s: Builder) {
+        for ((i, f) in floatArrayOf(392f, 392f, 392f).withIndex()) {
+            s.tone(i * 0.11f, 0.09f, f, f, Wave.SQUARE, 0.3f, decay = 10f)
+        }
+        val chord = 0.33f
+        s.tone(chord, 0.6f, 523f, 523f, Wave.SQUARE, 0.32f, decay = 3f)
+        for (f in floatArrayOf(262f, 330f, 392f)) s.tone(chord, 0.6f, f, f, Wave.TRIANGLE, 0.3f, decay = 3f)
     }
 
     private fun gobbled(s: Builder) {

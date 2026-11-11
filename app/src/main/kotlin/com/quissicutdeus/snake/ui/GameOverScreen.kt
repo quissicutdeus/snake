@@ -138,10 +138,24 @@ private fun GameOverStats(
                     },
                     MaterialTheme.typography.titleLarge,
                 )
+                if (result.biggestSeconds > 0) {
+                    ShadowText("👑 Biggest snake for ${duration(result.biggestSeconds)}!", MaterialTheme.typography.titleLarge)
+                }
             }
         }
     }
 }
+
+/** "1 second", "42 seconds", "1 minute", "3 minutes" (whole minutes past one). */
+internal fun duration(seconds: Int): String =
+    when {
+        seconds == 1 -> "1 second"
+        seconds < SECONDS_PER_MINUTE -> "$seconds seconds"
+        seconds < 2 * SECONDS_PER_MINUTE -> "1 minute"
+        else -> "${seconds / SECONDS_PER_MINUTE} minutes"
+    }
+
+private const val SECONDS_PER_MINUTE = 60
 
 /** "New hat unlocked!": the player's snake wearing what this game earned. */
 @Composable

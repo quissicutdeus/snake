@@ -1,12 +1,13 @@
 package com.quissicutdeus.snake.game.render
 
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.sim.GameSim
 import kotlin.math.min
 
-/** Screen-space HUD: hearts, length, and the live "Biggest snakes" list. */
+/** Screen-space HUD: hearts, length (with a crown while you're the biggest), and the live "Biggest snakes" list. */
 object HudRenderer {
     private val path = Path2D()
 
@@ -34,16 +35,13 @@ object HudRenderer {
 
         // Length (the score) and snakes eaten.
         val scoreY = top + hs + 26f * ui
-        SceneRenderer.shadowText(
-            c,
-            "Length ${GameConfig.scoreFor(player.length)}",
-            left,
-            scoreY,
-            22f * ui,
-            Colors.WHITE,
-            TextAlign.LEFT,
-            2f * ui,
-        )
+        val lengthText = "Length ${GameConfig.scoreFor(player.length)}"
+        SceneRenderer.shadowText(c, lengthText, left, scoreY, 22f * ui, Colors.WHITE, TextAlign.LEFT, 2f * ui)
+        // A crown while you're the biggest snake around.
+        if (sim.playerOnTop) {
+            val crownX = left + c.measureText(lengthText, 22f * ui) + 22f * ui
+            HatArt.drawHat(c, crownX, scoreY - 2f * ui, 26f * ui, Hat.CROWN, player.style)
+        }
         if (player.snakesEaten > 0) {
             SceneRenderer.shadowText(
                 c,

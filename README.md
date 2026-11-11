@@ -28,6 +28,8 @@ ones. Steer with your thumb, anywhere on the screen.
 - **A red arrow with an angry face** at the edge of the screen means a bigger
   snake is coming your way from off-screen. Get moving!
 - **A bigger snake bites your body** → your tail falls off. Go back and eat it!
+- **Become the biggest snake** in the arena and you get a fanfare, confetti
+  and a crown next to your length for as long as you stay on top.
 - Lose all 3 hearts and you get gobbled up. Game over — put your name on the
   high-score list!
 
@@ -42,7 +44,7 @@ your score:
 | **Super Armor** | blue ball with a shield and ripples | Nothing can hurt, snip or eat you. Bigger snakes bounce off — *CLANG!* |
 
 Sound effects go with the big moments (*nom-nom*, *boing*, *clang*, a
-power-up jingle, a sad *wah-wah* when you're gobbled) and a little pop for
+power-up jingle, a fanfare when you become the biggest, a sad *wah-wah* when you're gobbled) and a little pop for
 every food dot, rising in pitch when you gobble a row of them. The phone also
 gives a little buzz for the big moments, and a bouncy tune plays during a
 game (it stops when you pause). Three round buttons, on the title screen and
@@ -58,8 +60,9 @@ snakes and food are new, and you blink safe for a few seconds.
 
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
 list) and pick colors, a pattern (stripes, polka dots, zigzag, rainbow,
-checker), eyes and a hat. A few extra looks are earned by playing, and the
-game-over screen cheers when you get one:
+checker), eyes and a hat. A few extra looks are earned by playing: a locked
+one shows its goal and a bar filling up toward it, and the game-over screen
+cheers when you get one:
 
 | Look | How to get it |
 | --- | --- |
@@ -70,7 +73,8 @@ game-over screen cheers when you get one:
 | Viking horns | Eat 40 snakes (all games together) |
 
 Games played before this existed count too (from the high-score list).
-The game-over screen also shows who gobbled you.
+The game-over screen also shows who gobbled you, and how long you were the
+biggest snake.
 
 ## Install it on a Pixel
 
@@ -166,8 +170,9 @@ After a change, run `./gradlew :game:test :game:balanceReport` to see how games 
 game/   pure Kotlin, no Android: all rules, AI and drawing code
   model/   Snake (body follows the head's trail), food, SnakeStyle, scores
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
-           Rules, PowerUps, Ai, Spawner, Scoreboard, SavedRun (a game to carry
-           on after Android closes the app)
+           Rules, PowerUps, Ai, Spawner, Danger (warning arrows), Biggest
+           (who's on top), Scoreboard, SavedRun (a game to carry on after
+           Android closes the app)
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
            FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),

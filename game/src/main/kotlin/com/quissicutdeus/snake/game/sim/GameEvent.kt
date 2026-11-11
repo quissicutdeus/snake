@@ -60,6 +60,12 @@ sealed class GameEvent {
         override val y: Float,
     ) : GameEvent()
 
+    /** The player just became the biggest snake in the arena. */
+    data class BecameBiggest(
+        override val x: Float,
+        override val y: Float,
+    ) : GameEvent()
+
     data class PlayerEaten(
         override val x: Float,
         override val y: Float,

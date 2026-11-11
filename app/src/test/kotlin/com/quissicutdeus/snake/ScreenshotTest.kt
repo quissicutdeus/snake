@@ -191,7 +191,7 @@ class ScreenshotTest {
         storage.saveNames(listOf("Caleb", "Mya", "Dad"))
         show {
             GameOverScreen(
-                GameResult(87, 3, style, 1000L, Eater("Sir Noodles", sirNoodles)),
+                GameResult(87, 3, style, 1000L, Eater("Sir Noodles", sirNoodles), biggestSeconds = 42),
                 listOfNotNull(Unlocks.ruleFor(Hat.TOP_HAT)),
                 storage,
                 {},

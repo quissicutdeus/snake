@@ -27,6 +27,7 @@ class SavedRunTest {
         p.hearts = 2
         p.snakesEaten = 4
         p.givePower(PowerType.ARMOR)
+        sim.biggestSeconds = 12.5f
         return sim
     }
 
@@ -46,6 +47,7 @@ class SavedRunTest {
         assertEquals("Me; and you", now.name)
         assertTrue(abs(now.powerLeft(PowerType.ARMOR) - was.powerLeft(PowerType.ARMOR)) < 1e-4f)
         assertTrue(now.invulnerable > 0f, "a moment of protection after coming back")
+        assertEquals(12.5f, after.biggestSeconds)
         assertTrue(after.world.snakes.count { !it.isPlayer } >= GameConfig.AI_TARGET_COUNT - 2, "the world is filled again")
     }
 
@@ -62,6 +64,15 @@ class SavedRunTest {
         assertNull(SavedRun.decode("run1;NaN;300;2;0;0,0,0;1,2,STRIPES,GOOGLY,NONE;You"))
         assertNull(SavedRun.decode("run1;300;300;0;0;0,0,0;1,2,STRIPES,GOOGLY,NONE;You"))
         assertNotNull(SavedRun.decode(gameInProgress().snapshot()!!.encode()))
+    }
+
+    /** A game paused by the previous version still comes back after an update. */
+    @Test fun aGameSavedByTheLastVersionStillLoads() {
+        val run = assertNotNull(SavedRun.decode("run1;300.0;320.0;2;1;0.0,0.0,0.0;1,2,STRIPES,GOOGLY,NONE;Me; too"))
+        assertEquals(300f, run.length)
+        assertEquals(2, run.hearts)
+        assertEquals("Me; too", run.name)
+        assertEquals(0f, run.biggestSeconds)
     }
 
     @Test fun aVeryLongSnakeComesBackInsideTheFenceAndPlaysOn() {
