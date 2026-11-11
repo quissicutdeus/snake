@@ -55,6 +55,10 @@ class Profile(
     var alreadyEarned: List<Unlock> by mutableStateOf(notYetCheered())
         private set
 
+    /** Little kid mode: this kid plays gentler games. */
+    var littleKid: Boolean by mutableStateOf(saved.loadLittleKid())
+        private set
+
     /** Everyone who plays on this phone, for the title screen. */
     var players: List<PlayerCard> by mutableStateOf(loadPlayers())
         private set
@@ -75,6 +79,7 @@ class Profile(
         style = saved.loadStyle()
         snakeName = saved.loadSnakeName()
         stats = saved.loadStats()
+        littleKid = saved.loadLittleKid()
         alreadyEarned = notYetCheered()
     }
 
@@ -134,6 +139,11 @@ class Profile(
         style = new
         saved.saveStyle(new)
         players = loadPlayers()
+    }
+
+    fun changeLittleKid(on: Boolean) {
+        littleKid = on
+        saved.saveLittleKid(on)
     }
 
     fun changeSnakeName(new: String) {

@@ -73,6 +73,7 @@ class Storage(
             saveSnakeName("")
             saveStats(Stats())
             saveAnnounced(emptySet())
+            saveLittleKid(false)
         }
         prefs.edit { putString(KEY_PLAYERS, (ids + id).joinToString(",")) }
         return id

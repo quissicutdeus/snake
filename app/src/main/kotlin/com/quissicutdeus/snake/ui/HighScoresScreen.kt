@@ -167,7 +167,17 @@ private fun ScoreRow(
         }
         SnakePicture(e.style, Modifier.padding(horizontal = 8.dp).size(56.dp))
         Column(Modifier.weight(1f)) {
-            Text(e.name, style = MaterialTheme.typography.titleLarge, color = KidColors.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    e.name,
+                    Modifier.weight(1f, fill = false),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = KidColors.Ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (e.littleKid) LittleKidMark(Modifier.padding(start = 6.dp))
+            }
             Text(
                 when (e.snakesEaten) {
                     0 -> "no snakes eaten"

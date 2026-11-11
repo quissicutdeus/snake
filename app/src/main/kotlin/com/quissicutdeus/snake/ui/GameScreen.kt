@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.quissicutdeus.snake.ComposeCanvas2D
+import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.audio.SoundCues
 import com.quissicutdeus.snake.game.model.SnakeStyle
@@ -73,8 +74,16 @@ private class GameHolder(
     val stick: Thumbstick,
     resume: SavedRun? = null,
     playerName: String = "You",
+    /** Ignored when carrying on a saved game: that comes back as hard as it was. */
+    difficulty: Difficulty = Difficulty.NORMAL,
 ) {
-    val sim = GameSim(playerStyle = style, playerName = playerName, options = SimOptions(season = holidaysToday()), resume = resume)
+    val sim =
+        GameSim(
+            playerStyle = style,
+            playerName = playerName,
+            options = SimOptions(season = holidaysToday(), difficulty = difficulty),
+            resume = resume,
+        )
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()
@@ -116,7 +125,8 @@ private class GameHolder(
     /** How the game went, for the game-over screen. */
     fun result(): GameResult {
         val p = sim.player!!
-        return GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), sim.eatenBy, sim.biggestSeconds.toInt())
+        val little = sim.difficulty == Difficulty.LITTLE
+        return GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), sim.eatenBy, sim.biggestSeconds.toInt(), little)
     }
 }
 
@@ -146,17 +156,10 @@ fun GameScreen(
     onTipsDone: () -> Unit = {},
     /** The bedtime timer, if any: it counts the play and can stop the game at a calm moment. */
     bedtime: GameBedtime? = null,
+    /** This kid plays in little kid mode (a saved game carries on as it was saved, though). */
+    littleKid: Boolean = false,
 ) {
-    val density = LocalDensity.current
-    val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
-    // If Android closes the app in the background, the player's snake is saved
-    // with the screen and comes back (paused) in a fresh world. See SavedRun.
-    val saver =
-        Saver<GameHolder, String>(
-            save = { it.sim.snapshot()?.encode() },
-            restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it) } },
-        )
-    val game = rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName) }
+    val game = rememberGame(key, style, playerName, difficultyFor(littleKid))
     var paused by rememberSaveable(key) { mutableStateOf(false) }
     val tips = rememberFirstGameTips(key, showTips)
     val currentOnTipsDone by rememberUpdatedState(onTipsDone)
@@ -213,6 +216,28 @@ fun GameScreen(
             PauseOverlay(settings, onSettingsChange, onResume = { paused = false }, onQuit = onQuit)
         }
     }
+}
+
+/**
+ * A new game for [key], or the one saved with the screen: if Android closes
+ * the app in the background, the player's snake is saved with the screen and
+ * comes back (paused, as hard as it was) in a fresh world. See SavedRun.
+ */
+@Composable
+private fun rememberGame(
+    key: Int,
+    style: SnakeStyle,
+    playerName: String,
+    difficulty: Difficulty,
+): GameHolder {
+    val density = LocalDensity.current
+    val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
+    val saver =
+        Saver<GameHolder, String>(
+            save = { it.sim.snapshot()?.encode() },
+            restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it) } },
+        )
+    return rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName, difficulty = difficulty) }
 }
 
 /** After being gobbled, the world keeps going this long (the GULP! effect) before the game-over screen. */

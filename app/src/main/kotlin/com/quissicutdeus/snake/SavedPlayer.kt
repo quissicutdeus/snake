@@ -48,10 +48,15 @@ class SavedPlayer internal constructor(
 
     fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(key(KEY_ANNOUNCED), keys.toSet()) }
 
+    /** Little kid mode: gentler games for this kid (see Difficulty.LITTLE). Off unless switched on. */
+    fun loadLittleKid(): Boolean = prefs.getBoolean(key(KEY_LITTLE_KID), false)
+
+    fun saveLittleKid(on: Boolean) = prefs.edit { putBoolean(key(KEY_LITTLE_KID), on) }
+
     /** Forgets this kid's snake altogether (their high scores stay: those are everyone's). */
     fun clear() =
         prefs.edit {
-            listOf(KEY_STYLE, KEY_SNAKE_NAME, KEY_STATS, KEY_ANNOUNCED).forEach { remove(key(it)) }
+            listOf(KEY_STYLE, KEY_SNAKE_NAME, KEY_STATS, KEY_ANNOUNCED, KEY_LITTLE_KID).forEach { remove(key(it)) }
         }
 
     private companion object {
@@ -59,5 +64,6 @@ class SavedPlayer internal constructor(
         const val KEY_SNAKE_NAME = "snake_name"
         const val KEY_STATS = "stats"
         const val KEY_ANNOUNCED = "announced"
+        const val KEY_LITTLE_KID = "little_kid"
     }
 }

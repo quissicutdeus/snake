@@ -64,7 +64,9 @@ fun GameOverScreen(
     val names = remember(playerName) { namesFor(playerName, storage.loadNames()) }
 
     fun save(name: String) {
-        storage.addScore(ScoreEntry(Scoreboard.cleanName(name), result.score, result.snakesEaten, result.style, result.timestamp))
+        storage.addScore(
+            ScoreEntry(Scoreboard.cleanName(name), result.score, result.snakesEaten, result.style, result.timestamp, result.littleKid),
+        )
         onSaved(result.timestamp)
     }
 

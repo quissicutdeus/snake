@@ -93,7 +93,10 @@ fun MySnakeScreen(
     modifier: Modifier = Modifier,
     /** How to take this kid off the phone; null when they're the only one. */
     removal: Removal? = null,
+    /** This kid's little kid mode switch; null to leave it out. */
+    littleKid: LittleKidMode? = null,
 ) {
+    val extras = Extras(littleKid, removal)
     val naming = Naming(name, onNameChange, knownNames)
     BoxWithConstraints(
         modifier
@@ -105,13 +108,13 @@ fun MySnakeScreen(
             Row(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, stats, onChange, onDone, 170.dp, Modifier.weight(1f).fillMaxHeight())
                 Spacer(Modifier.size(12.dp))
-                StyleControls(style, stats, onChange, naming, removal, Modifier.weight(1.1f).fillMaxHeight())
+                StyleControls(style, stats, onChange, naming, extras, Modifier.weight(1.1f).fillMaxHeight())
             }
         } else {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, stats, onChange, onDone, 150.dp, Modifier.fillMaxWidth())
                 Spacer(Modifier.size(10.dp))
-                StyleControls(style, stats, onChange, naming, removal, Modifier.fillMaxWidth().weight(1f))
+                StyleControls(style, stats, onChange, naming, extras, Modifier.fillMaxWidth().weight(1f))
             }
         }
     }
@@ -144,7 +147,7 @@ private fun StyleControls(
     stats: Stats,
     onChange: (SnakeStyle) -> Unit,
     naming: Naming,
-    removal: Removal?,
+    extras: Extras,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier, shape = RoundedCornerShape(24.dp), color = KidColors.Panel) {
@@ -156,6 +159,7 @@ private fun StyleControls(
             Section("Name") {
                 NamePicker(naming)
             }
+            extras.littleKid?.let { LittleKidSwitch(it, Modifier.padding(bottom = 14.dp)) }
             Section("Body color") {
                 Swatches(style.color1, { onChange(style.copy(color1 = it)) })
             }
@@ -172,10 +176,16 @@ private fun StyleControls(
                 Choices(Hat.entries, style.hat, stats, { onChange(style.copy(hat = it)) })
             }
             // Last, at the bottom of the list, so it's out of the way.
-            if (removal != null) RemovePlayerButton(removal, style, Modifier.padding(top = 8.dp))
+            extras.removal?.let { RemovePlayerButton(it, style, Modifier.padding(top = 8.dp)) }
         }
     }
 }
+
+/** The kid's settings that aren't about the look (kept together to keep parameter lists short). */
+private class Extras(
+    val littleKid: LittleKidMode?,
+    val removal: Removal?,
+)
 
 /** The snake's name and how to change it (kept together to keep parameter lists short). */
 private class Naming(

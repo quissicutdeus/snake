@@ -92,6 +92,16 @@ shared. The phone remembers who played last. To take a kid off the phone, pick
 them, open My Snake and tap **Remove player** at the bottom (it asks first;
 their high scores stay, and the last kid can't be removed).
 
+**Little kid mode 🐣** is a switch in each kid's My Snake, off until a grown-up
+(or the kid) turns it on. It's the same game, just gentler, for the youngest:
+4 hearts instead of 3, half again as much food, more of the other snakes
+smaller than you (about 3 in 4 instead of 3 in 5), and bigger snakes that
+notice you from less far away, chase you less often, give up sooner and
+don't aim ahead of you. They can still bite and gobble you, just less often.
+Little-kid games go on the same high-score list with a 🐣 next to the name, and
+they count toward unlocking looks like any other game. A paused game that comes
+back after Android closed the app carries on just as gentle as it started.
+
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
 list, and is the first one offered when you get a high score) and pick
 colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
