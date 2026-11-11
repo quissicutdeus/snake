@@ -106,6 +106,8 @@ fun TitleScreen(
     modifier: Modifier = Modifier,
     /** The arena behind the menu: grass, autumn leaves or snow, as at this time of year. */
     arena: ArenaSeason = todaysOptions().arena,
+    /** Starts a two-player game; null hides the button (no room for two halves). */
+    onPlayTogether: (() -> Unit)? = null,
     /** Extra content shown under the snake, e.g. [AlreadyEarnedBanner]. */
     content: @Composable () -> Unit = {},
 ) {
@@ -137,6 +139,7 @@ fun TitleScreen(
             val buttons: @Composable () -> Unit = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     KidButton("Play!", onPlay)
+                    onPlayTogether?.let { KidButton("Play together", it, color = KidColors.Berry, big = false) }
                     KidButton("My Snake", onMySnake, color = KidColors.Sky)
                     KidButton("High Scores", onHighScores, color = KidColors.Grape)
                 }

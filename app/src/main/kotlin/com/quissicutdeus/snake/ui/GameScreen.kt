@@ -125,13 +125,13 @@ private class GameHolder(
 }
 
 /** Size of the round pause button at the top centre (the HUD keeps clear of it). */
-private val PauseButtonSize = 52.dp
+internal val PauseButtonSize = 52.dp
 
 /** Thumbstick: drags shorter than this keep the snake going straight. */
-private val StickDeadZone = 12.dp
+internal val StickDeadZone = 12.dp
 
 /** Thumbstick: how far the thumb gets from the centre before the centre follows it. */
-private val StickLeash = 56.dp
+internal val StickLeash = 56.dp
 
 @Composable
 fun GameScreen(
@@ -306,7 +306,7 @@ private fun steerWith(
 }
 
 /** A faint ring where the thumb landed and a knob under the thumb. */
-private fun DrawScope.drawStick(stick: Thumbstick) {
+internal fun DrawScope.drawStick(stick: Thumbstick) {
     val center = Offset(stick.centerX, stick.centerY)
     val ring = StickLeash.toPx()
     drawCircle(Color.White.copy(alpha = 0.12f), ring, center)
@@ -353,7 +353,7 @@ private fun step(
  * "vibration & haptics" setting, so turning that off silences the game too
  * (as does the game's own buzz switch).
  */
-private fun hapticFor(buzz: Buzz): Int =
+internal fun hapticFor(buzz: Buzz): Int =
     when (buzz) {
         Buzz.TAP -> HapticFeedbackConstants.CLOCK_TICK
         Buzz.THUD -> HapticFeedbackConstants.VIRTUAL_KEY
@@ -363,7 +363,7 @@ private fun hapticFor(buzz: Buzz): Int =
     }
 
 @Composable
-private fun PauseButton(
+internal fun PauseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -384,7 +384,7 @@ private fun PauseButton(
 }
 
 @Composable
-private fun PauseOverlay(
+internal fun PauseOverlay(
     settings: Settings,
     onSettingsChange: (Settings) -> Unit,
     onResume: () -> Unit,

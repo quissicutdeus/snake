@@ -82,6 +82,11 @@ private val ScreenSaver: Saver<Screen, String> =
                 is Screen.HighScores -> {
                     "scores|${screen.highlight ?: ""}"
                 }
+
+                // Deliberately not carried on: a two-player game comes back as the title screen.
+                is TogetherScreen -> {
+                    "title"
+                }
             }
         },
         restore = { text -> decodeScreen(text) },
@@ -170,8 +175,12 @@ fun SniddleApp(
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onAddPlayer = { if (me.addPlayer()) screen = Screen.MySnake },
-                    onHighScores = { screen = Screen.HighScores() },
+                    go = { screen = it },
                 )
+            }
+
+            is TogetherScreen -> {
+                TogetherRoute(s, me, storage, nextRound = { ++round }, go = { screen = it }, playSound, playMusic)
             }
 
             is Screen.Play -> {
@@ -262,13 +271,15 @@ private fun TitleRoute(
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
     onAddPlayer: () -> Unit,
-    onHighScores: () -> Unit,
-) = BedtimeHome(bedtime, me.style, onMySnake, onHighScores) {
+    /** Opens another screen (High scores, Play together). */
+    go: (Screen) -> Unit,
+) = BedtimeHome(bedtime, me.style, onMySnake, onHighScores = { go(Screen.HighScores()) }) {
     TitleScreen(
         style = me.style,
         onPlay = onPlay,
+        onPlayTogether = { go(TogetherScreen.Pick) }.takeIf { roomForTwo() },
         onMySnake = onMySnake,
-        onHighScores = onHighScores,
+        onHighScores = { go(Screen.HighScores()) },
         settings = me.settings,
         onSettingsChange = me::changeSettings,
         arena = remember { me.todaysOptions().arena },
@@ -291,7 +302,7 @@ private fun TitleRoute(
  * scores), unlocks, and removing this kid (back to the title after).
  */
 @Composable
-private fun MySnakeRoute(
+internal fun MySnakeRoute(
     me: Profile,
     storage: Storage,
     onDone: () -> Unit,

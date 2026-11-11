@@ -125,6 +125,26 @@ class Profile(
         return Unlocks.newlyUnlocked(before, stats).also(::announce)
     }
 
+    /**
+     * Like [recordGame], for kid [id] whether or not they're the one picked
+     * (two kids play together). Nothing for anyone who isn't on this phone.
+     */
+    fun recordGameFor(
+        id: Int,
+        result: GameResult,
+        season: Set<Holiday> = holidaysToday(),
+    ): List<Unlock> {
+        if (id == playerId) return recordGame(result, season)
+        if (players.none { it.id == id }) return emptyList()
+        val kid = storage.player(id)
+        val before = kid.loadStats()
+        val after = before.after(result.score, result.snakesEaten, season)
+        kid.saveStats(after)
+        val unlocked = Unlocks.newlyUnlocked(before, after)
+        if (unlocked.isNotEmpty()) kid.saveAnnounced(kid.loadAnnounced() + unlocked.map(::key))
+        return unlocked
+    }
+
     /** [alreadyEarned] has been shown, so it won't be shown again after this. */
     fun alreadyEarnedShown() = announce(alreadyEarned)
 

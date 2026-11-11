@@ -24,7 +24,7 @@ data class SecondPlayer(
  */
 class Together internal constructor(
     /** How long the whole game lasts. */
-    val seconds: Float,
+    seconds: Float,
 ) {
     /** Seconds left on the shared clock; the game is over at 0. */
     var timeLeft = seconds
