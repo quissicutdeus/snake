@@ -54,9 +54,10 @@ internal fun BedtimeHome(
 ) {
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { bedtime.refresh() }
     LaunchedEffect(bedtime) {
+        // Straight away too: a game can end the usual way after time ran out.
         while (true) {
-            delay(LOOK_AGAIN_MS)
             bedtime.refresh()
+            delay(LOOK_AGAIN_MS)
         }
     }
     if (bedtime.timeUp) {
