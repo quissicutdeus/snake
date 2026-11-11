@@ -25,6 +25,8 @@ ones. Steer with your thumb, anywhere on the screen.
   then blink for a moment (you can't be hurt while blinking).
 - **Run into a bigger snake's body** → you just bounce off. Only a bigger
   snake's mouth can hurt you, so you always see who's after you.
+- **A red arrow with an angry face** at the edge of the screen means a bigger
+  snake is coming your way from off-screen. Get moving!
 - **A bigger snake bites your body** → your tail falls off. Go back and eat it!
 - Lose all 3 hearts and you get gobbled up. Game over — put your name on the
   high-score list!

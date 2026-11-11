@@ -111,6 +111,17 @@ object GameConfig {
     const val BOUNCE_SECONDS = 0.3f
     const val BOUNCE_SPEED_FACTOR = 1.3f
 
+    // ---- Danger arrows ------------------------------------------------------
+
+    /** Bigger snakes closer than this, heading the player's way, get a warning arrow when off-screen. */
+    const val DANGER_RANGE = 1800f
+
+    /** "Heading the player's way": within about 50 degrees of pointing straight at them. */
+    const val DANGER_HEADING_COS = 0.64f
+
+    /** At most this many warning arrows at once (nearest first). */
+    const val MAX_DANGER_ARROWS = 3
+
     // ---- AI ----------------------------------------------------------------
     const val AI_THINK_INTERVAL = 0.15f
     const val AI_FLEE_RADIUS = 300f

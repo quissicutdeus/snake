@@ -107,7 +107,10 @@ object SceneRenderer {
         drawFx(c, fx, ui / cam.scale)
         c.restore()
 
-        if (showHud) drawPowerUpMarkers(c, sim, cam, ui)
+        if (showHud) {
+            drawPowerUpMarkers(c, sim, cam, ui)
+            EdgeMarkers.drawDangers(c, sim, cam, ui, time)
+        }
         if (fx.hurtFlash > 0f) {
             c.fillRect(0f, 0f, c.width, c.height, Colors.withAlpha(Colors.ANGRY_RED, fx.hurtFlash / Fx.HURT_FLASH_SECONDS * 0.28f))
         }
@@ -134,36 +137,18 @@ object SceneRenderer {
         ui: Float,
     ) {
         val p = sim.player?.takeIf { it.alive } ?: return
-        val cx = c.width / 2f
-        val cy = c.height / 2f
-        val inset = 26f * ui
         for (u in sim.world.powerUps) {
-            val dx = cam.worldToScreenX(u.x, c.width) - cx
-            val dy = cam.worldToScreenY(u.y, c.height) - cy
-            val onScreen = abs(dx) < cx && abs(dy) < cy
-            if (onScreen || dist2(u.x, u.y, p.x, p.y) > MARKER_RANGE * MARKER_RANGE) continue
-            // Where the line from the screen centre to the power-up leaves the (inset) screen.
-            // Along the top, stay below the pause button.
-            val limitY = if (dy < 0f) cy - 76f * ui else cy - inset
-            val k = min((cx - inset) / max(abs(dx), 1e-3f), limitY / max(abs(dy), 1e-3f))
-            val mx = cx + dx * k
-            val my = cy + dy * k
-            val a = atan2(dy, dx)
-            val tip = 25f * ui
-            val wing = 9f * ui
-            arrow.reset()
-            arrow.moveTo(mx + cos(a) * tip, my + sin(a) * tip)
-            arrow.lineTo(mx + cos(a + 1.2f) * wing * 1.4f, my + sin(a + 1.2f) * wing * 1.4f)
-            arrow.lineTo(mx + cos(a - 1.2f) * wing * 1.4f, my + sin(a - 1.2f) * wing * 1.4f)
-            arrow.close()
-            c.fillPath(arrow, PowerUpArt.color(u.type))
-            PowerUpArt.drawOrb(c, u.type, mx, my, 10f * ui)
+            val near = dist2(u.x, u.y, p.x, p.y) <= MARKER_RANGE * MARKER_RANGE
+            val dx = cam.worldToScreenX(u.x, c.width) - c.width / 2f
+            val dy = cam.worldToScreenY(u.y, c.height) - c.height / 2f
+            if (!near || !EdgeMarkers.place(c, dx, dy, ui)) continue
+            EdgeMarkers.drawArrow(c, PowerUpArt.color(u.type), ui)
+            PowerUpArt.drawOrb(c, u.type, EdgeMarkers.x, EdgeMarkers.y, 10f * ui)
         }
     }
 
     /** Off-screen power-ups closer than this get an arrow. */
     private const val MARKER_RANGE = 2400f
-    private val arrow = Path2D()
 
     /** AI snakes first, the player on top. */
     private fun drawSnakes(

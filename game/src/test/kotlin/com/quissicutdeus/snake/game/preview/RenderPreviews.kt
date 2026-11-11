@@ -36,6 +36,7 @@ fun main(args: Array<String>) {
     moods(out)
     curls(out)
     powerUps(out)
+    dangerArrows(out)
     println("Previews written to ${out.absolutePath}")
 }
 
@@ -80,6 +81,32 @@ private fun nearby(
 ) {
     val s = sim.addSnake(name, SnakeStyle.random(kotlin.random.Random(name.hashCode())), false, x, y, heading, length)
     s.brain = null // hold still-ish for the picture
+}
+
+/** Bigger snakes coming at the player from off-screen get red warning arrows; one heading away doesn't. */
+private fun dangerArrows(out: File) {
+    val sim = GameSim(seed = 4, options = SimOptions(aiCount = 0, pelletCount = 160, spawnPlayer = false, powerUps = false))
+    val p = sim.addSnake("You", SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES), true, 2000f, 2000f, 0.3f, 300f)
+
+    fun bigOne(
+        name: String,
+        color: Int,
+        x: Float,
+        y: Float,
+        heading: Float,
+    ) = sim.addSnake(name, SnakeStyle(color1 = color, color2 = 10, pattern = Pattern.DOTS), false, x, y, heading, 1200f).also {
+        it.brain =
+            null
+    }
+    bigOne("From the left", 0, 1100f, 2100f, 0.1f)
+    bigOne("From above", 8, 2300f, 1250f, 1.9f)
+    bigOne("Going away", 4, 2900f, 2200f, 0f)
+    sim.step()
+    val cam = Camera()
+    cam.snapTo(p.x, p.y, p.radius, W.toFloat(), H.toFloat())
+    val c = Java2DCanvas(W, H)
+    SceneRenderer.draw(c, sim, cam, Fx(), 0.2f)
+    c.writePng(File(out, "danger_arrows.png"))
 }
 
 /** A big player has just bitten through an AI snake: the tail lies on the ground in pieces. */
