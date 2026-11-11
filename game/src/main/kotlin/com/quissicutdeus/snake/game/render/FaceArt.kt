@@ -5,11 +5,12 @@ import com.quissicutdeus.snake.game.model.PI_F
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Cartoon faces: googly, sleepy or sunglasses eyes, with eyebrows and a mouth that show the mood. */
+/** Cartoon faces: googly, sleepy, sunglasses or heart eyes, with eyebrows and a mouth that show the mood. */
 object FaceArt {
     private val path = Path2D()
     private const val SUNGLASS = 0xFF1E1E28.toInt()
     private const val SWEAT = 0xFF7FD3FF.toInt()
+    private const val HEART_PINK = 0xFFFF3B6B.toInt()
 
     /** Where a face sits and how it looks: centre ([fx], [fy]) for a head of radius [hr]. */
     class Face(
@@ -45,6 +46,7 @@ object FaceArt {
                 Eyes.GOOGLY -> drawGooglyEye(c, face, ex, side, mood)
                 Eyes.SLEEPY -> drawSleepyEye(c, face, ex)
                 Eyes.SUNGLASSES -> drawSunglassLens(c, face, ex)
+                Eyes.HEARTS -> drawHeartEye(c, face, ex)
             }
             drawBrow(c, face, ex, side, mood)
         }
@@ -80,6 +82,21 @@ object FaceArt {
         val py = ey + face.lookY * er * 0.42f
         c.fillCircle(px, py, pr, face.ink)
         c.fillCircle(px - pr * 0.35f, py - pr * 0.35f, pr * 0.32f, Colors.washed(Colors.WHITE, face.wash))
+    }
+
+    /** A white eye with a pink heart for a pupil, looking where the snake goes. */
+    private fun drawHeartEye(
+        c: Canvas2D,
+        face: Face,
+        ex: Float,
+    ) {
+        val er = face.er
+        val ey = face.ey
+        c.fillCircle(ex, ey, er + face.hr * 0.05f, face.ink)
+        c.fillCircle(ex, ey, er, Colors.washed(Colors.WHITE, face.wash))
+        val px = ex + face.lookX * er * 0.25f
+        val py = ey + face.lookY * er * 0.25f
+        c.fillPath(HudRenderer.heartPath(px, py, er * 1.25f), Colors.washed(HEART_PINK, face.wash))
     }
 
     private fun drawSleepyEye(

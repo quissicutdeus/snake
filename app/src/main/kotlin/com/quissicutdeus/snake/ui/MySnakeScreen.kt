@@ -44,8 +44,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
+import com.quissicutdeus.snake.game.model.Labelled
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Stats
+import com.quissicutdeus.snake.game.model.Unlocks
 import com.quissicutdeus.snake.game.sim.Scoreboard
 import kotlin.random.Random
 
@@ -74,6 +77,7 @@ fun MySnakeScreen(
     name: String,
     onNameChange: (String) -> Unit,
     knownNames: List<String>,
+    stats: Stats,
     modifier: Modifier = Modifier,
 ) {
     val naming = Naming(name, onNameChange, knownNames)
@@ -85,15 +89,15 @@ fun MySnakeScreen(
     ) {
         if (maxWidth > maxHeight) {
             Row(Modifier.fillMaxSize().padding(12.dp)) {
-                SnakePreview(style, onChange, onDone, 170.dp, Modifier.weight(1f).fillMaxHeight())
+                SnakePreview(style, stats, onChange, onDone, 170.dp, Modifier.weight(1f).fillMaxHeight())
                 Spacer(Modifier.size(12.dp))
-                StyleControls(style, onChange, naming, Modifier.weight(1.1f).fillMaxHeight())
+                StyleControls(style, stats, onChange, naming, Modifier.weight(1.1f).fillMaxHeight())
             }
         } else {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
-                SnakePreview(style, onChange, onDone, 150.dp, Modifier.fillMaxWidth())
+                SnakePreview(style, stats, onChange, onDone, 150.dp, Modifier.fillMaxWidth())
                 Spacer(Modifier.size(10.dp))
-                StyleControls(style, onChange, naming, Modifier.fillMaxWidth().weight(1f))
+                StyleControls(style, stats, onChange, naming, Modifier.fillMaxWidth().weight(1f))
             }
         }
     }
@@ -103,6 +107,7 @@ fun MySnakeScreen(
 @Composable
 private fun SnakePreview(
     style: SnakeStyle,
+    stats: Stats,
     onChange: (SnakeStyle) -> Unit,
     onDone: () -> Unit,
     snakeHeight: Dp,
@@ -113,7 +118,7 @@ private fun SnakePreview(
         ShadowText("My Snake", MaterialTheme.typography.headlineLarge)
         WigglingSnake(style, Modifier.fillMaxWidth().height(snakeHeight))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            KidButton("Surprise me!", { onChange(SnakeStyle.random(rng)) }, color = KidColors.Berry, big = false)
+            KidButton("Surprise me!", { onChange(Unlocks.randomStyle(rng, stats)) }, color = KidColors.Berry, big = false)
             KidButton("Done", onDone, color = KidColors.DeepGreen, big = false)
         }
     }
@@ -122,6 +127,7 @@ private fun SnakePreview(
 @Composable
 private fun StyleControls(
     style: SnakeStyle,
+    stats: Stats,
     onChange: (SnakeStyle) -> Unit,
     naming: Naming,
     modifier: Modifier = Modifier,
@@ -142,13 +148,13 @@ private fun StyleControls(
                 Swatches(style.color2, { onChange(style.copy(color2 = it)) })
             }
             Section("Pattern") {
-                Choices(Pattern.entries, style.pattern, { it.label }, { onChange(style.copy(pattern = it)) })
+                Choices(Pattern.entries, style.pattern, stats, { onChange(style.copy(pattern = it)) })
             }
             Section("Eyes") {
-                Choices(Eyes.entries, style.eyes, { it.label }, { onChange(style.copy(eyes = it)) })
+                Choices(Eyes.entries, style.eyes, stats, { onChange(style.copy(eyes = it)) })
             }
             Section("Hat") {
-                Choices(Hat.entries, style.hat, { it.label }, { onChange(style.copy(hat = it)) })
+                Choices(Hat.entries, style.hat, stats, { onChange(style.copy(hat = it)) })
             }
         }
     }
@@ -168,7 +174,7 @@ private fun NamePicker(naming: Naming) {
     val current = Scoreboard.snakeName(naming.name)
     val options = (listOf("You") + naming.known).distinct()
     if (options.size > 1) {
-        Choices(options, current, { it }, { naming.onChange(if (it == "You") "" else it) })
+        NameChoices(options, current, { naming.onChange(if (it == "You") "" else it) })
         Spacer(Modifier.height(10.dp))
     }
     OutlinedTextField(
@@ -236,28 +242,70 @@ private fun Swatches(
     }
 }
 
+/** Pattern, eye or hat choices. Locked ones are dimmed with their goal and can't be picked yet. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun <T> Choices(
     options: List<T>,
     selected: T,
-    label: (T) -> String,
+    stats: Stats,
     onPick: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) where T : Enum<T>, T : Labelled {
+    FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEach { option ->
+            val goal = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }?.goal
+            Pill(option.label, option == selected, goal, { onPick(option) })
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NameChoices(
+    options: List<String>,
+    selected: String,
+    onPick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.forEach { option ->
-            val isSelected = option == selected
-            Box(
-                Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(if (isSelected) KidColors.Sky else Color(0xFFE8F5E0))
-                    .semantics { this.selected = isSelected }
-                    .clickable(role = Role.RadioButton) { onPick(option) }
-                    .padding(horizontal = 18.dp, vertical = 12.dp),
-            ) {
-                Text(label(option), style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
+        options.forEach { option -> Pill(option, option == selected, null, { onPick(option) }) }
+    }
+}
+
+/** A rounded choice button; with a [lockedGoal] it's greyed out, shows a lock and the goal, and can't be tapped. */
+@Composable
+private fun Pill(
+    label: String,
+    isSelected: Boolean,
+    lockedGoal: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val locked = lockedGoal != null
+    Box(
+        modifier
+            .clip(RoundedCornerShape(50))
+            .background(
+                when {
+                    isSelected -> KidColors.Sky
+                    locked -> Color(0xFFEDEDED)
+                    else -> Color(0xFFE8F5E0)
+                },
+            ).semantics {
+                this.selected = isSelected
+                if (locked) contentDescription = "$label, locked: $lockedGoal"
+            }.clickable(enabled = !locked, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = if (locked) 6.dp else 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (locked) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("🔒 $label", style = MaterialTheme.typography.titleMedium, color = Color(0xFF8A8A8A))
+                Text(lockedGoal, style = MaterialTheme.typography.labelMedium, color = Color(0xFF8A8A8A))
             }
+        } else {
+            Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
         }
     }
 }

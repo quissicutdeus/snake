@@ -38,13 +38,19 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.quissicutdeus.snake.Storage
+import com.quissicutdeus.snake.game.model.Eyes
+import com.quissicutdeus.snake.game.model.Hat
+import com.quissicutdeus.snake.game.model.Labelled
+import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.ScoreEntry
+import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.render.Mood
 import com.quissicutdeus.snake.game.sim.Scoreboard
 
 @Composable
 fun GameOverScreen(
     result: GameResult,
+    unlocked: List<Unlock>,
     storage: Storage,
     onSaved: (timestamp: Long) -> Unit,
     onPlayAgain: () -> Unit,
@@ -72,6 +78,7 @@ fun GameOverScreen(
             Row(Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     GameOverStats(result)
+                    UnlockedBanner(result, unlocked)
                     Spacer(Modifier.height(20.dp))
                     GameOverButtons(qualifies, onPlayAgain, onHome)
                 }
@@ -88,6 +95,7 @@ fun GameOverScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 GameOverStats(result)
+                UnlockedBanner(result, unlocked)
                 Spacer(Modifier.height(16.dp))
                 if (qualifies) {
                     WhoPlayedPanel(names, ::save)
@@ -131,6 +139,37 @@ private fun GameOverStats(
                     MaterialTheme.typography.titleLarge,
                 )
             }
+        }
+    }
+}
+
+/** "New hat unlocked!": the player's snake wearing what this game earned. */
+@Composable
+private fun UnlockedBanner(
+    result: GameResult,
+    unlocked: List<Unlock>,
+    modifier: Modifier = Modifier,
+) {
+    if (unlocked.isEmpty()) return
+    val wearing =
+        unlocked.fold(result.style) { s, u ->
+            when (val item = u.item) {
+                is Hat -> s.copy(hat = item)
+                is Eyes -> s.copy(eyes = item)
+                is Pattern -> s.copy(pattern = item)
+                else -> s
+            }
+        }
+    val names = unlocked.joinToString(" and ") { (it.item as? Labelled)?.label ?: it.item.name }
+    Surface(modifier.padding(top = 12.dp), shape = RoundedCornerShape(24.dp), color = KidColors.Sunny) {
+        Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            SnakePicture(wearing, Modifier.size(64.dp))
+            Text(
+                "Unlocked: $names!",
+                style = MaterialTheme.typography.titleLarge,
+                color = KidColors.Ink,
+                modifier = Modifier.padding(start = 10.dp),
+            )
         }
     }
 }

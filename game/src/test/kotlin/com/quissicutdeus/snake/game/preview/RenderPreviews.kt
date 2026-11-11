@@ -174,10 +174,12 @@ private fun board(
 
 private fun patterns(out: File) {
     val entries = Pattern.entries
-    board("patterns.png", 3, 2, 520, 300, out) { c, col, r ->
-        val pattern = entries[r * 3 + col]
+    board("patterns.png", 4, 2, 520, 300, out) { c, col, r ->
+        val i = r * 4 + col
+        if (i >= entries.size) return@board ""
+        val pattern = entries[i]
         val ps =
-            PosedSnake(SnakeStyle(color1 = (r * 3 + col) * 2 % 12, color2 = (r * 3 + col * 5 + 2) % 12, pattern = pattern), length = 300f)
+            PosedSnake(SnakeStyle(color1 = i * 2 % 12, color2 = (i * 5 + 2) % 12, pattern = pattern), length = 300f)
         c.save()
         c.scale(1.6f)
         ps.wave(290f, 85f, 0.7f, amplitude = 26f, wavelength = 170f)
@@ -188,11 +190,14 @@ private fun patterns(out: File) {
 }
 
 private fun facesAndHats(out: File) {
-    board("faces_hats.png", 4, 3, 420, 300, out) { c, col, r ->
+    board("faces_hats.png", Hat.entries.size, Eyes.entries.size, 420, 300, out) { c, col, r ->
         val hat = Hat.entries[col]
         val eyes = Eyes.entries[r]
         val ps =
-            PosedSnake(SnakeStyle(color1 = 1 + col * 2, color2 = 9 - col, pattern = Pattern.SOLID, eyes = eyes, hat = hat), length = 140f)
+            PosedSnake(
+                SnakeStyle(color1 = (1 + col * 2) % 12, color2 = (9 - col + 12) % 12, pattern = Pattern.SOLID, eyes = eyes, hat = hat),
+                length = 140f,
+            )
         c.save()
         c.scale(2.4f)
         ps.wave(150f, 62f, 1.1f, amplitude = 10f, wavelength = 120f)

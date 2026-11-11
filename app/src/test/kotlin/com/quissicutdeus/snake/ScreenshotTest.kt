@@ -20,6 +20,8 @@ import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Stats
+import com.quissicutdeus.snake.game.model.Unlocks
 import com.quissicutdeus.snake.game.sim.Eater
 import com.quissicutdeus.snake.ui.GameOverScreen
 import com.quissicutdeus.snake.ui.GameResult
@@ -150,14 +152,33 @@ class ScreenshotTest {
         name: String,
         look: SnakeStyle = style,
     ) {
-        show { MySnakeScreen(look, {}, {}, name = "Caleb", onNameChange = {}, knownNames = listOf("Caleb", "Mya", "Dad")) }
+        show {
+            MySnakeScreen(
+                look,
+                {},
+                {},
+                name = "Caleb",
+                onNameChange = {},
+                knownNames = listOf("Caleb", "Mya", "Dad"),
+                stats = Stats(bestScore = 120),
+            )
+        }
         advance(800)
         snap(name)
     }
 
     private fun gameOverScene(name: String) {
         storage.saveNames(listOf("Caleb", "Mya", "Dad"))
-        show { GameOverScreen(GameResult(87, 3, style, 1000L, Eater("Sir Noodles", sirNoodles)), storage, {}, {}, {}) }
+        show {
+            GameOverScreen(
+                GameResult(87, 3, style, 1000L, Eater("Sir Noodles", sirNoodles)),
+                listOfNotNull(Unlocks.ruleFor(Hat.TOP_HAT)),
+                storage,
+                {},
+                {},
+                {},
+            )
+        }
         advance(500)
         snap(name)
     }

@@ -2,32 +2,42 @@ package com.quissicutdeus.snake.game.model
 
 import kotlin.random.Random
 
+/** Something with a name to show a kid. */
+interface Labelled {
+    val label: String
+}
+
 enum class Pattern(
-    val label: String,
-) {
+    override val label: String,
+) : Labelled {
     SOLID("Solid"),
     STRIPES("Stripes"),
     DOTS("Polka dots"),
     ZIGZAG("Zigzag"),
     RAINBOW("Rainbow"),
     CHECKER("Checker"),
+    STARS("Stars"),
 }
 
 enum class Eyes(
-    val label: String,
-) {
+    override val label: String,
+) : Labelled {
     GOOGLY("Googly"),
     SLEEPY("Sleepy"),
     SUNGLASSES("Sunglasses"),
+    HEARTS("Heart eyes"),
 }
 
 enum class Hat(
-    val label: String,
-) {
+    override val label: String,
+) : Labelled {
     NONE("None"),
     CROWN("Crown"),
     PARTY("Party hat"),
     BOW("Bow"),
+    TOP_HAT("Top hat"),
+    WIZARD("Wizard hat"),
+    HORNS("Viking horns"),
 }
 
 /**

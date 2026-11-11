@@ -43,7 +43,7 @@ object SnakeArt {
         r: Float,
     ): Int =
         when (style.pattern) {
-            Pattern.SOLID, Pattern.DOTS, Pattern.ZIGZAG -> style.bodyColor
+            Pattern.SOLID, Pattern.DOTS, Pattern.ZIGZAG, Pattern.STARS -> style.bodyColor
             Pattern.STRIPES -> if (band(d, r * 1.4f) % 2 == 0) style.bodyColor else style.patternColor
             Pattern.CHECKER -> if (band(d, r * 1.3f) % 2 == 0) style.bodyColor else style.patternColor
             Pattern.RAINBOW -> Colors.hsv(d / (r * 9f), 0.68f, 1f)
@@ -90,6 +90,10 @@ object SnakeArt {
 
             Pattern.CHECKER -> {
                 drawChecker(c, s, wash)
+            }
+
+            Pattern.STARS -> {
+                drawStars(c, s, wash)
             }
 
             else -> {} // solid, stripes and rainbow are just body colors
@@ -161,6 +165,31 @@ object SnakeArt {
             val other = if (band(s.segD[i], s.radius * 1.3f) % 2 == 0) style.patternColor else style.bodyColor
             val off = s.segR[i] * 0.48f
             c.fillCircle(s.drawX[i] + perpX * off, s.drawY[i] + perpY * off, s.segR[i] * 0.52f, Colors.washed(other, wash))
+        }
+    }
+
+    /** Little five-pointed stars along the body, every few circles, swapping sides. */
+    private fun drawStars(
+        c: Canvas2D,
+        s: Snake,
+        wash: Float,
+    ) {
+        val color = Colors.washed(s.style.patternColor, wash)
+        for (i in s.segCount - 2 downTo 1) {
+            if (i % 5 != 3) continue
+            perp(s, i)
+            val off = (if ((i / 5) % 2 == 0) 1f else -1f) * s.segR[i] * 0.3f
+            val r = s.segR[i] * 0.62f
+            val cx = s.drawX[i] + perpX * off
+            val cy = s.drawY[i] + perpY * off
+            path.reset()
+            for (k in 0 until 10) {
+                val a = -PI_F / 2f + k * PI_F / 5f
+                val rr = if (k % 2 == 0) r else r * 0.45f
+                if (k == 0) path.moveTo(cx + cos(a) * rr, cy + sin(a) * rr) else path.lineTo(cx + cos(a) * rr, cy + sin(a) * rr)
+            }
+            path.close()
+            c.fillPath(path, color)
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Stats
 import com.quissicutdeus.snake.game.sim.Scoreboard
 import com.quissicutdeus.snake.ui.Settings
 
@@ -41,6 +42,17 @@ class Storage(
 
     fun saveSnakeName(name: String) = prefs.edit { putString(KEY_SNAKE_NAME, name) }
 
+    /**
+     * Lifetime totals that unlock new looks. The first time, they're worked out
+     * from the high-score list, so earlier games count too.
+     */
+    fun loadStats(): Stats =
+        Stats.decode(prefs.getString(KEY_STATS, null)) ?: loadScores().let { scores ->
+            Stats(scores.maxOfOrNull { it.score } ?: 0, scores.sumOf { it.snakesEaten }, scores.size)
+        }
+
+    fun saveStats(stats: Stats) = prefs.edit { putString(KEY_STATS, stats.encode()) }
+
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
     fun saveNames(names: List<String>) = prefs.edit { putString(KEY_NAMES, Scoreboard.encodeNames(names)) }
@@ -58,5 +70,6 @@ class Storage(
         const val KEY_SOUND = "sound"
         const val KEY_BUZZ = "buzz"
         const val KEY_SNAKE_NAME = "snake_name"
+        const val KEY_STATS = "stats"
     }
 }

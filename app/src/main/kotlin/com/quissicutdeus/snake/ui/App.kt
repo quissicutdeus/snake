@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.Storage
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.sim.Eater
 import com.quissicutdeus.snake.game.sim.Scoreboard
 
@@ -34,6 +35,8 @@ sealed interface Screen {
 
     data class GameOver(
         val result: GameResult,
+        /** Looks this game unlocked (not saved with the screen: the cheer is shown once). */
+        val unlocked: List<Unlock> = emptyList(),
     ) : Screen
 
     data object MySnake : Screen
@@ -119,14 +122,16 @@ private fun eaterAt(p: List<String>): Eater? {
     return Eater(name, SnakeStyle.decode(style))
 }
 
-/** Top level: a tiny screen switcher (no navigation library needed). [playSound] plays an effect. */
+/**
+ * Top level: a tiny screen switcher (no navigation library needed). [playSound]
+ * plays an effect. The screen is saved with the activity, so after Android
+ * closes the app in the background the kid comes back to it (a game, paused).
+ */
 @Composable
 fun SniddleApp(
     storage: Storage,
     playSound: (Sound) -> Unit,
 ) {
-    // Saved with the activity, so after Android closes the app in the background
-    // the kid comes back to the same screen (a game comes back paused).
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage) }
     var round by rememberSaveable { mutableIntStateOf(0) }
@@ -154,7 +159,7 @@ fun SniddleApp(
                     key = s.round,
                     style = me.style,
                     playerName = Scoreboard.snakeName(me.snakeName),
-                    onGameOver = { screen = Screen.GameOver(it) },
+                    onGameOver = { screen = Screen.GameOver(it, me.recordGame(it)) },
                     onQuit = { screen = Screen.Title },
                     settings = me.settings,
                     onSettingsChange = me::changeSettings,
@@ -165,6 +170,7 @@ fun SniddleApp(
             is Screen.GameOver -> {
                 GameOverScreen(
                     result = s.result,
+                    unlocked = s.unlocked,
                     storage = storage,
                     onSaved = { screen = Screen.HighScores(highlight = it) },
                     onPlayAgain = ::play,
@@ -173,14 +179,7 @@ fun SniddleApp(
             }
 
             Screen.MySnake -> {
-                MySnakeScreen(
-                    style = me.style,
-                    onChange = me::changeStyle,
-                    onDone = { screen = Screen.Title },
-                    name = me.snakeName,
-                    onNameChange = me::changeSnakeName,
-                    knownNames = storage.loadNames(),
-                )
+                MySnakeRoute(me, storage, onDone = { screen = Screen.Title })
             }
 
             is Screen.HighScores -> {
@@ -195,4 +194,22 @@ fun SniddleApp(
         // Back always leads home (the play screen handles back itself to pause).
         BackHandler(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
     }
+}
+
+/** My Snake, fed from the [Profile]: look, name (with names from the high scores) and unlocks. */
+@Composable
+private fun MySnakeRoute(
+    me: Profile,
+    storage: Storage,
+    onDone: () -> Unit,
+) {
+    MySnakeScreen(
+        style = me.style,
+        onChange = me::changeStyle,
+        onDone = onDone,
+        name = me.snakeName,
+        onNameChange = me::changeSnakeName,
+        knownNames = remember { storage.loadNames() },
+        stats = me.stats,
+    )
 }

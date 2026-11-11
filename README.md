@@ -54,8 +54,21 @@ background while you're away, the game is still there when you come back:
 paused, with your snake just as long, the same score and hearts. The other
 snakes and food are new, and you blink safe for a few seconds.
 
-**My Snake** lets you pick colors, a pattern (stripes, polka dots, zigzag,
-rainbow, checker), eyes and a hat. Everything is unlocked from the start.
+**My Snake** lets you name your snake (the name shows in the "Biggest snakes"
+list) and pick colors, a pattern (stripes, polka dots, zigzag, rainbow,
+checker), eyes and a hat. A few extra looks are earned by playing, and the
+game-over screen cheers when you get one:
+
+| Look | How to get it |
+| --- | --- |
+| Top hat | Reach length 100 |
+| Stars pattern | Play 10 games |
+| Heart eyes | Eat 10 snakes (all games together) |
+| Wizard hat | Reach length 200 |
+| Viking horns | Eat 40 snakes (all games together) |
+
+Games played before this existed count too (from the high-score list).
+The game-over screen also shows who gobbled you.
 
 ## Install it on a Pixel
 
