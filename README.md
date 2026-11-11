@@ -58,9 +58,17 @@ background while you're away, the game is still there when you come back:
 paused, with your snake just as long, the same score and hearts. The other
 snakes and food are new, and you blink safe for a few seconds.
 
+**Brothers and sisters each get their own snake.** Tap **+ Add player** on
+the title screen and a new kid gets a fresh snake to name and dress up. After
+that the title screen shows a little picture of everyone's snake: tap yours
+before you play. Each kid has their own name, look and unlocked looks (up to
+four kids per phone); the sound switches and the "Biggest snakes" list are
+shared. The phone remembers who played last.
+
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
-list) and pick colors, a pattern (stripes, polka dots, zigzag, rainbow,
-checker), eyes and a hat. A few extra looks are earned by playing: a locked
+list, and is the first one offered when you get a high score) and pick
+colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
+hat. A few extra looks are earned by playing: a locked
 one shows its goal and a bar filling up toward it, and the game-over screen
 cheers when you get one:
 
@@ -72,7 +80,8 @@ cheers when you get one:
 | Wizard hat | Reach length 200 |
 | Viking horns | Eat 40 snakes (all games together) |
 
-Games played before this existed count too (from the high-score list).
+Games played before this existed count too (from the high-score list), for the
+first kid on the phone. A new kid starts from zero.
 
 Holiday looks come from playing one game while the holiday is on, and then
 they stay for good. Until then they say when to come back. While a holiday
@@ -195,9 +204,12 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
   ui/               Title, Game (frame loop + thumbstick + pause),
-                    Game over ("Who played?"), High scores, My Snake
-  Storage           snake look, top-10 scores, names, settings (sound, buzz)
-                    (SharedPreferences)
+                    Game over ("Who played?"), High scores, My Snake,
+                    WhoIsPlaying (pick a kid), Profile (the kid playing)
+  Storage           shared: top-10 scores, names, settings, who's playing;
+                    SavedPlayer: each kid's look, name, unlock totals
+                    (SharedPreferences; the first kid keeps the keys from
+                    before players existed, so updates lose nothing)
   SoundPlayer       plays the effects (one preloaded AudioTrack each) and
                     loops the music
 ```
