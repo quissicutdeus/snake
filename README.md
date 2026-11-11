@@ -109,6 +109,33 @@ Little-kid games go on the same high-score list with a 🐣 next to the name, an
 they count toward unlocking looks like any other game. A paused game that comes
 back after Android closed the app carries on just as gentle as it started.
 
+**Play together.** On a tablet, or a big phone turned sideways, the title
+screen has a **Play together** button: two kids play at once in the same
+arena, each on their own half of the screen. The kid picked on the title
+screen plays on the left; the next screen asks who plays on the right
+(the next kid to start with, or a "Player 2" with a random look when only
+one kid is on the phone, or **Add player** to make a new one). Each kid
+steers by putting a thumb down on their own half (a finger belongs to the
+half it started in, even if it slides across), and each half follows its
+own snake with its own hearts, length and warning arrows.
+
+- The usual rules hold between the two kids too: a bigger head gobbles a
+  smaller one. But a gobbled kid isn't out: "Oops! Back in 3…", and they
+  come back somewhere quiet as a fresh small snake, blinking safe for a
+  moment. Their best length and snakes eaten so far still count.
+- The game lasts **3 minutes** (the clock under the pause button), then
+  *Time's up! Who's biggest?* The end screen shows both snakes, both
+  lengths and a cheer for both. Each kid's best length goes on the "Biggest
+  snakes" list under their own name if it made it, and counts toward their
+  own unlocked looks.
+- Pause stops both halves. Unlike a one-player game, a two-player game
+  isn't kept if the phone closes Sniddle in the background: you start from
+  the title screen again.
+
+| Two kids, one screen | Who's biggest? |
+| --- | --- |
+| ![Two halves, each following its own kid's snake](docs/screenshots/play_together.png) | ![End of a two-player game: both snakes and lengths](docs/screenshots/play_together_over.png) |
+
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
 list, and is the first one offered when you get a high score) and pick
 colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
@@ -279,7 +306,8 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
            Rules, PowerUps, Ai, Spawner, Danger (warning arrows), Biggest
            (who's on top), Scoreboard, SavedRun (a game to carry on after
-           Android closes the app)
+           Android closes the app), TwoPlayer (a second kid in the same
+           world: comebacks, the shared clock, each kid's crown)
   render/  Canvas2D (tiny drawing interface), SnakeArt / FaceArt / HatArt /
            FoodArt / PowerUpArt, HolidayHatArt / CalendarArt (holiday looks),
            SceneRenderer + ArenaArt (the floor, per season) + HudRenderer, Camera,
@@ -295,7 +323,11 @@ app/    Android app (Jetpack Compose)
                     WhoIsPlaying (pick a kid), Profile (the kid playing,
                     and today's holidays, birthday and arena season: the
                     only place the date is read), BirthdaySetting (the
-                    picker), BirthdayCheer (title-screen cheer + confetti)
+                    picker), BirthdayCheer (title-screen cheer + confetti),
+                    TwoPlayerScreen / TwoPlayerGame (split screen: two
+                    halves, each with its own camera, effects and
+                    thumbstick), TogetherScreen (picking the second kid,
+                    recording both), TogetherOverScreen
   Storage           shared: top-10 scores, names, settings, who's playing;
                     SavedPlayer: each kid's look, name, birthday, unlock totals
                     (SharedPreferences; the first kid keeps the keys from
@@ -314,6 +346,15 @@ The simulation runs at a fixed 60 steps per second; drawing blends between
 the last two steps so motion stays smooth on 90/120 Hz Pixel screens. Because
 the game logic and art don't depend on Android, an iOS version could reuse them
 one day.
+
+A two-player game is one `GameSim` with two player snakes, so the kids can
+meet and gobble each other. The screen is two Compose canvases side by side,
+each clipped to its half; the renderer draws the whole world once per half,
+from that kid's point of view (`SceneRenderer.draw(..., me = kid)`). That is
+about twice the drawing of one full screen: `:game:benchmark` ends with a
+tablet comparison (two 1280x1600 halves vs one 2560x1600 screen).
+One-player code is untouched by it: `player` is still the first kid, and the
+benchmark's checksum of a one-player game didn't change.
 
 `app/src/main/baseline-prof.txt` lists the app's code for Android to compile
 ahead of time at install (profileinstaller does this for sideloaded APKs too),
