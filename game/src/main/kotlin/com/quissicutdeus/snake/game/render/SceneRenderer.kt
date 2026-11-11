@@ -82,6 +82,11 @@ object SceneRenderer {
         }
     }
 
+    /**
+     * Draws the frame as [me] sees it: their HUD, warning arrows and the moods
+     * of the others. With two kids, each half of the screen is drawn with its
+     * own kid as [me] (and its own camera and effects).
+     */
     fun draw(
         c: Canvas2D,
         sim: GameSim,
@@ -90,6 +95,7 @@ object SceneRenderer {
         time: Float,
         insets: HudInsets = HudInsets(),
         showHud: Boolean = true,
+        me: Snake? = sim.player,
     ) {
         val ui = uiUnit(c)
         c.fillRect(0f, 0f, c.width, c.height, ArenaArt.outside(sim.options.arena))
@@ -101,21 +107,20 @@ object SceneRenderer {
 
         ArenaArt.drawFloor(c, sim.options.arena, sim.world.width, sim.world.height)
         drawFood(c, sim, time)
-        drawSnakes(c, sim, time)
+        drawSnakes(c, sim, me, time)
         // Name tags only in play, not behind the menus.
-        if (showHud) drawNameTags(c, sim, ui / cam.scale)
+        if (showHud) drawNameTags(c, sim, me, ui / cam.scale)
         drawFx(c, fx, ui / cam.scale)
         c.restore()
 
         if (showHud) {
-            drawPowerUpMarkers(c, sim, cam, ui)
-            EdgeMarkers.drawDangers(c, sim, cam, ui, time)
+            drawPowerUpMarkers(c, sim, me, cam, ui)
+            EdgeMarkers.drawDangers(c, sim, me, cam, ui, time)
         }
         if (fx.hurtFlash > 0f) {
             c.fillRect(0f, 0f, c.width, c.height, Colors.withAlpha(Colors.ANGRY_RED, fx.hurtFlash / Fx.HURT_FLASH_SECONDS * 0.28f))
         }
-        val player = sim.player
-        if (showHud && player != null) HudRenderer.draw(c, sim, player, insets, ui)
+        if (showHud && me != null) HudRenderer.draw(c, sim, me, insets, ui)
     }
 
     private fun drawFood(
@@ -133,10 +138,11 @@ object SceneRenderer {
     private fun drawPowerUpMarkers(
         c: Canvas2D,
         sim: GameSim,
+        me: Snake?,
         cam: Camera,
         ui: Float,
     ) {
-        val p = sim.player?.takeIf { it.alive } ?: return
+        val p = me?.takeIf { it.alive } ?: return
         for (u in sim.world.powerUps) {
             val near = dist2(u.x, u.y, p.x, p.y) <= MARKER_RANGE * MARKER_RANGE
             val dx = cam.worldToScreenX(u.x, c.width) - c.width / 2f
@@ -150,28 +156,29 @@ object SceneRenderer {
     /** Off-screen power-ups closer than this get an arrow. */
     private const val MARKER_RANGE = 2400f
 
-    /** AI snakes first, the player on top. */
+    /** Everyone else first (AI snakes, and the other kid if there are two), the player on top. */
     private fun drawSnakes(
         c: Canvas2D,
         sim: GameSim,
+        player: Snake?,
         time: Float,
     ) {
-        val player = sim.player
         for (s in sim.world.snakes) {
             if (s.alive && s !== player && View.mayShow(s)) drawSnakeWithBlink(c, s, moodFor(s, player), time, sim.renderAlpha)
         }
         if (player != null && player.alive) drawSnakeWithBlink(c, player, Mood.HAPPY, time, sim.renderAlpha)
     }
 
-    /** Names above AI heads. [unit] is one UI unit in world units (so text keeps its screen size). */
+    /** Names above everyone else's heads. [unit] is one UI unit in world units (so text keeps its screen size). */
     private fun drawNameTags(
         c: Canvas2D,
         sim: GameSim,
+        me: Snake?,
         unit: Float,
     ) {
         val size = 11f * unit
         for (s in sim.world.snakes) {
-            if (!s.alive || s.isPlayer || !View.contains(s.x, s.y, s.radius * 3f)) continue
+            if (!s.alive || s === me || !View.contains(s.x, s.y, s.radius * 3f)) continue
             // Snakes were drawn already, so drawX/drawY hold this frame's head position.
             val above = s.radius * (if (s.style.hat == Hat.NONE) 1.35f else 2.05f) + size * 0.35f
             shadowText(

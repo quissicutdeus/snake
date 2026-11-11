@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.preview
 
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.ArenaSeason
+import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.render.Camera
 import com.quissicutdeus.snake.game.render.Canvas2D
 import com.quissicutdeus.snake.game.render.Fx
@@ -12,6 +13,7 @@ import com.quissicutdeus.snake.game.sim.Ai
 import com.quissicutdeus.snake.game.sim.AiBrain
 import com.quissicutdeus.snake.game.sim.GameSim
 import com.quissicutdeus.snake.game.sim.SimOptions
+import com.quissicutdeus.snake.game.sim.SecondPlayer
 import com.quissicutdeus.snake.game.sim.SteerInput
 import kotlin.random.Random
 
@@ -59,6 +61,62 @@ fun main(args: Array<String>) {
             results.fold(0) { acc, r -> acc * 31 + r.checksum },
         ),
     )
+    benchmarkTwoPlayers()
+}
+
+/**
+ * Two kids on a tablet: the world is drawn twice, once per half of the
+ * screen, each half with its own camera. Compared with one kid playing on the
+ * whole tablet screen, using the same games.
+ */
+private fun benchmarkTwoPlayers() {
+    playTogether(seed = 1000L, steps = STEPS, twoKids = true)
+    println("Two players on a ${TABLET_W.toInt()}x${TABLET_H.toInt()} tablet (same seeds):")
+    for (twoKids in listOf(false, true)) {
+        val runs = SEEDS.map { playTogether(it, STEPS, twoKids) }
+        println(
+            "  %-28s frame %6.1f us  %5d draw calls/frame".format(
+                if (twoKids) "two kids, two halves:" else "one kid, whole screen:",
+                runs.map { it.first }.average(),
+                runs.map { it.second }.average().toLong(),
+            ),
+        )
+    }
+}
+
+private const val TABLET_W = 2560f
+private const val TABLET_H = 1600f
+
+/** Mean time and draw calls per frame, for one kid on the whole screen or two kids on half each. */
+private fun playTogether(
+    seed: Long,
+    steps: Int,
+    twoKids: Boolean,
+): Pair<Double, Long> {
+    val sim = if (twoKids) GameSim(seed = seed, secondPlayer = SecondPlayer("Bot 2", SnakeStyle.DEFAULT)) else GameSim(seed = seed)
+    val kids = sim.players
+    kids.forEachIndexed { i, kid -> kid.brain = AiBrain(Random(seed + i)) }
+    val inputs = kids.map { SteerInput() }
+    val canvas = CountingCanvas(if (twoKids) TABLET_W / 2f else TABLET_W, TABLET_H)
+    val cameras = kids.map { Camera() }
+    val fxs = kids.map { Fx() }
+    var frameNanos = 0L
+    for (i in 0 until steps) {
+        kids.forEachIndexed { k, kid ->
+            if (kid.alive) inputs[k].set(Ai.desiredHeading(sim, kid, GameConfig.STEP)) else inputs[k].release()
+        }
+        sim.step(inputs)
+        val t0 = System.nanoTime()
+        kids.forEachIndexed { k, kid ->
+            fxs[k].onEvents(sim, sim.events, kid)
+            fxs[k].update(GameConfig.STEP)
+            cameras[k].followSnake(kid, 1f, canvas.width, canvas.height, GameConfig.STEP)
+            SceneRenderer.draw(canvas, sim, cameras[k], fxs[k], i * GameConfig.STEP, me = kid)
+        }
+        frameNanos += System.nanoTime() - t0
+        sim.events.clear()
+    }
+    return frameNanos / steps / 1000.0 to canvas.calls / steps
 }
 
 private const val STEPS_PER_SECOND = 60

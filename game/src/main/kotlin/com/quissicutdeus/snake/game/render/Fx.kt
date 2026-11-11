@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.render
 
 import com.quissicutdeus.snake.game.model.PI_F
 import com.quissicutdeus.snake.game.model.PowerType
+import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.TWO_PI
 import com.quissicutdeus.snake.game.model.dist2
 import com.quissicutdeus.snake.game.sim.GameEvent
@@ -56,13 +57,18 @@ class Fx(
     var hurtFlash = 0f
         private set
 
-    /** Feeds this frame's events. Effects far from the player are skipped. */
+    /**
+     * Feeds this frame's events. Effects far from the player are skipped. With
+     * two kids, each half of the screen has its own [Fx] with its kid as [me]:
+     * shakes and the red flash are only for that kid's own moments.
+     */
     fun onEvents(
         sim: GameSim,
         events: List<GameEvent>,
+        me: Snake? = sim.player,
     ) {
-        speedTrail(sim)
-        val p = sim.player
+        speedTrail(me)
+        val p = me
         val pid = p?.id ?: -1
         for (e in events) {
             if (p != null && p.alive && dist2(e.x, e.y, p.x, p.y) > FAR_AWAY * FAR_AWAY) continue
@@ -73,10 +79,10 @@ class Fx(
                 is GameEvent.Hurt -> if (e.snakeId == pid) playerHurt(e)
                 is GameEvent.Bounced -> bounced(e, pid)
                 is GameEvent.HitWall -> if (e.snakeId == pid) addShake(3f)
-                is GameEvent.PlayerEaten -> playerEaten(e)
+                is GameEvent.PlayerEaten -> playerEaten(e, pid)
                 is GameEvent.PowerUpTaken -> powerUpTaken(e)
                 is GameEvent.Blocked -> if (e.snakeId == pid) blocked(e)
-                is GameEvent.BecameBiggest -> becameBiggest(e)
+                is GameEvent.BecameBiggest -> becameBiggest(e, pid)
             }
         }
     }
@@ -130,11 +136,14 @@ class Fx(
     }
 
     /** The player became the biggest snake: gold and white confetti and a cheer. */
-    private fun becameBiggest(e: GameEvent.BecameBiggest) {
+    private fun becameBiggest(
+        e: GameEvent.BecameBiggest,
+        pid: Int,
+    ) {
         burst(e.x, e.y, Colors.GOLD, count = 36, speed = 300f, size = 7f, life = 1f)
         burst(e.x, e.y, 0xFFFFFFFF.toInt(), count = 14, speed = 220f, size = 5f, life = 0.8f)
         word("BIGGEST SNAKE!", e.x, e.y, Colors.GOLD, 32f)
-        addShake(6f)
+        if (e.snakeId == pid) addShake(6f)
     }
 
     /** Super Armor stopped a hit on the player. */
@@ -145,8 +154,8 @@ class Fx(
     }
 
     /** Super Speed leaves a trail of sparkles behind the player. */
-    private fun speedTrail(sim: GameSim) {
-        val p = sim.player?.takeIf { it.alive && it.hasPower(PowerType.SPEED) } ?: return
+    private fun speedTrail(me: Snake?) {
+        val p = me?.takeIf { it.alive && it.hasPower(PowerType.SPEED) } ?: return
         if (p.segCount < 4 || particles.size > 600) return
         val i = min(p.segCount - 1, 4 + rng.nextInt(6))
         val back = p.heading + PI_F + (rng.nextFloat() - 0.5f)
@@ -164,10 +173,13 @@ class Fx(
         )
     }
 
-    private fun playerEaten(e: GameEvent.PlayerEaten) {
+    private fun playerEaten(
+        e: GameEvent.PlayerEaten,
+        pid: Int,
+    ) {
         burst(e.x, e.y, 0xFFFFFFFF.toInt(), count = 40, speed = 320f, size = 8f, life = 1.2f)
         word("GULP!", e.x, e.y, 0xFFFF5252.toInt(), 44f)
-        addShake(24f)
+        if (e.snakeId == pid) addShake(24f)
     }
 
     fun update(dt: Float) {

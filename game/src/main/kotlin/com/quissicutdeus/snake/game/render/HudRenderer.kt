@@ -5,6 +5,7 @@ import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.sim.GameSim
+import com.quissicutdeus.snake.game.sim.isOnTop
 import kotlin.math.min
 
 /** Screen-space HUD: hearts, length (with a crown while you're the biggest), and the live "Biggest snakes" list. */
@@ -38,7 +39,7 @@ object HudRenderer {
         val lengthText = "Length ${GameConfig.scoreFor(player.length)}"
         SceneRenderer.shadowText(c, lengthText, left, scoreY, 22f * ui, Colors.WHITE, TextAlign.LEFT, 2f * ui)
         // A crown while you're the biggest snake around.
-        if (sim.playerOnTop) {
+        if (sim.isOnTop(player)) {
             val crownX = left + c.measureText(lengthText, 22f * ui) + 22f * ui
             HatArt.drawHat(c, crownX, scoreY - 2f * ui, 26f * ui, Hat.CROWN, player.style)
         }

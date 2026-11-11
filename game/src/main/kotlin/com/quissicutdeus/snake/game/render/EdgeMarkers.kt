@@ -70,13 +70,14 @@ internal object EdgeMarkers {
     fun drawDangers(
         c: Canvas2D,
         sim: GameSim,
+        me: Snake?,
         cam: Camera,
         ui: Float,
         time: Float,
     ) {
         val pulse = 1f + 0.12f * sin(time * 9f)
         val offScreen =
-            sim.dangers().filter { s ->
+            sim.dangers(me).filter { s ->
                 // The head must be fully off-screen (its radius counts) to need an arrow.
                 val r = s.radius * cam.scale
                 abs(cam.worldToScreenX(s.x, c.width) - c.width / 2f) - r >= c.width / 2f ||
