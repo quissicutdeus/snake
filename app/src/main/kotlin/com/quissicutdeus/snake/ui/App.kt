@@ -168,19 +168,13 @@ fun SniddleApp(
             }
 
             is Screen.Play -> {
-                GameScreen(
-                    key = s.round,
-                    style = me.style,
-                    playerName = Scoreboard.snakeName(me.snakeName),
-                    littleKid = me.littleKid,
+                PlayRoute(
+                    s.round,
+                    me,
+                    bedtime,
+                    Speakers(playSound, playMusic),
                     onGameOver = { screen = Screen.GameOver(it, me.recordGame(it)) },
-                    onQuit = { screen = Screen.Title },
-                    settings = me.settings,
-                    onSettingsChange = me::changeSettings,
-                    onSound = { if (me.settings.soundOn) playSound(it) },
-                    onMusic = { playMusic(it && me.settings.soundOn && me.settings.musicOn) },
-                    showTips = remember(s.round) { tipsDue(me.stats) },
-                    bedtime = bedtime.forGame { screen = Screen.Title },
+                    onHome = { screen = Screen.Title },
                 )
             }
 
@@ -212,6 +206,38 @@ fun SniddleApp(
         // Back always leads home (the play screen handles back itself to pause).
         BackHandler(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
     }
+}
+
+/** Where the game's sound effects and music go. */
+private class Speakers(
+    val playSound: (Sound) -> Unit,
+    val playMusic: (Boolean) -> Unit,
+)
+
+/** A one-player game for the kid playing, in their look and mode, with their tips and the bedtime timer. */
+@Composable
+private fun PlayRoute(
+    round: Int,
+    me: Profile,
+    bedtime: Bedtime,
+    speakers: Speakers,
+    onGameOver: (GameResult) -> Unit,
+    onHome: () -> Unit,
+) {
+    GameScreen(
+        key = round,
+        style = me.style,
+        playerName = Scoreboard.snakeName(me.snakeName),
+        littleKid = me.littleKid,
+        onGameOver = onGameOver,
+        onQuit = onHome,
+        settings = me.settings,
+        onSettingsChange = me::changeSettings,
+        onSound = { if (me.settings.soundOn) speakers.playSound(it) },
+        onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+        showTips = remember(round) { tipsDue(me.stats) },
+        bedtime = bedtime.forGame(onHome),
+    )
 }
 
 /**
