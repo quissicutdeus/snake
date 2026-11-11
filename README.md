@@ -138,7 +138,9 @@ Samsung Galaxy Note 10 or Note 20.
 Or with a cable and `adb`: `adb install -r sniddle.apk`.
 
 Sniddle is still a **beta** (0.x): every push to `main` that passes
-[CI](.github/workflows/build.yml) publishes a new [release](../../releases).
+[CI](.github/workflows/build.yml) and changes the app publishes a new
+[release](../../releases). A push that only touches the README, docs, lint
+rules or CI publishes nothing, so phones don't get an update with nothing new.
 Releases use [semver](https://semver.org): you set MAJOR.MINOR as `appVersion`
 in [`gradle.properties`](gradle.properties), and CI adds the next patch number
 (`v0.1.0`, `v0.1.1`, …). Change `appVersion` to `0.2`, and later `1.0`, to start

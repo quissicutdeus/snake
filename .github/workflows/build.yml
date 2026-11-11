@@ -1,7 +1,8 @@
 name: Build
 
 # Every push and pull request: lint, test and build. On main, if all of that
-# passes, a GitHub release "v<MAJOR.MINOR>.<patch>" is published with
+# passes and the app itself changed (see "Check whether the app changed"), a
+# GitHub release "v<MAJOR.MINOR>.<patch>" is published with
 # sniddle.apk attached, so the newest APK is always at
 #   releases/latest/download/sniddle.apk
 # "Run workflow" in the Actions tab publishes one from any branch.
@@ -164,11 +165,38 @@ jobs:
     env:
       VERSION_NAME: ${{ needs.build.outputs.version }}
     steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # every tag, to compare with the last release
+
+      # A push that only changes the README, docs, lint rules or CI builds the
+      # same app, so it isn't released: phones would get an update with nothing
+      # new. Anything not on this list counts as an app change, so a new kind
+      # of file releases rather than being skipped. "Run workflow" always releases.
+      - name: Check whether the app changed
+        id: changed
+        run: |
+          last=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null || true)
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || [ -z "$last" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          app_files=$(git diff --name-only "$last" HEAD |
+            grep -Ev '^(README\.md|PLAN\.md|docs/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
+          if [ -n "$app_files" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+            echo "Only docs, lint rules or CI changed since $last, so no release." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/download-artifact@v8
+        if: steps.changed.outputs.app == 'true'
         with:
           name: sniddle-apk
 
       - name: Create release v${{ env.VERSION_NAME }}
+        if: steps.changed.outputs.app == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
