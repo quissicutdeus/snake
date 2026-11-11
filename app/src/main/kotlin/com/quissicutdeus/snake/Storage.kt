@@ -8,16 +8,15 @@ import com.quissicutdeus.snake.game.model.Stats
 import com.quissicutdeus.snake.game.sim.Scoreboard
 import com.quissicutdeus.snake.ui.Settings
 
-/** Everything saved on the device: the player's snake look, high scores, player names, the snake's name and the settings. */
+/**
+ * Everything saved on the device: the high scores, names used before and the
+ * settings, which everyone shares, and each kid's own snake ([player]).
+ */
 class Storage(
     context: Context,
 ) {
     // Named from when the game was "Snake Arena"; renaming it would lose everyone's saved high scores.
     private val prefs = context.getSharedPreferences("snake_arena", Context.MODE_PRIVATE)
-
-    fun loadStyle(): SnakeStyle = SnakeStyle.decode(prefs.getString(KEY_STYLE, null))
-
-    fun saveStyle(style: SnakeStyle) = prefs.edit { putString(KEY_STYLE, style.encode()) }
 
     fun loadScores(): List<ScoreEntry> = Scoreboard.decode(prefs.getString(KEY_SCORES, null))
 
@@ -39,26 +38,43 @@ class Storage(
             putBoolean(KEY_MUSIC, settings.musicOn)
         }
 
-    /** The name the player gave their snake ("" for none). */
-    fun loadSnakeName(): String = prefs.getString(KEY_SNAKE_NAME, null).orEmpty()
+    /** Ids of the kids who play on this phone, in the order they joined: just player 0 until a second one joins. */
+    fun loadPlayers(): List<Int> =
+        prefs
+            .getString(KEY_PLAYERS, null)
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?.filter { it in 0 until MAX_PLAYERS }
+            ?.distinct()
+            ?.ifEmpty { null } ?: listOf(0)
 
-    fun saveSnakeName(name: String) = prefs.edit { putString(KEY_SNAKE_NAME, name) }
+    /** Who's playing now: the last kid picked on the title screen. */
+    fun loadCurrentPlayer(): Int = loadPlayers().let { ids -> prefs.getInt(KEY_PLAYER, ids[0]).takeIf { it in ids } ?: ids[0] }
+
+    fun saveCurrentPlayer(id: Int) = prefs.edit { putInt(KEY_PLAYER, id) }
+
+    fun player(id: Int): SavedPlayer = SavedPlayer(prefs, id, ::loadScores)
 
     /**
-     * Lifetime totals that unlock new looks. The first time, they're worked out
-     * from the high-score list, so earlier games count too.
+     * Adds a kid with a snake in [style] and nothing else yet. Returns their
+     * id, or null when the phone already has [MAX_PLAYERS].
      */
-    fun loadStats(): Stats =
-        Stats.decode(prefs.getString(KEY_STATS, null)) ?: loadScores().let { scores ->
-            Stats(scores.maxOfOrNull { it.score } ?: 0, scores.sumOf { it.snakesEaten }, scores.size)
+    fun addPlayer(style: SnakeStyle): Int? {
+        val ids = loadPlayers()
+        val id = (0 until MAX_PLAYERS).firstOrNull { it !in ids } ?: return null
+        // Player 0's totals may still be worked out from the high-score list,
+        // which the new kid's games are about to join: write them down first.
+        if (0 in ids) player(0).let { it.saveStats(it.loadStats()) }
+        // Every key written, so nothing is left over from anyone before.
+        player(id).apply {
+            saveStyle(style)
+            saveSnakeName("")
+            saveStats(Stats())
+            saveAnnounced(emptySet())
         }
-
-    fun saveStats(stats: Stats) = prefs.edit { putString(KEY_STATS, stats.encode()) }
-
-    /** Unlocked looks the player has been told about ("Hat.TOP_HAT"...); any others get a cheer on the title screen. */
-    fun loadAnnounced(): Set<String> = prefs.getStringSet(KEY_ANNOUNCED, null)?.toSet().orEmpty()
-
-    fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(KEY_ANNOUNCED, keys.toSet()) }
+        prefs.edit { putString(KEY_PLAYERS, (ids + id).joinToString(",")) }
+        return id
+    }
 
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
@@ -70,15 +86,16 @@ class Storage(
         saveNames(Scoreboard.rememberName(loadNames(), entry.name))
     }
 
-    private companion object {
-        const val KEY_STYLE = "style"
-        const val KEY_SCORES = "scores"
-        const val KEY_NAMES = "names"
-        const val KEY_SOUND = "sound"
-        const val KEY_BUZZ = "buzz"
-        const val KEY_MUSIC = "music"
-        const val KEY_SNAKE_NAME = "snake_name"
-        const val KEY_STATS = "stats"
-        const val KEY_ANNOUNCED = "announced"
+    companion object {
+        /** Kids per phone: enough for a family, and their pictures still fit in one row. */
+        const val MAX_PLAYERS = 4
+
+        private const val KEY_SCORES = "scores"
+        private const val KEY_NAMES = "names"
+        private const val KEY_SOUND = "sound"
+        private const val KEY_BUZZ = "buzz"
+        private const val KEY_MUSIC = "music"
+        private const val KEY_PLAYERS = "players"
+        private const val KEY_PLAYER = "player"
     }
 }

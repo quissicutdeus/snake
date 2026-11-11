@@ -1,0 +1,57 @@
+package com.quissicutdeus.snake
+
+import android.content.SharedPreferences
+import androidx.core.content.edit
+import com.quissicutdeus.snake.game.model.ScoreEntry
+import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.model.Stats
+
+/**
+ * One kid's saved snake: look, name, unlock totals and which unlocks they've
+ * been cheered for. Player 0 uses the keys from before there were players
+ * ("style", "stats"...), so an updated phone keeps its snake without any
+ * copying; other players put "p2." and so on in front of the same keys.
+ */
+class SavedPlayer internal constructor(
+    private val prefs: SharedPreferences,
+    val id: Int,
+    /** The shared high-score list, which player 0's totals start from (see [loadStats]). */
+    private val oldGames: () -> List<ScoreEntry>,
+) {
+    private fun key(base: String) = if (id == 0) base else "p$id.$base"
+
+    fun loadStyle(): SnakeStyle = SnakeStyle.decode(prefs.getString(key(KEY_STYLE), null))
+
+    fun saveStyle(style: SnakeStyle) = prefs.edit { putString(key(KEY_STYLE), style.encode()) }
+
+    /** The name the kid gave their snake ("" for none). */
+    fun loadSnakeName(): String = prefs.getString(key(KEY_SNAKE_NAME), null).orEmpty()
+
+    fun saveSnakeName(name: String) = prefs.edit { putString(key(KEY_SNAKE_NAME), name) }
+
+    /**
+     * Lifetime totals that unlock new looks. Player 0 starts from the
+     * high-score list the first time, so games from before unlocks existed
+     * count too. Everyone else starts from nothing.
+     */
+    fun loadStats(): Stats =
+        Stats.decode(prefs.getString(key(KEY_STATS), null)) ?: if (id == 0) {
+            oldGames().let { scores -> Stats(scores.maxOfOrNull { it.score } ?: 0, scores.sumOf { it.snakesEaten }, scores.size) }
+        } else {
+            Stats()
+        }
+
+    fun saveStats(stats: Stats) = prefs.edit { putString(key(KEY_STATS), stats.encode()) }
+
+    /** Unlocked looks this kid has been told about ("Hat.TOP_HAT"...); any others get a cheer on the title screen. */
+    fun loadAnnounced(): Set<String> = prefs.getStringSet(key(KEY_ANNOUNCED), null)?.toSet().orEmpty()
+
+    fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(key(KEY_ANNOUNCED), keys.toSet()) }
+
+    private companion object {
+        const val KEY_STYLE = "style"
+        const val KEY_SNAKE_NAME = "snake_name"
+        const val KEY_STATS = "stats"
+        const val KEY_ANNOUNCED = "announced"
+    }
+}

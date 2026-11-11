@@ -53,13 +53,15 @@ fun GameOverScreen(
     result: GameResult,
     unlocked: List<Unlock>,
     storage: Storage,
+    /** The snake name of the kid who played ("" for none), offered first under "Who played?". */
+    playerName: String,
     onSaved: (timestamp: Long) -> Unit,
     onPlayAgain: () -> Unit,
     onHome: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val qualifies = remember(result) { Scoreboard.qualifies(storage.loadScores(), result.score) }
-    val names = remember { storage.loadNames() }
+    val names = remember(playerName) { namesFor(playerName, storage.loadNames()) }
 
     fun save(name: String) {
         storage.addScore(ScoreEntry(Scoreboard.cleanName(name), result.score, result.snakesEaten, result.style, result.timestamp))
@@ -84,7 +86,7 @@ fun GameOverScreen(
                     GameOverButtons(qualifies, onPlayAgain, onHome)
                 }
                 Spacer(Modifier.size(16.dp))
-                WhoPlayedPanel(names, ::save, Modifier.weight(1.1f).verticalScroll(rememberScrollState()))
+                WhoPlayedPanel(names, playerName.isNotBlank(), ::save, Modifier.weight(1.1f).verticalScroll(rememberScrollState()))
             }
         } else {
             Column(
@@ -99,7 +101,7 @@ fun GameOverScreen(
                 UnlockedBanner(result, unlocked)
                 Spacer(Modifier.height(16.dp))
                 if (qualifies) {
-                    WhoPlayedPanel(names, ::save)
+                    WhoPlayedPanel(names, playerName.isNotBlank(), ::save)
                     Spacer(Modifier.height(16.dp))
                 }
                 GameOverButtons(qualifies, onPlayAgain, onHome)
@@ -216,11 +218,19 @@ private fun GameOverButtons(
     }
 }
 
-/** "Who played?": tap a name used before, or type a new one. */
+/** Names for "Who played?": the kid playing first, if their snake has a name, then the others used before. */
+private fun namesFor(
+    playerName: String,
+    known: List<String>,
+): List<String> = if (playerName.isBlank()) known else Scoreboard.rememberName(known, playerName)
+
+/** "Who played?": tap a name used before (the kid playing is first, in orange), or type a new one. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WhoPlayedPanel(
     names: List<String>,
+    /** The first name is the kid who's playing. */
+    firstIsPlayer: Boolean,
     onPick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -239,7 +249,10 @@ private fun WhoPlayedPanel(
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    names.forEach { name -> KidButton(name, { onPick(name) }, color = KidColors.Sky, big = false) }
+                    names.forEachIndexed { i, name ->
+                        val mine = i == 0 && firstIsPlayer
+                        KidButton(name, { onPick(name) }, color = if (mine) KidColors.Play else KidColors.Sky, big = false)
+                    }
                 }
                 Spacer(Modifier.height(12.dp))
             }

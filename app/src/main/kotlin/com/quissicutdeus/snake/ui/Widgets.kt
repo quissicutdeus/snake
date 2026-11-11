@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quissicutdeus.snake.ComposeCanvas2D
 import com.quissicutdeus.snake.game.model.SnakeStyle
@@ -64,11 +65,15 @@ fun ShadowText(
     style: TextStyle,
     modifier: Modifier = Modifier,
     color: Color = Color.White,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
 ) {
     Text(
         text,
         modifier = modifier,
         color = color,
+        maxLines = maxLines,
+        overflow = overflow,
         style = style.copy(shadow = Shadow(color = Color(0xAA2B2B3A), offset = Offset(3f, 4f), blurRadius = 6f)),
     )
 }

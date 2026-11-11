@@ -154,6 +154,7 @@ fun SniddleApp(
                     me,
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
+                    onAddPlayer = { if (me.addPlayer()) screen = Screen.MySnake },
                     onHighScores = { screen = Screen.HighScores() },
                 )
             }
@@ -177,6 +178,7 @@ fun SniddleApp(
                     result = s.result,
                     unlocked = s.unlocked,
                     storage = storage,
+                    playerName = me.snakeName,
                     onSaved = { screen = Screen.HighScores(highlight = it) },
                     onPlayAgain = ::play,
                     onHome = { screen = Screen.Title },
@@ -201,12 +203,16 @@ fun SniddleApp(
     }
 }
 
-/** The title screen, fed from the [Profile]: look, settings and any looks earned without a cheer. */
+/**
+ * The title screen, fed from the [Profile]: look, settings, who's playing
+ * and any looks earned without a cheer.
+ */
 @Composable
 private fun TitleRoute(
     me: Profile,
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
+    onAddPlayer: () -> Unit,
     onHighScores: () -> Unit,
 ) {
     TitleScreen(
@@ -216,7 +222,10 @@ private fun TitleRoute(
         onHighScores = onHighScores,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
-        content = { AlreadyEarnedBanner(me.style, me.alreadyEarned, me::alreadyEarnedShown, me::dismissAlreadyEarned) },
+        content = {
+            WhoIsPlaying(me.players, me.playerId, me::switchTo, onAddPlayer)
+            AlreadyEarnedBanner(me.style, me.alreadyEarned, me::alreadyEarnedShown, me::dismissAlreadyEarned)
+        },
     )
 }
 
