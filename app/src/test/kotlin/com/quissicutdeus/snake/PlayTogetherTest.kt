@@ -220,6 +220,8 @@ class PlayTogetherTest : ScreenTest() {
                     sim = s
                     val kid = s.players[1]
                     kid.hearts = 1
+                    // Only Noodle nearby, so it is Noodle who does it.
+                    s.world.snakes.removeAll { !it.isPlayer }
                     // Right in front of her, coming her way.
                     s.addSnake(
                         "Noodle",
