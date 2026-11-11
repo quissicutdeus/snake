@@ -11,9 +11,10 @@ import kotlin.math.sin
  * fight, so Super Strength counts), within [GameConfig.DANGER_RANGE], and with
  * their head pointed roughly at the player. Only a bigger snake's mouth can
  * hurt the player, so it's their heads that matter. Nearest first.
+ * With two kids, [me] says whose point of view (each half of the screen has its own).
  */
-fun GameSim.dangers(): List<Snake> {
-    val p = player?.takeIf { it.alive } ?: return emptyList()
+fun GameSim.dangers(me: Snake? = player): List<Snake> {
+    val p = me?.takeIf { it.alive } ?: return emptyList()
     return world.snakes
         .filter { s ->
             if (s === p || !s.alive || p.fightRelationTo(s) != SizeRelation.SMALLER) return@filter false

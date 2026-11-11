@@ -128,6 +128,20 @@ object GameConfig {
     /** Becoming the biggest snake again cheers only if the last cheer was at least this long ago. */
     const val BIGGEST_CHEER_GAP_SECONDS = 30f
 
+    // ---- Two players on one screen -------------------------------------------
+
+    /** A two-player game lasts this long (a shared clock), then "Who's biggest?". */
+    const val TWO_PLAYER_SECONDS = 180f
+
+    /** A gobbled kid comes back this many seconds later ("Oops! Back in 3…"). */
+    const val COME_BACK_SECONDS = 3f
+
+    /** Protection after coming back, so nobody waiting nearby can gobble the kid straight away. */
+    const val COME_BACK_INVULNERABLE_SECONDS = 3f
+
+    /** The two kids start this far either side of the middle of the arena. */
+    const val TWO_PLAYER_START_GAP = 180f
+
     // ---- AI ----------------------------------------------------------------
     const val AI_THINK_INTERVAL = 0.15f
     const val AI_FLEE_RADIUS = 300f

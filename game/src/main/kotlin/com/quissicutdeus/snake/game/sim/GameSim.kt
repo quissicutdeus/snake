@@ -52,6 +52,8 @@ class GameSim(
     internal val options: SimOptions = SimOptions(),
     /** Carry on a saved game: the player comes back as saved, in a freshly made world. */
     resume: SavedRun? = null,
+    /** A second kid on the same screen makes this a two-player game (see [Together]). */
+    secondPlayer: SecondPlayer? = null,
 ) {
     val rng = Random(seed)
 
@@ -72,8 +74,16 @@ class GameSim(
     /** Effects queue: filled by steps, cleared at the start of each [update]. */
     val events = ArrayList<GameEvent>()
 
+    /** The player (the first kid, in a two-player game). */
     var player: Snake? = null
         private set
+
+    /** Every player's snake, in the order they joined: just [player], or both kids. */
+    val players: List<Snake> get() = playerList
+    private val playerList = ArrayList<Snake>(2)
+
+    /** The two-player game's clock and each kid's comings and goings; null in a one-player game. */
+    val together: Together? = secondPlayer?.let { Together(it.seconds) }
 
     /** True once the player has been eaten. The world keeps running behind the game-over screen. */
     var gameOver = false
@@ -99,6 +109,8 @@ class GameSim(
         repeat((options.pelletCount * difficulty.foodFactor).toInt()) { world.pellets.add(randomPellet()) }
         if (resume != null) {
             comeBack(resume)
+        } else if (secondPlayer != null) {
+            if (options.spawnPlayer) spawnTwoKids(playerName, playerStyle, secondPlayer)
         } else if (options.spawnPlayer) {
             addSnake(
                 name = playerName,
@@ -115,12 +127,14 @@ class GameSim(
         grid.build(world.snakes)
         // Already on top at the start (or on coming back) is no news: no cheer.
         playerOnTop = player?.let { isBiggest(it) } ?: false
+        together?.let { t -> playerList.forEachIndexed { i, s -> t.kids[i].onTop = isBiggest(s) } }
     }
 
     /** The player's game so far, or null once it is over (nothing left to carry on). */
     fun snapshot(): SavedRun? {
         val p = player ?: return null
-        if (gameOver || !p.alive) return null
+        // A two-player game isn't carried on: after Android closes the app, the kids start afresh.
+        if (gameOver || !p.alive || together != null) return null
         return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snakesEaten, p.powerTime.toList(), biggestSeconds, difficulty)
     }
 
@@ -147,11 +161,20 @@ class GameSim(
         elapsedSeconds: Float,
         input: SteerInput,
     ): Int {
+        oneInput[0] = input
+        return update(elapsedSeconds, oneInput)
+    }
+
+    /** Like [update], with one [SteerInput] per player (in [players] order). */
+    fun update(
+        elapsedSeconds: Float,
+        inputs: List<SteerInput?>,
+    ): Int {
         events.clear()
         accumulator = min(accumulator + elapsedSeconds, GameConfig.STEP * GameConfig.MAX_STEPS_PER_FRAME)
         var steps = 0
         while (accumulator >= GameConfig.STEP) {
-            step(input)
+            step(inputs)
             accumulator -= GameConfig.STEP
             steps++
         }
@@ -163,6 +186,15 @@ class GameSim(
 
     /** One fixed 1/60 s step. */
     fun step(input: SteerInput? = null) {
+        oneInput[0] = input
+        step(oneInput)
+    }
+
+    /** One-player steering, reused so a step allocates nothing. */
+    private val oneInput = arrayListOf<SteerInput?>(null)
+
+    /** One fixed 1/60 s step, with one [SteerInput] per player (in [players] order). */
+    fun step(inputs: List<SteerInput?>) {
         val dt = GameConfig.STEP
         world.time += dt
         if (events.size > MAX_QUEUED_EVENTS) events.subList(0, MAX_QUEUED_EVENTS / 2).clear()
@@ -173,7 +205,7 @@ class GameSim(
             if (!s.alive) continue
             val desired =
                 when {
-                    s.isPlayer -> if (input != null && input.active) input.heading else Float.NaN
+                    s.isPlayer -> steeredHeading(s, inputs)
                     options.aiEnabled -> Ai.desiredHeading(this, s, dt)
                     else -> Float.NaN
                 }
@@ -196,6 +228,7 @@ class GameSim(
         world.snakes.removeAll { !it.alive && !it.isPlayer }
         spawner.update(this, dt)
         trackBiggest(dt)
+        together?.let { tickTogether(it, dt) }
     }
 
     fun addSnake(
@@ -208,7 +241,12 @@ class GameSim(
         length: Float,
     ): Snake {
         val s = Snake(nextId++, name, style, isPlayer, x, y, heading, length)
-        if (isPlayer) player = s else s.brain = AiBrain(rng)
+        if (isPlayer) {
+            playerList.add(s)
+            if (player == null) player = s
+        } else {
+            s.brain = AiBrain(rng)
+        }
         s.layStraightBody()
         world.snakes.add(s)
         return s
@@ -219,7 +257,8 @@ class GameSim(
 
     /** The longest an AI snake may grow right now. */
     fun aiMaxLength(): Float {
-        val ref = player?.length ?: GameConfig.PLAYER_START_LENGTH
+        // Two kids: measured against the bigger one, so there's still a snake to beat.
+        val ref = (if (together != null) playerList.maxOfOrNull { it.length } else player?.length) ?: GameConfig.PLAYER_START_LENGTH
         return ref * GameConfig.AI_MAX_LENGTH_RATIO
     }
 

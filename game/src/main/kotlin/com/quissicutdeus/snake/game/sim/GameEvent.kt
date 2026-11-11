@@ -64,11 +64,15 @@ sealed class GameEvent {
     data class BecameBiggest(
         override val x: Float,
         override val y: Float,
+        /** Which player (with two kids playing, it matters whose half shakes). */
+        val snakeId: Int = -1,
     ) : GameEvent()
 
     data class PlayerEaten(
         override val x: Float,
         override val y: Float,
+        /** Which player was gobbled (with two kids playing, it matters whose half shakes). */
+        val snakeId: Int = -1,
     ) : GameEvent()
 }
 

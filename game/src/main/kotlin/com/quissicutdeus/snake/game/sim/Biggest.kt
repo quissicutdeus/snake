@@ -13,13 +13,14 @@ internal fun GameSim.isBiggest(s: Snake): Boolean = world.snakes.none { it !== s
  * next one waits [GameConfig.BIGGEST_CHEER_GAP_SECONDS].
  */
 internal fun GameSim.trackBiggest(dt: Float) {
+    together?.let { return trackBiggestTogether(it, dt) }
     sinceBiggestCheer += dt
     val p = player?.takeIf { it.alive && !gameOver } ?: return
     val top = isBiggest(p)
     if (top) biggestSeconds += dt
     if (top && !playerOnTop && sinceBiggestCheer >= GameConfig.BIGGEST_CHEER_GAP_SECONDS) {
         sinceBiggestCheer = 0f
-        emit(GameEvent.BecameBiggest(p.x, p.y))
+        emit(GameEvent.BecameBiggest(p.x, p.y, p.id))
     }
     playerOnTop = top
 }

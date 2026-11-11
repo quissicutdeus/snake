@@ -138,9 +138,15 @@ internal fun GameSim.eatWhole(
     eater.sinceAte = 0f
     emit(GameEvent.AteSnake(eater.id, victim.x, victim.y, victim.style.bodyColor))
     if (victim.isPlayer) {
-        gameOver = true
-        eatenBy = Eater(eater.name, eater.style)
-        emit(GameEvent.PlayerEaten(victim.x, victim.y))
+        // Two kids: the gobbled one comes back soon, and the game goes on.
+        val t = together
+        if (t != null) {
+            kidGobbled(t, victim, eater)
+        } else {
+            gameOver = true
+            eatenBy = Eater(eater.name, eater.style)
+        }
+        emit(GameEvent.PlayerEaten(victim.x, victim.y, victim.id))
     }
 }
 

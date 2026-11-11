@@ -13,6 +13,10 @@ import kotlin.math.max
  * bigger; little kid mode keeps more smaller, see [com.quissicutdeus.snake.game.Difficulty]),
  * always spawning them off-screen, and quietly removes far-away
  * ones that no longer fit the mix.
+ *
+ * With two kids, "off-screen" and "far away" go for both halves of the
+ * screen, and the mix is made around the smaller kid, so the arena stays
+ * fair for whoever is behind.
  */
 class Spawner(
     private val targetCount: Int = GameConfig.AI_TARGET_COUNT,
@@ -37,7 +41,15 @@ class Spawner(
 
     private fun aiCount(sim: GameSim) = sim.world.snakes.count { it.alive && !it.isPlayer }
 
-    private fun referenceLength(sim: GameSim): Float = sim.player?.length ?: GameConfig.PLAYER_START_LENGTH
+    private fun referenceLength(sim: GameSim): Float {
+        val ref = if (sim.together != null) sim.players.filter { it.alive }.minOfOrNull { it.length } else sim.player?.length
+        return ref ?: GameConfig.PLAYER_START_LENGTH
+    }
+
+    /** The players whose screens new snakes must stay off (everyone alive). */
+    private fun watchers(sim: GameSim): List<Snake> = sim.players.filter { it.alive }
+
+    private fun offscreen(s: Snake) = GameConfig.offscreenDistance(s.radius)
 
     fun spawnOne(sim: GameSim): Snake? {
         val rng = sim.rng
@@ -71,38 +83,43 @@ class Spawner(
     private fun findSpot(sim: GameSim): Pair<Float, Float>? {
         val w = sim.world
         val margin = GameConfig.SPAWN_WALL_MARGIN
-        val player = sim.player
-        val minDist = if (player != null && player.alive) GameConfig.offscreenDistance(player.radius) else 0f
+        val watchers = watchers(sim)
+
+        fun unseen(
+            x: Float,
+            y: Float,
+        ) = watchers.all { dist(x, y, it.x, it.y) >= offscreen(it) }
         var bestX = 0f
         var bestY = 0f
         var bestScore = -1f
         repeat(SPAWN_TRIES) {
             val x = margin + sim.rng.nextFloat() * (w.width - 2 * margin)
             val y = margin + sim.rng.nextFloat() * (w.height - 2 * margin)
-            val toPlayer = if (player != null && player.alive) dist(x, y, player.x, player.y) else Float.MAX_VALUE
             val crowd = w.snakes.filter { it.alive }.minOfOrNull { dist(x, y, it.x, it.y) } ?: Float.MAX_VALUE
             val clearance = GameConfig.SPAWN_CLEARANCE
-            if (toPlayer >= minDist && crowd > clearance) return x to y
-            val score = minOf(toPlayer / max(minDist, 1f), crowd / clearance)
+            if (unseen(x, y) && crowd > clearance) return x to y
+            // How far out of sight (1 = just off the nearest kid's screen).
+            val hidden = watchers.minOfOrNull { dist(x, y, it.x, it.y) / max(offscreen(it), 1f) } ?: Float.MAX_VALUE
+            val score = minOf(hidden, crowd / clearance)
             if (score > bestScore) {
                 bestScore = score
                 bestX = x
                 bestY = y
             }
         }
-        // Arena too crowded or the player sees almost all of it: only accept off-screen spots.
-        return if (player == null || !player.alive || dist(bestX, bestY, player.x, player.y) >= minDist) bestX to bestY else null
+        // Arena too crowded or the players see almost all of it: only accept off-screen spots.
+        return if (unseen(bestX, bestY)) bestX to bestY else null
     }
 
     private fun despawnMisfits(sim: GameSim) {
-        val player = sim.player ?: return
-        if (!player.alive) return
-        val far = GameConfig.offscreenDistance(player.radius) + GameConfig.DESPAWN_EXTRA_DISTANCE
+        val watchers = watchers(sim)
+        if (watchers.isEmpty()) return
+        val ref = referenceLength(sim)
 
-        fun isFar(s: Snake) = dist(s.x, s.y, player.x, player.y) > far
+        fun isFar(s: Snake) = watchers.all { dist(s.x, s.y, it.x, it.y) > offscreen(it) + GameConfig.DESPAWN_EXTRA_DISTANCE }
         val ais = sim.world.snakes.filter { it.alive && !it.isPlayer }
         for (s in ais) {
-            val ratio = s.length / player.length
+            val ratio = s.length / ref
             if ((ratio > GameConfig.DESPAWN_MAX_RATIO || ratio < GameConfig.DESPAWN_MIN_RATIO) && isFar(s)) s.alive = false
         }
         // Keep the mix around the player: if the player shrank (or AIs grew) and
@@ -110,10 +127,10 @@ class Spawner(
         // The next spawn will then be a smaller snake.
         val alive = ais.filter { it.alive }
         if (alive.isEmpty()) return
-        val smaller = alive.count { compareSize(it.length, player.length) == SizeRelation.SMALLER }
+        val smaller = alive.count { compareSize(it.length, ref) == SizeRelation.SMALLER }
         if (smaller.toFloat() / alive.size < sim.difficulty.smallerFraction - GameConfig.MIX_TOLERANCE) {
             alive
-                .filter { compareSize(it.length, player.length) == SizeRelation.BIGGER && isFar(it) }
+                .filter { compareSize(it.length, ref) == SizeRelation.BIGGER && isFar(it) }
                 .maxByOrNull { it.length }
                 ?.alive = false
         }

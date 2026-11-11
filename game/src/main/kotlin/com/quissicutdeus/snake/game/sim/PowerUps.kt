@@ -3,6 +3,7 @@ package com.quissicutdeus.snake.game.sim
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.PowerType
 import com.quissicutdeus.snake.game.model.PowerUp
+import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.dist2
 
 /**
@@ -37,12 +38,18 @@ private fun GameSim.randomPowerUp(): PowerUp {
     )
 }
 
-/** True (and the power starts) if the player's head touches [p]. */
+/** True (and the power starts) if a player's head touches [p] (either kid's, with two). */
 private fun GameSim.pickedUp(p: PowerUp): Boolean {
-    val s = player?.takeIf { it.alive } ?: return false
-    val reach = s.radius + GameConfig.POWER_UP_RADIUS + GameConfig.EAT_MARGIN
-    if (dist2(s.x, s.y, p.x, p.y) > reach * reach) return false
+    val s = players.firstOrNull { it.alive && reaches(it, p) } ?: return false
     s.givePower(p.type)
     emit(GameEvent.PowerUpTaken(p.type, p.x, p.y))
     return true
+}
+
+private fun reaches(
+    s: Snake,
+    p: PowerUp,
+): Boolean {
+    val reach = s.radius + GameConfig.POWER_UP_RADIUS + GameConfig.EAT_MARGIN
+    return dist2(s.x, s.y, p.x, p.y) <= reach * reach
 }
