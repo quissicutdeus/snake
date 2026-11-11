@@ -7,6 +7,24 @@ permissions at all and works fully offline.
 Grow by eating food dots, gobble up smaller snakes, and steer clear of bigger
 ones. Steer with your thumb, anywhere on the screen.
 
+| Pick who's playing | Playing |
+| --- | --- |
+| ![Title screen with a snake for each kid](docs/screenshots/title.png) | ![A game in progress, with the biggest-snakes list](docs/screenshots/playing.png) |
+| **Dress up your snake** | **Game over** |
+| ![My Snake: colours, patterns, eyes and hats](docs/screenshots/my_snake.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
+
+![Every hat, including the holiday ones](docs/screenshots/hats.png)
+
+![Every pattern](docs/screenshots/patterns.png)
+
+A kid's first game shows a few tips along the bottom:
+
+![First-game tip: drag anywhere to steer](docs/screenshots/first_game_tip.png)
+
+These pictures come from the screenshot tests (`:app:testDebugUnitTest` writes
+app/build/screenshots, `:game:renderPreviews` writes game/build/previews),
+shrunk for the README. Swap in fresh ones when a screen changes.
+
 ## How to play
 
 - **Steer**: put your thumb down anywhere and drag it the way you want to go —
