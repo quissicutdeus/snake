@@ -1,12 +1,13 @@
 package com.quissicutdeus.snake.game.preview
 
+import com.quissicutdeus.snake.game.audio.Music
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.audio.Synth
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-/** Writes every sound effect as a WAV file into the directory given as the first argument. */
+/** Writes every sound effect, and the music loop, as a WAV file into the directory given as the first argument. */
 fun main(args: Array<String>) {
     val dir = File(args.firstOrNull() ?: "build/sounds")
     dir.mkdirs()
@@ -15,6 +16,9 @@ fun main(args: Array<String>) {
         file.writeBytes(wav(Synth.render(s)))
         println(file)
     }
+    val music = File(dir, "music_loop.wav")
+    music.writeBytes(wav(Music.render()))
+    println(music)
 }
 
 /** 16-bit mono PCM in a minimal RIFF/WAVE container. */

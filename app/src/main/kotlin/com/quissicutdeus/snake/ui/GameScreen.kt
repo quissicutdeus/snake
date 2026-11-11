@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -86,6 +87,22 @@ private class GameHolder(
     /** The finger steering [stick], so a second finger can't make it jump. */
     var stickPointer: PointerId? = null
     var overTimer = 0f
+
+    /** Whether the music was last told to play. */
+    private var musicOn = false
+
+    /** Music plays while the game is actually running, and stops when it's paused or over. */
+    fun updateMusic(
+        paused: Boolean,
+        onMusic: (Boolean) -> Unit,
+    ) {
+        val now = !paused && !sim.gameOver
+        if (now != musicOn) {
+            musicOn = now
+            onMusic(now)
+        }
+    }
+
     var reported = false
 }
 
@@ -109,6 +126,7 @@ fun GameScreen(
     settings: Settings = Settings(),
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
+    onMusic: (Boolean) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
@@ -124,12 +142,16 @@ fun GameScreen(
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val currentOnSound by rememberUpdatedState(onSound)
+    val currentOnMusic by rememberUpdatedState(onMusic)
     val buzzOn by rememberUpdatedState(settings.buzzOn)
     val view = LocalView.current
 
     // Pause when the app goes to the background; back button pauses / resumes.
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { paused = true }
     BackHandler { paused = !paused }
+
+    // Leaving the game (quit, game over, another app) always stops the music.
+    DisposableEffect(game) { onDispose { currentOnMusic(false) } }
 
     LaunchedEffect(game) {
         var last = 0L
@@ -144,6 +166,7 @@ fun GameScreen(
                     val p = game.sim.player!!
                     currentOnGameOver(GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), game.sim.eatenBy))
                 }
+                game.updateMusic(paused, currentOnMusic)
                 frame++
             }
         }

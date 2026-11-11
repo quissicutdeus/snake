@@ -131,6 +131,7 @@ private fun eaterAt(p: List<String>): Eater? {
 fun SniddleApp(
     storage: Storage,
     playSound: (Sound) -> Unit,
+    playMusic: (Boolean) -> Unit = {},
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage) }
@@ -164,6 +165,7 @@ fun SniddleApp(
                     settings = me.settings,
                     onSettingsChange = me::changeSettings,
                     onSound = { if (me.settings.soundOn) playSound(it) },
+                    onMusic = { playMusic(it && me.settings.soundOn && me.settings.musicOn) },
                 )
             }
 

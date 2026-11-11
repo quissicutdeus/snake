@@ -127,10 +127,10 @@ object Synth {
         s.tone(0.64f, 0.34f, 330f, 300f, Wave.SQUARE, 0.25f, decay = 3f)
     }
 
-    private enum class Wave { SINE, TRIANGLE, SQUARE }
+    internal enum class Wave { SINE, TRIANGLE, SQUARE }
 
     /** Mixes notes and noise bursts into a float buffer that grows as needed. */
-    private class Builder {
+    internal class Builder {
         private var buf = FloatArray(SAMPLE_RATE)
         private var length = 0
         private val rng = Random(SEED)
@@ -180,6 +180,13 @@ object Synth {
             level: Float,
             decay: Float,
         ) = mix(start, seconds) { _, t -> level * exp(-decay * t) * (rng.nextFloat() * 2f - 1f) }
+
+        /** Makes the sound exactly [seconds] long (silence after the last note), for a seamless loop. */
+        fun padTo(seconds: Float) {
+            val n = (seconds * SAMPLE_RATE).roundToInt()
+            if (n > buf.size) buf = buf.copyOf(n)
+            length = n
+        }
 
         /** Scaled so the loudest sample is [peakLevel] of full scale. */
         fun toPcm(peakLevel: Float): ShortArray {

@@ -1,5 +1,6 @@
 package com.quissicutdeus.snake.game
 
+import com.quissicutdeus.snake.game.audio.Music
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.audio.SoundCues
 import com.quissicutdeus.snake.game.audio.Synth
@@ -24,6 +25,17 @@ class SoundTest {
             // Starts and ends at (near) silence: no click.
             assertTrue(abs(pcm.first().toInt()) < 200 && abs(pcm.last().toInt()) < 200, "$s clicks")
         }
+    }
+
+    @Test fun theMusicLoopsCleanlyAndStaysUnderTheEffects() {
+        val pcm = Music.render()
+        assertEquals((Music.LOOP_SECONDS * Synth.SAMPLE_RATE).toInt(), pcm.size, "exactly one loop long")
+        // Starts from zero (fading in) and ends in silence, so going round the loop doesn't click.
+        assertTrue(abs(pcm.first().toInt()) < 50, "start ${pcm.first()}")
+        assertTrue(pcm.takeLast(200).all { abs(it.toInt()) < 50 }, "the end isn't silent")
+        val peak = pcm.maxOf { abs(it.toInt()) }
+        val pop = Synth.render(Sound.PELLET_MID).maxOf { abs(it.toInt()) }
+        assertTrue(peak in 1000..pop, "music peak $peak, food pop $pop")
     }
 
     @Test fun soundsComeOutTheSameEveryTime() {

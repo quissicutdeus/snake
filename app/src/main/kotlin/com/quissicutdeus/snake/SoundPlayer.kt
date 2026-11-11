@@ -3,12 +3,13 @@ package com.quissicutdeus.snake
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import com.quissicutdeus.snake.game.audio.Music
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.audio.Synth
 import kotlin.concurrent.thread
 
 /**
- * Plays the synthesized sound effects. Each sound gets its own preloaded
+ * Plays the synthesized sound effects and the looping background music. Each sound gets its own preloaded
  * ("static") AudioTrack, so starting one is instant and different sounds can
  * overlap. The samples are made on a background thread at startup; a sound
  * asked for before then is just skipped.
@@ -19,14 +20,40 @@ import kotlin.concurrent.thread
 class SoundPlayer {
     @Volatile private var tracks: Map<Sound, AudioTrack>? = null
 
+    @Volatile private var music: AudioTrack? = null
+
     @Volatile private var released = false
+
+    /** Whether music was asked for; remembered so a request before loading finishes still counts. */
+    @Volatile private var musicWanted = false
 
     init {
         thread(name = "sound-loader", isDaemon = true) {
             val loaded = Sound.entries.associateWith { track(Synth.render(it)) }
+            val loop =
+                track(Music.render()).also {
+                    it.setLoopPoints(0, (Music.LOOP_SECONDS * Synth.SAMPLE_RATE).toInt(), -1)
+                }
             synchronized(this) {
-                if (released) loaded.values.forEach { it.release() } else tracks = loaded
+                if (released) {
+                    loaded.values.forEach { it.release() }
+                    loop.release()
+                } else {
+                    tracks = loaded
+                    music = loop
+                    if (musicWanted) loop.play()
+                }
             }
+        }
+    }
+
+    /** Starts (from where it left off) or pauses the background music loop. */
+    fun music(on: Boolean) {
+        synchronized(this) {
+            musicWanted = on
+            val m = music ?: return
+            if (on && m.playState != AudioTrack.PLAYSTATE_PLAYING) m.play()
+            if (!on && m.playState == AudioTrack.PLAYSTATE_PLAYING) m.pause()
         }
     }
 
@@ -43,6 +70,8 @@ class SoundPlayer {
             released = true
             tracks?.values?.forEach { it.release() }
             tracks = null
+            music?.release()
+            music = null
         }
     }
 

@@ -44,8 +44,10 @@ your score:
 Sound effects go with the big moments (*nom-nom*, *boing*, *clang*, a
 power-up jingle, a sad *wah-wah* when you're gobbled) and a little pop for
 every food dot, rising in pitch when you gobble a row of them. The phone also
-gives a little buzz for the big moments. Two round buttons, on the title
-screen and the pause screen, turn the buzz and the sound off and on. The
+gives a little buzz for the big moments, and a bouncy tune plays during a
+game (it stops when you pause). Three round buttons, on the title screen and
+the pause screen, turn the music, the buzz and the sound off and on (sound
+off silences the music too). The
 phone's media volume sets how loud, and its own *Vibration & haptics* setting
 can switch the buzz off too.
 
@@ -117,7 +119,7 @@ Handy extras that need no phone:
 ```sh
 ./gradlew :game:renderPreviews   # PNGs of the real game art -> game/build/previews/
 ./gradlew :game:balanceReport    # bot-played games: survival time, score, size mix
-./gradlew :game:soundPreviews    # every sound effect as a WAV -> game/build/sounds/
+./gradlew :game:soundPreviews    # every effect + the music loop as WAVs -> game/build/sounds/
 ./gradlew :game:benchmark        # time per sim step and per frame, plus a checksum of the final world
 ```
 
@@ -170,8 +172,8 @@ game/   pure Kotlin, no Android: all rules, AI and drawing code
            FoodArt / PowerUpArt, SceneRenderer (arena) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),
            PosedSnake
-  audio/   Synth (makes every sound effect from scratch), SoundCues (which
-           sound when)
+  audio/   Synth (makes every sound effect from scratch), Music (the game
+           tune, same way), SoundCues (which sound when)
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
 app/    Android app (Jetpack Compose)
   ComposeCanvas2D   draws the game art on the Compose canvas
@@ -179,7 +181,8 @@ app/    Android app (Jetpack Compose)
                     Game over ("Who played?"), High scores, My Snake
   Storage           snake look, top-10 scores, names, settings (sound, buzz)
                     (SharedPreferences)
-  SoundPlayer       plays the effects (one preloaded AudioTrack each)
+  SoundPlayer       plays the effects (one preloaded AudioTrack each) and
+                    loops the music
 ```
 
 The simulation runs at a fixed 60 steps per second; drawing blends between

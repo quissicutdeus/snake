@@ -148,6 +148,19 @@ class ScreenshotTest {
         compose.onNodeWithText("Paused").assertDoesNotExist()
     }
 
+    @Test fun musicPlaysOnlyWhileTheGameRuns() {
+        val calls = mutableListOf<Boolean>()
+        show { GameScreen(key = 1, style = style, playerName = "You", onGameOver = {}, onQuit = {}, onMusic = { calls += it }) }
+        advance(300)
+        assertEquals(listOf(true), calls)
+        compose.onNodeWithContentDescription("Pause").performClick()
+        advance(100)
+        assertEquals(listOf(true, false), calls)
+        compose.onNodeWithText("Keep playing").performClick()
+        advance(100)
+        assertEquals(listOf(true, false, true), calls)
+    }
+
     private fun mySnakeScene(
         name: String,
         look: SnakeStyle = style,

@@ -25,9 +25,10 @@ import androidx.compose.ui.unit.dp
 data class Settings(
     val soundOn: Boolean = true,
     val buzzOn: Boolean = true,
+    val musicOn: Boolean = true,
 )
 
-/** Sound and buzz switches as two round picture buttons, for the title and pause screens. */
+/** Music, buzz and sound switches as round picture buttons, for the title and pause screens. */
 @Composable
 fun SettingsButtons(
     settings: Settings,
@@ -35,6 +36,11 @@ fun SettingsButtons(
     modifier: Modifier = Modifier,
 ) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        SwitchButton(
+            on = settings.musicOn,
+            name = "Music",
+            onToggle = { onChange(settings.copy(musicOn = !settings.musicOn)) },
+        ) { drawMusic(settings.musicOn) }
         SwitchButton(
             on = settings.buzzOn,
             name = "Buzz",
@@ -102,6 +108,28 @@ private fun DrawScope.drawSpeaker(on: Boolean) {
         drawLine(Color.White, Offset(w * 0.66f, h * 0.32f), Offset(w * 0.98f, h * 0.68f), stroke.width, StrokeCap.Round)
         drawLine(Color.White, Offset(w * 0.98f, h * 0.32f), Offset(w * 0.66f, h * 0.68f), stroke.width, StrokeCap.Round)
     }
+}
+
+/** Two joined music notes, crossed out when off. */
+private fun DrawScope.drawMusic(on: Boolean) {
+    val w = size.width
+    val h = size.height
+    val line = w * 0.09f
+    // Note heads, stems and the beam joining them.
+    for (x in floatArrayOf(0.28f, 0.78f)) {
+        drawOval(Color.White, topLeft = Offset(w * (x - 0.2f), h * 0.66f), size = Size(w * 0.26f, h * 0.2f))
+        drawLine(Color.White, Offset(w * (x + 0.04f), h * 0.76f), Offset(w * (x + 0.04f), h * 0.14f), line)
+    }
+    val beam =
+        Path().apply {
+            moveTo(w * 0.32f - line / 2, h * 0.14f)
+            lineTo(w * 0.82f + line / 2, h * 0.04f)
+            lineTo(w * 0.82f + line / 2, h * 0.2f)
+            lineTo(w * 0.32f - line / 2, h * 0.3f)
+            close()
+        }
+    drawPath(beam, Color.White)
+    if (!on) drawLine(Color.White, Offset(w * 0.05f, h * 0.05f), Offset(w * 0.95f, h * 0.95f), line, StrokeCap.Round)
 }
 
 /** A phone shaking (wiggle marks on both sides), or a phone crossed out. */

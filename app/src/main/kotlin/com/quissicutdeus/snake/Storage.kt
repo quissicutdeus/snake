@@ -29,12 +29,14 @@ class Storage(
         Settings(
             soundOn = prefs.getBoolean(KEY_SOUND, true),
             buzzOn = prefs.getBoolean(KEY_BUZZ, true),
+            musicOn = prefs.getBoolean(KEY_MUSIC, true),
         )
 
     fun saveSettings(settings: Settings) =
         prefs.edit {
             putBoolean(KEY_SOUND, settings.soundOn)
             putBoolean(KEY_BUZZ, settings.buzzOn)
+            putBoolean(KEY_MUSIC, settings.musicOn)
         }
 
     /** The name the player gave their snake ("" for none). */
@@ -69,6 +71,7 @@ class Storage(
         const val KEY_NAMES = "names"
         const val KEY_SOUND = "sound"
         const val KEY_BUZZ = "buzz"
+        const val KEY_MUSIC = "music"
         const val KEY_SNAKE_NAME = "snake_name"
         const val KEY_STATS = "stats"
     }
