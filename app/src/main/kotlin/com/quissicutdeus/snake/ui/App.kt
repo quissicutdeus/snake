@@ -139,10 +139,12 @@ fun SniddleApp(
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage) }
+    val notes = remember { DeviceNotes(storage) }
     var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun play() {
         me.dismissAlreadyEarned()
+        notes.dismissNews()
         round++
         screen = Screen.Play(round)
     }
@@ -152,6 +154,7 @@ fun SniddleApp(
             Screen.Title -> {
                 TitleRoute(
                     me,
+                    notes,
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onAddPlayer = { if (me.addPlayer()) screen = Screen.MySnake },
@@ -170,6 +173,7 @@ fun SniddleApp(
                     onSettingsChange = me::changeSettings,
                     onSound = { if (me.settings.soundOn) playSound(it) },
                     onMusic = { playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+                    showTips = remember(s.round) { tipsDue(me.stats) },
                 )
             }
 
@@ -205,11 +209,14 @@ fun SniddleApp(
 
 /**
  * The title screen, fed from the [Profile]: look, settings, who's playing
- * and any looks earned without a cheer.
+ * and any looks earned without a cheer. One card at a time: "What's new"
+ * first, then (once that's tapped away, or on the next visit) the
+ * already-earned looks.
  */
 @Composable
 private fun TitleRoute(
     me: Profile,
+    notes: DeviceNotes,
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
     onAddPlayer: () -> Unit,
@@ -224,7 +231,11 @@ private fun TitleRoute(
         onSettingsChange = me::changeSettings,
         content = {
             WhoIsPlaying(me.players, me.playerId, me::switchTo, onAddPlayer)
-            AlreadyEarnedBanner(me.style, me.alreadyEarned, me::alreadyEarnedShown, me::dismissAlreadyEarned)
+            if (notes.news.isNotEmpty()) {
+                WhatsNewCard(notes.news, notes::newsShown, notes::dismissNews)
+            } else {
+                AlreadyEarnedBanner(me.style, me.alreadyEarned, me::alreadyEarnedShown, me::dismissAlreadyEarned)
+            }
         },
     )
 }

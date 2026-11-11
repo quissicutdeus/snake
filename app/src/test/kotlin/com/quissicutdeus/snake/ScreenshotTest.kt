@@ -18,6 +18,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -44,6 +45,7 @@ import com.quissicutdeus.snake.ui.Settings
 import com.quissicutdeus.snake.ui.SniddleApp
 import com.quissicutdeus.snake.ui.SniddleTheme
 import com.quissicutdeus.snake.ui.TitleScreen
+import com.quissicutdeus.snake.ui.WhatsNew
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -54,38 +56,15 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Renders each screen with Robolectric's native graphics and saves PNGs to
  * app/build/screenshots, so layouts can be checked without a phone. Also a
  * smoke test: every screen must compose and run its frame loop without crashing.
  */
-@RunWith(RobolectricTestRunner::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [36], qualifiers = "w800dp-h360dp-land-xxhdpi")
-class ScreenshotTest {
-    @get:Rule val compose = createComposeRule()
-
-    private val style = SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES, eyes = Eyes.GOOGLY, hat = Hat.CROWN)
-    private val sirNoodles = SnakeStyle(color1 = 8, color2 = 2, pattern = Pattern.DOTS, eyes = Eyes.SUNGLASSES, hat = Hat.PARTY)
-    private lateinit var storage: Storage
-
-    @Before fun setUp() {
-        storage = Storage(RuntimeEnvironment.getApplication())
-        compose.mainClock.autoAdvance = false
-    }
-
-    private fun show(content: @androidx.compose.runtime.Composable () -> Unit) {
-        compose.setContent { SniddleTheme(content) }
-    }
-
-    private fun advance(ms: Long) {
-        // Step frame by frame so the game loops really run.
-        repeat((ms / 16).toInt()) { compose.mainClock.advanceTimeByFrame() }
-    }
-
-    private fun snap(name: String) = saveScreenshot(compose.onRoot().captureToImage().asAndroidBitmap(), name)
-
+class ScreenshotTest : ScreenTest() {
     // ---- Scenes (each rendered in several screen shapes below) ----
 
     private fun titleScene(
@@ -168,21 +147,6 @@ class ScreenshotTest {
     }
 
     // ---- Looks earned before unlocks existed: cheered once on the title screen ----
-
-    private val alreadyEarned = "You've already earned: Top hat and Stars!"
-
-    /** Ten old high scores, one past length 100: enough for the top hat and stars, never cheered. */
-    private fun seedOldScores() {
-        (1..10).forEach { i -> storage.addScore(ScoreEntry("Caleb", if (i == 1) 120 else 20 + i, 0, style, 1000L + i)) }
-    }
-
-    /** The whole app; bumping the returned counter starts it afresh (like the next launch). */
-    private fun launchApp(): androidx.compose.runtime.MutableIntState {
-        val launch = androidx.compose.runtime.mutableIntStateOf(0)
-        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, playSound = {}) } }
-        advance(800)
-        return launch
-    }
 
     private fun alreadyEarnedScene(name: String) {
         seedOldScores()
@@ -355,230 +319,6 @@ class ScreenshotTest {
         snap(name)
     }
 
-    // ---- Players: each kid has their own snake, name and unlocks ----
-
-    /** The saved data straight from the phone, as the version before players wrote it. */
-    private fun rawPrefs() = RuntimeEnvironment.getApplication().getSharedPreferences("snake_arena", Context.MODE_PRIVATE)
-
-    /** A phone updated from before players existed opens with its snake, name and unlocks just as they were. */
-    @Test fun anUpdatedPhoneKeepsItsSnake() {
-        // Written the way the version before players saved them: no prefix.
-        rawPrefs().edit(commit = true) {
-            putString("style", sirNoodles.encode())
-            putString("snake_name", "Caleb")
-            putString("stats", "120,11,10")
-            putStringSet("announced", setOf("Hat.TOP_HAT", "Pattern.STARS", "Eyes.HEARTS"))
-        }
-        storage.addScore(ScoreEntry("Caleb", 120, 4, sirNoodles, 1000L))
-        val me = Profile(storage)
-        assertEquals(sirNoodles, me.style)
-        assertEquals("Caleb", me.snakeName)
-        assertEquals(Stats(120, 11, 10), me.stats)
-        assertEquals(emptyList<Any>(), me.alreadyEarned)
-        launchApp()
-        compose.onNodeWithText("+ Add player").assertExists()
-        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
-        snap("players_upgraded")
-        compose.onNodeWithText("My Snake").performClick()
-        advance(500)
-        compose.onNode(hasSetTextAction() and hasText("Caleb")).assertExists()
-        compose.onNodeWithContentDescription("Top hat, locked", substring = true).assertDoesNotExist()
-    }
-
-    /**
-     * An updated phone whose unlock totals were never saved works them out from
-     * the high scores. A second kid's scores join that list, so they must not
-     * count for the first kid.
-     */
-    @Test fun aNewKidsScoresDontUnlockLooksForTheFirst() {
-        seedOldScores()
-        val first = storage.player(0).loadStats()
-        assertEquals(Stats(120, 0, 10), first)
-        val me = Profile(storage)
-        me.addPlayer(kotlin.random.Random(1))
-        assertEquals(1, me.playerId)
-        assertEquals(Stats(), me.stats)
-        assertEquals(emptyList<Any>(), me.alreadyEarned)
-        repeat(3) { storage.addScore(ScoreEntry("Mya", 250, 50, style, 5000L + it)) }
-        me.recordGame(GameResult(250, 50, style, 6000L), season = emptySet())
-        assertEquals(first, storage.player(0).loadStats())
-        // The first kid's keys are still the old, unprefixed ones.
-        assertEquals("120,0,10", rawPrefs().getString("stats", null))
-        assertEquals("250,50,1", rawPrefs().getString("p1.stats", null))
-    }
-
-    /** Three kids: Caleb (playing), Mya and one who hasn't named their snake yet. */
-    private fun seedThreePlayers() {
-        storage.player(0).apply {
-            saveStyle(style)
-            saveSnakeName("Caleb")
-            saveStats(Stats(bestScore = 120))
-            saveAnnounced(setOf("Hat.TOP_HAT"))
-        }
-        storage.addPlayer(sirNoodles)
-        storage.player(1).saveSnakeName("Mya")
-        storage.addPlayer(style.copy(color1 = 0, color2 = 10, pattern = Pattern.ZIGZAG, hat = Hat.NONE, eyes = Eyes.SLEEPY))
-    }
-
-    private fun playersScene(name: String) {
-        seedThreePlayers()
-        launchApp()
-        compose.onNodeWithContentDescription("Caleb is playing").assertExists()
-        compose.onNodeWithContentDescription("Switch to Player 3").assertExists()
-        compose.onNodeWithContentDescription("Add a player").assertExists()
-        snap(name)
-    }
-
-    @Test fun playersLandscape() = playersScene("players_landscape")
-
-    @Config(qualifiers = PORTRAIT)
-    @Test
-    fun playersPortrait() = playersScene("players_portrait")
-
-    @Config(qualifiers = TABLET)
-    @Test
-    fun playersTablet() = playersScene("players_tablet")
-
-    /** The fullest a short phone screen gets: four kids, and a cheer for looks already earned. */
-    @Test fun fourPlayersAndACheerLandscape() {
-        seedOldScores()
-        repeat(3) { storage.addPlayer(SnakeStyle.random(kotlin.random.Random(it))) }
-        storage.player(2).saveSnakeName("Maximilianus")
-        launchApp()
-        compose.onNodeWithText(alreadyEarned).assertExists()
-        compose.onNodeWithContentDescription("Add a player").assertDoesNotExist()
-        snap("players_full_landscape")
-    }
-
-    /** "+ Add player" makes a new kid with a fresh snake, opens My Snake to name it, then shows everyone. */
-    @Test fun addingAPlayer() {
-        storage.player(0).saveSnakeName("Caleb")
-        val launch = launchApp()
-        compose.onNodeWithText("+ Add player").performClick()
-        advance(500)
-        compose.onNodeWithText("Type a name").assertExists()
-        assertEquals(listOf(0, 1), storage.loadPlayers())
-        assertEquals(1, storage.loadCurrentPlayer())
-        snap("players_adding")
-        compose.onNodeWithText("Done").performClick()
-        advance(500)
-        compose.onNodeWithContentDescription("Player 2 is playing").assertExists()
-        compose.onNodeWithContentDescription("Switch to Caleb").assertExists()
-        snap("players_added")
-        // Still the new kid after the next launch.
-        launch.intValue++
-        advance(300)
-        compose.onNodeWithContentDescription("Player 2 is playing").assertExists()
-    }
-
-    /** Switching kids swaps the look and unlocks; each kid's game counts only for them. */
-    @Test fun switchingPlayerKeepsEachKidsOwn() {
-        seedThreePlayers()
-        launchApp()
-        compose.onNodeWithContentDescription("Switch to Mya").performClick()
-        advance(300)
-        compose.onNodeWithContentDescription("Mya is playing").assertExists()
-        assertEquals(1, storage.loadCurrentPlayer())
-        snap("players_switched")
-        compose.onNodeWithText("My Snake").performClick()
-        advance(500)
-        compose.onNode(hasSetTextAction() and hasText("Mya")).assertExists()
-        // Caleb's top hat is his: Mya hasn't reached length 100 yet.
-        compose.onNodeWithContentDescription("Top hat, locked", substring = true).assertExists()
-        val mya = Profile(storage)
-        assertEquals(sirNoodles, mya.style)
-        mya.recordGame(GameResult(40, 2, sirNoodles, 2000L), season = emptySet())
-        assertEquals(Stats(40, 2, 1), storage.player(1).loadStats())
-        assertEquals(Stats(bestScore = 120), storage.player(0).loadStats())
-        assertEquals(style, storage.player(0).loadStyle())
-    }
-
-    /** Removing a kid who isn't playing takes away only their snake; their high scores stay. */
-    @Test fun removingAPlayerWhoIsntPlaying() {
-        seedThreePlayers()
-        storage.addScore(ScoreEntry("Mya", 77, 1, sirNoodles, 3000L))
-        Profile(storage).removePlayer(1)
-        assertEquals(listOf(0, 2), storage.loadPlayers())
-        assertEquals(0, storage.loadCurrentPlayer())
-        assertEquals(emptyList<String>(), rawPrefs().all.keys.filter { it.startsWith("p1.") })
-        assertEquals(listOf("Mya"), storage.loadScores().map { it.name })
-        assertEquals(style, storage.player(0).loadStyle())
-        launchApp()
-        compose.onNodeWithContentDescription("Caleb is playing").assertExists()
-        compose.onNodeWithContentDescription("Switch to Mya").assertDoesNotExist()
-    }
-
-    /** Scrolls My Snake's choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
-    private fun scrollMySnakeToBottom() {
-        repeat(4) {
-            compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }
-            advance(1500)
-        }
-    }
-
-    /** The kid playing removes themselves from My Snake: asked first, "Keep" backs out, then home with someone else playing. */
-    @Test fun removingThePlayerWhoIsPlaying() {
-        seedThreePlayers()
-        launchApp()
-        compose.onNodeWithContentDescription("Switch to Mya").performClick()
-        advance(300)
-        compose.onNodeWithText("My Snake").performClick()
-        advance(500)
-        scrollMySnakeToBottom()
-        compose.onNodeWithText("Remove player").performClick()
-        advance(500)
-        compose.onNodeWithText("Remove Mya's snake?").assertExists()
-        saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), "players_remove_ask")
-        compose.onNodeWithText("Keep").performClick()
-        advance(500)
-        compose.onNodeWithText("Remove Mya's snake?").assertDoesNotExist()
-        assertEquals(listOf(0, 1, 2), storage.loadPlayers())
-
-        compose.onNodeWithText("Remove player").performClick()
-        advance(500)
-        compose.onNodeWithText("Yes, remove Mya").performClick()
-        advance(500)
-        compose.onNodeWithText("Play!").assertExists()
-        compose.onNodeWithContentDescription("Caleb is playing").assertExists()
-        compose.onNodeWithContentDescription("Switch to Mya").assertDoesNotExist()
-        assertEquals(listOf(0, 2), storage.loadPlayers())
-        assertEquals(0, storage.loadCurrentPlayer())
-        snap("players_removed")
-    }
-
-    /**
-     * The first kid (the old unprefixed keys) leaves: the others keep their own
-     * totals, and a kid who later gets the first kid's place starts from zero,
-     * not from the high-score list.
-     */
-    @Test fun removingTheFirstPlayerThenAddingANewOne() {
-        seedOldScores()
-        val me = Profile(storage)
-        me.addPlayer(kotlin.random.Random(1))
-        me.recordGame(GameResult(40, 2, style, 2000L), season = emptySet())
-        me.removePlayer(0)
-        assertEquals(listOf(1), storage.loadPlayers())
-        listOf("style", "snake_name", "stats", "announced").forEach { assertEquals(false, rawPrefs().contains(it)) }
-        assertEquals(Stats(40, 2, 1), storage.player(1).loadStats())
-        assertEquals(10, storage.loadScores().size)
-
-        me.addPlayer(kotlin.random.Random(2))
-        assertEquals(listOf(1, 0), storage.loadPlayers())
-        assertEquals(0, me.playerId)
-        assertEquals(Stats(), me.stats)
-        assertEquals(emptyList<Any>(), me.alreadyEarned)
-        // The last kid can't be removed.
-        me.removePlayer(1)
-        me.removePlayer(0)
-        assertEquals(listOf(0), storage.loadPlayers())
-        launchApp()
-        compose.onNodeWithText("+ Add player").assertExists()
-        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("My Snake").performClick()
-        advance(500)
-        compose.onNodeWithText("Remove player").assertDoesNotExist()
-    }
-
     // ---- Phone, landscape (the class default) ----
 
     @Test fun titleLandscape() = titleScene("title_landscape")
@@ -643,20 +383,4 @@ class ScreenshotTest {
     @Config(sdk = [30], qualifiers = NOTE_20)
     @Test
     fun playingOldestAndroid() = playScene("game_android11")
-
-    private companion object {
-        const val PORTRAIT = "w360dp-h780dp-port-xxhdpi"
-        const val TABLET = "w1280dp-h800dp-land-xhdpi"
-        const val NOTE_20 = "w915dp-h412dp-land-xxhdpi"
-    }
-}
-
-/** Saves [bitmap] as app/build/screenshots/<name>.png. */
-internal fun saveScreenshot(
-    bitmap: Bitmap,
-    name: String,
-) {
-    val dir = File(System.getProperty("screenshots.dir") ?: "build/screenshots")
-    dir.mkdirs()
-    File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
 }

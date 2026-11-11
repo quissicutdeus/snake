@@ -103,6 +103,11 @@ class Storage(
         saveNames(Scoreboard.rememberName(loadNames(), entry.name))
     }
 
+    /** The newest "What's new" entry shown on this device, or null if this install has never set it. */
+    var newsSeen: Int?
+        get() = if (prefs.contains(KEY_NEWS_SEEN)) prefs.getInt(KEY_NEWS_SEEN, 0) else null
+        set(value) = prefs.edit { if (value == null) remove(KEY_NEWS_SEEN) else putInt(KEY_NEWS_SEEN, value) }
+
     companion object {
         /** Kids per phone: enough for a family, and their pictures still fit in one row. */
         const val MAX_PLAYERS = 4
@@ -114,5 +119,6 @@ class Storage(
         private const val KEY_MUSIC = "music"
         private const val KEY_PLAYERS = "players"
         private const val KEY_PLAYER = "player"
+        private const val KEY_NEWS_SEEN = "news_seen"
     }
 }

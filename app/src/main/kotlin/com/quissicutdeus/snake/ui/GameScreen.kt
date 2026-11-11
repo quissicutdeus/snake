@@ -134,6 +134,9 @@ fun GameScreen(
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
     onMusic: (Boolean) -> Unit = {},
+    /** Show the first-game tips; [onTipsDone] runs once the kid has seen them all. */
+    showTips: Boolean = false,
+    onTipsDone: () -> Unit = {},
 ) {
     val density = LocalDensity.current
     val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
@@ -146,6 +149,8 @@ fun GameScreen(
         )
     val game = rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName) }
     var paused by rememberSaveable(key) { mutableStateOf(false) }
+    val tips = rememberFirstGameTips(key, showTips)
+    val currentOnTipsDone by rememberUpdatedState(onTipsDone)
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val currentOnSound by rememberUpdatedState(onSound)
@@ -168,6 +173,7 @@ fun GameScreen(
                 last = now
                 val buzz = step(game, dt, paused, currentOnSound)
                 if (buzz != null && buzzOn) view.performHapticFeedback(hapticFor(buzz))
+                tips?.onFrame(game.sim, game.stick, dt, paused, currentOnTipsDone)
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     currentOnGameOver(game.result())
@@ -190,6 +196,7 @@ fun GameScreen(
                         .padding(top = 10.dp),
             )
         }
+        TipCard(tips, hidden = paused || game.sim.gameOver, style, Modifier.align(Alignment.BottomCenter))
         if (paused) {
             PauseOverlay(settings, onSettingsChange, onResume = { paused = false }, onQuit = onQuit)
         }

@@ -53,6 +53,13 @@ off silences the music too). The
 phone's media volume sets how loud, and its own *Vibration & haptics* setting
 can switch the buzz off too.
 
+Each kid's first game shows three quick tips along the bottom (steer, eat
+dots, bigger snakes bite), each moving on by itself when the kid does the
+thing. Kids who have finished a game, including everyone who played before
+this update, never see them. After
+an update, the title screen shows a **New!** card once, listing what's new
+(tap it or Play to put it away; a fresh install skips it).
+
 Switching to another app pauses the game. If the phone closes Sniddle in the
 background while you're away, the game is still there when you come back:
 paused, with your snake just as long, the same score and hearts. The other
@@ -211,7 +218,10 @@ app/    Android app (Jetpack Compose)
   Storage           shared: top-10 scores, names, settings, who's playing;
                     SavedPlayer: each kid's look, name, unlock totals
                     (SharedPreferences; the first kid keeps the keys from
-                    before players existed, so updates lose nothing)
+                    before players existed, so updates lose nothing);
+                    also the newest news seen, per phone
+  ui/FirstGameTips  the first-game tips; ui/News the "New!" lines (add
+                    one per release with the next number)
   SoundPlayer       plays the effects (one preloaded AudioTrack each) and
                     loops the music
 ```
