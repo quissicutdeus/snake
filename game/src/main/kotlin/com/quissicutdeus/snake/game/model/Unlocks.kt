@@ -2,26 +2,40 @@ package com.quissicutdeus.snake.game.model
 
 import kotlin.random.Random
 
-/** Lifetime totals on this device, which unlock new looks. */
+/** Lifetime totals on this device, and the holidays played on, which unlock new looks. */
 data class Stats(
     val bestScore: Int = 0,
     val snakesEaten: Int = 0,
     val gamesPlayed: Int = 0,
+    val holidays: Set<Holiday> = emptySet(),
 ) {
-    /** Stats after one more finished game. */
+    /** Stats after one more finished game, played while [season]'s holidays were on. */
     fun after(
         score: Int,
         eaten: Int,
-    ) = Stats(maxOf(bestScore, score), snakesEaten + eaten, gamesPlayed + 1)
+        season: Set<Holiday> = emptySet(),
+    ) = Stats(maxOf(bestScore, score), snakesEaten + eaten, gamesPlayed + 1, holidays + season)
 
-    fun encode(): String = "$bestScore,$snakesEaten,$gamesPlayed"
+    /** "120,11,10", plus ",CHRISTMAS+HALLOWEEN" once any holidays have been played on. */
+    fun encode(): String {
+        val base = "$bestScore,$snakesEaten,$gamesPlayed"
+        return if (holidays.isEmpty()) base else base + "," + holidays.joinToString("+") { it.name }
+    }
 
     companion object {
-        /** Reads [encode] output; null if unreadable. */
+        /** Reads [encode] output; null if unreadable. Unknown holiday names are skipped. */
         fun decode(text: String?): Stats? {
-            val p = text?.split(',')?.map { it.trim().toIntOrNull() ?: return null } ?: return null
-            if (p.size != FIELDS || p.any { it < 0 }) return null
-            return Stats(p[0], p[1], p[2])
+            val p = text?.split(',') ?: return null
+            if (p.size != FIELDS && p.size != FIELDS + 1) return null
+            val n = p.take(FIELDS).map { it.trim().toIntOrNull() ?: return null }
+            if (n.any { it < 0 }) return null
+            val names =
+                p
+                    .getOrNull(FIELDS)
+                    ?.split('+')
+                    ?.map { it.trim() }
+                    .orEmpty()
+            return Stats(n[0], n[1], n[2], Holiday.entries.filterTo(LinkedHashSet()) { it.name in names })
         }
 
         private const val FIELDS = 3
@@ -35,6 +49,9 @@ enum class GoalKind(
     LENGTH("Reach length %d"),
     SNAKES("Eat %d snakes"),
     GAMES("Play %d games"),
+
+    /** Play one game while a holiday is on; the holiday says when. */
+    HOLIDAY("%d holiday game"),
     ;
 
     fun describe(amount: Int) = text.format(amount)
@@ -46,7 +63,13 @@ data class Unlock(
     private val kind: GoalKind,
     private val amount: Int,
 ) {
-    val goal: String get() = kind.describe(amount)
+    /** The holiday this look belongs to, for a [GoalKind.HOLIDAY] goal. */
+    private val holiday: Holiday? = if (kind == GoalKind.HOLIDAY) checkNotNull(Holiday.of(item)) { "$item isn't a holiday look" } else null
+
+    /** A holiday look, earned by the date rather than by playing a lot. */
+    val isHoliday: Boolean get() = holiday != null
+
+    val goal: String get() = holiday?.goal ?: kind.describe(amount)
 
     /** The number the goal asks for (100 for "Reach length 100"). */
     val target: Int get() = amount
@@ -59,6 +82,7 @@ data class Unlock(
                 GoalKind.LENGTH -> stats.bestScore
                 GoalKind.SNAKES -> stats.snakesEaten
                 GoalKind.GAMES -> stats.gamesPlayed
+                GoalKind.HOLIDAY -> if (holiday in stats.holidays) amount else 0
             },
         )
 
@@ -69,6 +93,7 @@ data class Unlock(
         val left = amount - progress(stats)
         return when {
             left <= 0 -> "You did it!"
+            holiday != null -> holiday.hint
             kind == GoalKind.LENGTH -> "$left more length to go!"
             kind == GoalKind.SNAKES -> "Eat $left more ${if (left == 1) "snake" else "snakes"}!"
             else -> "$left more ${if (left == 1) "game" else "games"} to go!"
@@ -88,7 +113,7 @@ object Unlocks {
             Unlock(Eyes.HEARTS, GoalKind.SNAKES, 10),
             Unlock(Hat.WIZARD, GoalKind.LENGTH, 200),
             Unlock(Hat.HORNS, GoalKind.SNAKES, 40),
-        )
+        ) + Holiday.entries.flatMap { h -> h.looks.map { Unlock(it, GoalKind.HOLIDAY, 1) } }
 
     /** The unlock rule for [item], or null if it's always available. */
     fun ruleFor(item: Enum<*>): Unlock? = ALL.firstOrNull { it.item == item }

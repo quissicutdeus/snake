@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.dist
@@ -56,7 +57,7 @@ class Spawner(
         val heading = outward + (rng.nextFloat() - 0.5f) * 1.2f
         return sim.addSnake(
             name = sim.pickAiName(),
-            style = SnakeStyle.random(rng),
+            style = Holiday.dressUp(SnakeStyle.random(rng), rng, sim.options.season),
             isPlayer = false,
             x = x,
             y = y,

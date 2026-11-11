@@ -63,6 +63,7 @@ import com.quissicutdeus.snake.game.render.HudInsets
 import com.quissicutdeus.snake.game.render.SceneRenderer
 import com.quissicutdeus.snake.game.sim.GameSim
 import com.quissicutdeus.snake.game.sim.SavedRun
+import com.quissicutdeus.snake.game.sim.SimOptions
 import com.quissicutdeus.snake.game.sim.SteerInput
 import com.quissicutdeus.snake.game.sim.Thumbstick
 
@@ -73,7 +74,7 @@ private class GameHolder(
     resume: SavedRun? = null,
     playerName: String = "You",
 ) {
-    val sim = GameSim(playerStyle = style, playerName = playerName, resume = resume)
+    val sim = GameSim(playerStyle = style, playerName = playerName, options = SimOptions(season = holidaysToday()), resume = resume)
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()

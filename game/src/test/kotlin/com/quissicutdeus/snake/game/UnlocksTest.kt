@@ -17,9 +17,9 @@ class UnlocksTest {
         val fresh = Stats()
         for (h in listOf(Hat.NONE, Hat.CROWN, Hat.PARTY, Hat.BOW)) assertTrue(Unlocks.isUnlocked(h, fresh))
         for (e in listOf(Eyes.GOOGLY, Eyes.SLEEPY, Eyes.SUNGLASSES)) assertTrue(Unlocks.isUnlocked(e, fresh))
-        for (p in Pattern.entries - Pattern.STARS) assertTrue(Unlocks.isUnlocked(p, fresh))
+        for (p in Pattern.entries - Pattern.STARS - Pattern.FLAG) assertTrue(Unlocks.isUnlocked(p, fresh))
         val rules = (Hat.entries + Eyes.entries + Pattern.entries).mapNotNull { Unlocks.ruleFor(it) }
-        assertEquals(5, rules.size)
+        assertEquals(10, rules.size)
         assertFalse(rules.any { Unlocks.isUnlocked(it.item, fresh) })
     }
 

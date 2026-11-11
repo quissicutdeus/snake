@@ -5,7 +5,7 @@ import com.quissicutdeus.snake.game.model.PI_F
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import kotlin.math.max
 
-/** Hats drawn on top of a snake's head: crown, party hat, bow, top hat, wizard hat or Viking horns. */
+/** Hats drawn on top of a snake's head: crown, party hat, bow, top hat, wizard hat or Viking horns, and the [HolidayHatArt] ones. */
 object HatArt {
     private val path = Path2D()
 
@@ -45,6 +45,22 @@ object HatArt {
 
             Hat.HORNS -> {
                 drawHorns(c, x, y, hr, wash)
+            }
+
+            Hat.SANTA -> {
+                HolidayHatArt.drawSanta(c, x, y, hr, wash)
+            }
+
+            Hat.TURKEY -> {
+                HolidayHatArt.drawTurkey(c, x, y, hr, wash)
+            }
+
+            Hat.GHOST -> {
+                HolidayHatArt.drawGhost(c, x, y, hr, wash)
+            }
+
+            Hat.STAR_HAT -> {
+                HolidayHatArt.drawStarHat(c, x, y, hr, wash)
             }
         }
     }

@@ -53,7 +53,7 @@ import kotlin.math.sin
 
 /** AI snakes roaming the arena behind the menu, with a slowly drifting camera. */
 private class AttractMode {
-    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420))
+    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420, season = holidaysToday()))
     val camera = Camera()
     val fx = Fx()
     val adapter = ComposeCanvas2D()

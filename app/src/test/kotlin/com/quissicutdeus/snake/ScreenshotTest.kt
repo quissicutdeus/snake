@@ -22,6 +22,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
+import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
@@ -220,7 +221,7 @@ class ScreenshotTest {
 
     @Test fun looksCheeredAtGameOverAreNotAnnouncedAgain() {
         storage.addScore(ScoreEntry("Caleb", 90, 0, style, 1000L))
-        val unlocked = Profile(storage).recordGame(GameResult(120, 0, style, 2000L))
+        val unlocked = Profile(storage).recordGame(GameResult(120, 0, style, 2000L), season = emptySet())
         assertEquals(listOf<Any>(Hat.TOP_HAT), unlocked.map { it.item })
         assertEquals(emptyList<Any>(), Profile(storage).alreadyEarned.map { it.item })
         launchApp()
@@ -293,6 +294,33 @@ class ScreenshotTest {
         compose.onNodeWithText("Eat 2 more snakes!").assertDoesNotExist()
         compose.onNodeWithText("Eat 10 snakes").assertExists()
         assertEquals(emptyList<SnakeStyle>(), picked)
+    }
+
+    /** A game in November earns the turkey hat for good; Santa waits for December, with no progress bar. */
+    @Test fun holidayLooksComeFromPlayingOnTheDay() {
+        val profile = Profile(storage)
+        val unlocked = profile.recordGame(GameResult(20, 0, style, 2000L), season = setOf(Holiday.THANKSGIVING))
+        assertEquals(listOf<Any>(Hat.TURKEY), unlocked.map { it.item })
+        show {
+            MySnakeScreen(
+                style,
+                {},
+                {},
+                name = "Caleb",
+                onNameChange = {},
+                knownNames = listOf("Caleb"),
+                stats = profile.stats,
+            )
+        }
+        advance(800)
+        compose.onNodeWithText("Turkey hat").assertExists()
+        compose.onNodeWithContentDescription("Santa hat, locked: Play in December. Ho ho ho! Back in December!").assertExists()
+        compose.onNodeWithText("0/1").assertDoesNotExist()
+        repeat(2) {
+            compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }
+            advance(1500)
+        }
+        snap("my_snake_holidays")
     }
 
     private fun gameOverScene(name: String) {

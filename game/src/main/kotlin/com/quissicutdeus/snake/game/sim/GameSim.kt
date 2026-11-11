@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.GameConfig
 import com.quissicutdeus.snake.game.model.Food
+import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.Pellet
 import com.quissicutdeus.snake.game.model.Snake
 import com.quissicutdeus.snake.game.model.SnakeStyle
@@ -30,6 +31,8 @@ data class SimOptions(
     val aiEnabled: Boolean = true,
     /** When false, no power-ups appear by themselves (for rule tests). */
     val powerUps: Boolean = true,
+    /** Holidays that are on today: computer snakes dress up for them. */
+    val season: Set<Holiday> = emptySet(),
 )
 
 /**

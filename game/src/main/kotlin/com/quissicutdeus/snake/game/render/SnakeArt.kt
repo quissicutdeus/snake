@@ -47,7 +47,11 @@ object SnakeArt {
             Pattern.STRIPES -> if (band(d, r * 1.4f) % 2 == 0) style.bodyColor else style.patternColor
             Pattern.CHECKER -> if (band(d, r * 1.3f) % 2 == 0) style.bodyColor else style.patternColor
             Pattern.RAINBOW -> Colors.hsv(d / (r * 9f), 0.68f, 1f)
+            Pattern.FLAG -> FLAG_COLORS[band(d, r * 1.4f).mod(FLAG_COLORS.size)]
         }
+
+    /** Red, white and blue bands, whatever colours were picked. */
+    private val FLAG_COLORS = intArrayOf(Colors.FLAG_RED, Colors.WHITE, Colors.FLAG_BLUE)
 
     private fun band(
         d: Float,
@@ -57,7 +61,12 @@ object SnakeArt {
     fun outlineColor(
         style: SnakeStyle,
         mood: Mood,
-    ): Int = if (mood == Mood.ANGRY) Colors.ANGRY_RED else Colors.darken(style.bodyColor, 0.45f)
+    ): Int =
+        when {
+            mood == Mood.ANGRY -> Colors.ANGRY_RED
+            style.pattern == Pattern.FLAG -> Colors.darken(Colors.FLAG_BLUE, 0.45f)
+            else -> Colors.darken(style.bodyColor, 0.45f)
+        }
 
     /**
      * @param blink draw washed-out (the "hurt, can't be hurt again" flashing frame)

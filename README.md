@@ -73,6 +73,18 @@ cheers when you get one:
 | Viking horns | Eat 40 snakes (all games together) |
 
 Games played before this existed count too (from the high-score list).
+
+Holiday looks come from playing one game while the holiday is on, and then
+they stay for good. Until then they say when to come back. While a holiday
+is on, lots of the computer snakes dress up for it too:
+
+| Look | When |
+| --- | --- |
+| Ghost hat | October |
+| Turkey hat | November |
+| Santa hat | December |
+| Red, white & blue pattern and Star hat | Presidents' Day (12–22 Feb), Memorial Day to the 4th of July (20 May–10 Jul), Veterans Day (8–14 Nov) |
+
 The game-over screen also shows who gobbled you, and how long you were the
 biggest snake.
 

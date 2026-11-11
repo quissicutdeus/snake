@@ -267,7 +267,7 @@ private fun <T> Choices(
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
             val rule = Unlocks.ruleFor(option)?.takeUnless { it.reachedBy(stats) }
-            val lock = rule?.let { Lock(it.goal, it.progress(stats), it.target, it.hint(stats)) }
+            val lock = rule?.let { Lock(it.goal, it.progress(stats), it.target, it.hint(stats), showBar = !it.isHoliday) }
             Pill(option.label, option == selected, lock, { onPick(option) })
         }
     }
@@ -288,13 +288,15 @@ private fun NameChoices(
 
 /**
  * A locked look's goal ("Play 10 games"), how far along it is ([have] of
- * [need]), and what's left to do ([hint], "3 more games to go!").
+ * [need]), and what's left to do ([hint], "3 more games to go!"). Holiday
+ * looks have no bar, since waiting for December isn't progress.
  */
 private class Lock(
     val goal: String,
     val have: Int,
     val need: Int,
     val hint: String,
+    val showBar: Boolean = true,
 )
 
 /** How long a tapped locked look shows its hint, and how long it wiggles for. */
@@ -382,7 +384,7 @@ private fun LockedPill(
                 Text(lock.goal, Modifier.alpha(if (hinting) 0f else 1f).hideIf(hinting), style = goal, color = grey)
                 Text(lock.hint, Modifier.alpha(if (hinting) 1f else 0f).hideIf(!hinting), style = hint, color = KidColors.Berry)
             }
-            ProgressBar(lock.have, lock.need)
+            if (lock.showBar) ProgressBar(lock.have, lock.need)
         }
     }
 }

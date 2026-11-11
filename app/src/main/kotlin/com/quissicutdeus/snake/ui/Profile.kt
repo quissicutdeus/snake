@@ -4,10 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.Storage
+import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Stats
 import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.model.Unlocks
+import java.time.LocalDate
 
 /**
  * The player's saved choices as Compose state: reading one recomposes what
@@ -39,10 +41,16 @@ class Profile(
     )
         private set
 
-    /** Counts a finished game. Returns the looks it unlocked (usually none), which the game-over screen cheers. */
-    fun recordGame(result: GameResult): List<Unlock> {
+    /**
+     * Counts a finished game, played while [season]'s holidays were on.
+     * Returns the looks it unlocked (usually none), which the game-over screen cheers.
+     */
+    fun recordGame(
+        result: GameResult,
+        season: Set<Holiday> = holidaysToday(),
+    ): List<Unlock> {
         val before = stats
-        stats = before.after(result.score, result.snakesEaten)
+        stats = before.after(result.score, result.snakesEaten, season)
         storage.saveStats(stats)
         return Unlocks.newlyUnlocked(before, stats).also(::announce)
     }
@@ -77,3 +85,6 @@ class Profile(
         storage.saveSnakeName(new)
     }
 }
+
+/** The holidays that are on today, by this phone's calendar. */
+fun holidaysToday(): Set<Holiday> = LocalDate.now().let { Holiday.on(it.monthValue, it.dayOfMonth) }

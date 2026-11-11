@@ -91,6 +91,8 @@ object Colors {
     const val FENCE_DARK = 0xFF7F522A.toInt()
     const val HEART = 0xFFFF3D5A.toInt()
     const val GOLD = 0xFFFFC928.toInt()
+    const val FLAG_RED = 0xFFE53935.toInt()
+    const val FLAG_BLUE = 0xFF1E3A8A.toInt()
 }
 
 /** Left and right: -1 and +1 (pairs of eyes, bow loops). */
