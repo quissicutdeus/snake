@@ -140,7 +140,7 @@ fun GameScreen(
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     val p = game.sim.player!!
-                    currentOnGameOver(GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis()))
+                    currentOnGameOver(GameResult(p.score, p.snakesEaten, p.style, System.currentTimeMillis(), game.sim.eatenBy))
                 }
                 frame++
             }

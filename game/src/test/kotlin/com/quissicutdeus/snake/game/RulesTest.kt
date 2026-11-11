@@ -167,6 +167,8 @@ class RulesTest {
         assertEquals(0, kid.hearts)
         assertEquals(600f + 300f * GameConfig.EAT_WHOLE_GAIN, big.length, 0.01f)
         assertTrue(sim.events.any { it is GameEvent.PlayerEaten })
+        assertEquals(big.name, sim.eatenBy?.name, "the game remembers who did it")
+        assertEquals(big.style, sim.eatenBy?.style)
     }
 
     @Test fun sameSizeSnakesBothBounceWithoutDamage() {

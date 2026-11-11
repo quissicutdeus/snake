@@ -105,7 +105,19 @@ private fun GameOverStats(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        ShadowText("Gobbled up!", MaterialTheme.typography.displayLarge)
+        val eater = result.eater
+        if (eater == null) {
+            ShadowText("Gobbled up!", MaterialTheme.typography.displayLarge)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SnakePicture(eater.style, Modifier.size(72.dp), mood = Mood.ANGRY)
+                ShadowText(
+                    "${eater.name} gobbled you!",
+                    MaterialTheme.typography.headlineLarge,
+                    Modifier.padding(start = 10.dp),
+                )
+            }
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             SnakePicture(result.style, Modifier.size(96.dp), mood = Mood.SCARED)
             Column(Modifier.padding(start = 12.dp)) {

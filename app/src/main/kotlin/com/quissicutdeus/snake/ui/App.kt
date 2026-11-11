@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.Storage
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.sim.Eater
 
 /** Result of one game, handed from the play screen to the game-over screen. */
 data class GameResult(
@@ -19,6 +20,8 @@ data class GameResult(
     val snakesEaten: Int,
     val style: SnakeStyle,
     val timestamp: Long,
+    /** The snake that ate the player (null if unknown, e.g. a game saved by an older version). */
+    val eater: Eater? = null,
 )
 
 sealed interface Screen {
@@ -44,18 +47,36 @@ private val ScreenSaver: Saver<Screen, String> =
     Saver(
         save = { screen ->
             when (screen) {
-                Screen.Title -> "title"
-                is Screen.Play -> "play|${screen.round}"
-                is Screen.GameOver -> with(screen.result) { "over|$score|$snakesEaten|$timestamp|${style.encode()}" }
-                Screen.MySnake -> "mysnake"
-                is Screen.HighScores -> "scores|${screen.highlight ?: ""}"
+                Screen.Title -> {
+                    "title"
+                }
+
+                is Screen.Play -> {
+                    "play|${screen.round}"
+                }
+
+                is Screen.GameOver -> {
+                    with(screen.result) {
+                        val by = eater?.let { "|${it.style.encode()}|${it.name}" } ?: ""
+                        "over|$score|$snakesEaten|$timestamp|${style.encode()}$by"
+                    }
+                }
+
+                Screen.MySnake -> {
+                    "mysnake"
+                }
+
+                is Screen.HighScores -> {
+                    "scores|${screen.highlight ?: ""}"
+                }
             }
         },
         restore = { text -> decodeScreen(text) },
     )
 
 private fun decodeScreen(text: String): Screen? {
-    val p = text.split('|')
+    // The eater's name is last and may contain '|', so split at most 7 ways.
+    val p = text.split('|', limit = 7)
     return when (p[0]) {
         "title" -> {
             Screen.Title
@@ -72,7 +93,7 @@ private fun decodeScreen(text: String): Screen? {
             if (score == null || eaten == null || time == null) {
                 null
             } else {
-                Screen.GameOver(GameResult(score, eaten, SnakeStyle.decode(p.getOrNull(4)), time))
+                Screen.GameOver(GameResult(score, eaten, SnakeStyle.decode(p.getOrNull(4)), time, eaterAt(p)))
             }
         }
 
@@ -88,6 +109,13 @@ private fun decodeScreen(text: String): Screen? {
             null
         }
     }
+}
+
+/** The eater saved after the result (fields 5 and 6), if any: older saves have none. */
+private fun eaterAt(p: List<String>): Eater? {
+    val style = p.getOrNull(5) ?: return null
+    val name = p.getOrNull(6) ?: return null
+    return Eater(name, SnakeStyle.decode(style))
 }
 
 /** Top level: a tiny screen switcher (no navigation library needed). [playSound] plays an effect. */

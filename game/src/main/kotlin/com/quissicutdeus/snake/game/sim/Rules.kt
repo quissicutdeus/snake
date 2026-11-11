@@ -139,6 +139,7 @@ internal fun GameSim.eatWhole(
     emit(GameEvent.AteSnake(eater.id, victim.x, victim.y, victim.style.bodyColor))
     if (victim.isPlayer) {
         gameOver = true
+        eatenBy = Eater(eater.name, eater.style)
         emit(GameEvent.PlayerEaten(victim.x, victim.y))
     }
 }

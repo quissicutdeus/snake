@@ -13,6 +13,12 @@ import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+/** The snake that ate the player, as it looked then. */
+data class Eater(
+    val name: String,
+    val style: SnakeStyle,
+)
+
 /** Knobs mostly useful for tests and previews. */
 data class SimOptions(
     val width: Float = GameConfig.ARENA_WIDTH,
@@ -59,6 +65,10 @@ class GameSim(
 
     /** True once the player has been eaten. The world keeps running behind the game-over screen. */
     var gameOver = false
+        internal set
+
+    /** Who ate the player (kept from that moment: the eater may be gone by the time the game-over screen shows). */
+    var eatenBy: Eater? = null
         internal set
 
     init {

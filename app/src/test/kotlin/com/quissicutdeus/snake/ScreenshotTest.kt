@@ -20,6 +20,7 @@ import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.sim.Eater
 import com.quissicutdeus.snake.ui.GameOverScreen
 import com.quissicutdeus.snake.ui.GameResult
 import com.quissicutdeus.snake.ui.GameScreen
@@ -52,6 +53,7 @@ class ScreenshotTest {
     @get:Rule val compose = createComposeRule()
 
     private val style = SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES, eyes = Eyes.GOOGLY, hat = Hat.CROWN)
+    private val sirNoodles = SnakeStyle(color1 = 8, color2 = 2, pattern = Pattern.DOTS, eyes = Eyes.SUNGLASSES, hat = Hat.PARTY)
     private lateinit var storage: Storage
 
     @Before fun setUp() {
@@ -154,7 +156,7 @@ class ScreenshotTest {
 
     private fun gameOverScene(name: String) {
         storage.saveNames(listOf("Caleb", "Mya", "Dad"))
-        show { GameOverScreen(GameResult(87, 3, style, 1000L), storage, {}, {}, {}) }
+        show { GameOverScreen(GameResult(87, 3, style, 1000L, Eater("Sir Noodles", sirNoodles)), storage, {}, {}, {}) }
         advance(500)
         snap(name)
     }
