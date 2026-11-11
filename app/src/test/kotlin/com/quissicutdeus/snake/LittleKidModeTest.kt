@@ -1,13 +1,17 @@
 package com.quissicutdeus.snake
 
+import android.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.junit4.StateRestorationTester
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.core.graphics.get
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.ui.GameOverScreen
@@ -85,6 +89,7 @@ class LittleKidModeTest : ScreenTest() {
         show { GameScreen(key = 1, style = sirNoodles, playerName = "Bea", onGameOver = {}, onQuit = {}, littleKid = true) }
         advance(1500)
         snap("little_kid_game")
+        assertTrue("a 4th heart in the corner", fourthHeartShows())
     }
 
     /**
@@ -96,8 +101,8 @@ class LittleKidModeTest : ScreenTest() {
         seedTwoKids()
         storage.saveCurrentPlayer(1)
         storage.player(1).saveLittleKid(true)
-        val restore = StateRestorationTester(compose)
-        restore.setContent { SniddleApp(storage, playSound = {}) }
+        val app = SavedAndRestored()
+        compose.setContent { Restorable(app) { SniddleApp(storage, playSound = {}) } }
         advance(100)
         compose.onNodeWithText("Play!").performClick()
         advance(1000)
@@ -105,11 +110,27 @@ class LittleKidModeTest : ScreenTest() {
         advance(100)
         storage.player(1).saveLittleKid(false)
 
-        restore.emulateSavedInstanceStateRestore()
-        advance(500)
+        app.closeAndReopen { advance(100) }
         compose.onNodeWithText("Keep playing").performClick()
         advance(500)
         snap("little_kid_game_after_restore")
+        assertTrue("a 4th heart in the corner", fourthHeartShows())
+    }
+
+    /** The middle of the 4th heart slot is heart red (a normal game has no 4th slot: that's grass). */
+    private fun fourthHeartShows(): Boolean {
+        val pixel =
+            compose
+                .onRoot()
+                .captureToImage()
+                .asAndroidBitmap()[FOURTH_HEART_X, FOURTH_HEART_Y]
+        return Color.red(pixel) > 200 && Color.green(pixel) < 120
+    }
+
+    private companion object {
+        /** Where the 4th heart sits on the default landscape phone, in pixels (see little_kid_game.png). */
+        const val FOURTH_HEART_X = 337
+        const val FOURTH_HEART_Y = 72
     }
 
     @Test fun aLittleKidHighScoreIsSavedWithItsChick() {

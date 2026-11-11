@@ -7,7 +7,8 @@ import kotlin.math.roundToInt
 
 /**
  * Every gameplay tunable in one place. Distances are world units, times are
- * seconds, speeds are world units per second, angles are radians.
+ * seconds, speeds are world units per second, angles are radians. The ones
+ * little kid mode changes are picked per game by [Difficulty].
  */
 object GameConfig {
     /** Fixed simulation timestep (60 Hz). */

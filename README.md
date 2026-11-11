@@ -233,6 +233,10 @@ Every rule that is switched off or loosened is explained next to the setting.
 All gameplay numbers live in one file (detekt makes sure they stay there):
 [`game/src/main/kotlin/com/quissicutdeus/snake/game/GameConfig.kt`](game/src/main/kotlin/com/quissicutdeus/snake/game/GameConfig.kt).
 After a change, run `./gradlew :game:test :game:balanceReport` to see how games go.
+The few numbers that make little kid mode gentler (hearts, food, the share of
+smaller snakes, how bigger snakes chase you) are in
+[`Difficulty.kt`](game/src/main/kotlin/com/quissicutdeus/snake/game/Difficulty.kt)
+next to it; `LittleKidTest` checks it stays gentler than a normal game.
 
 | Want… | Change |
 | --- | --- |
