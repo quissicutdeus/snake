@@ -16,8 +16,11 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/** How a snake looks at the player: smaller ones are scared, bigger ones angry. */
-enum class Mood { HAPPY, SCARED, ANGRY }
+/**
+ * How a snake looks at the player: smaller ones are scared, bigger ones angry.
+ * [ASLEEP] is only for pictures (the bedtime screen), never in a game.
+ */
+enum class Mood { HAPPY, SCARED, ANGRY, ASLEEP }
 
 /**
  * Draws snakes, food and tail pieces in world coordinates. Everything is made

@@ -257,7 +257,7 @@ private fun facesAndHats(out: File) {
 }
 
 private fun moods(out: File) {
-    board("moods.png", 3, 1, 460, 300, out) { c, col, _ ->
+    board("moods.png", 4, 1, 460, 300, out) { c, col, _ ->
         val mood = Mood.entries[col]
         val ps = PosedSnake(SnakeStyle(color1 = 7, color2 = 2, pattern = Pattern.CHECKER, hat = Hat.BOW), length = 150f)
         c.save()
@@ -269,6 +269,7 @@ private fun moods(out: File) {
             Mood.HAPPY -> "Same size / you"
             Mood.SCARED -> "Smaller than you"
             Mood.ANGRY -> "Bigger than you"
+            Mood.ASLEEP -> "Bedtime"
         }
     }
 }

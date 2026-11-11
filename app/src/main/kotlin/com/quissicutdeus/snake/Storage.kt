@@ -29,6 +29,7 @@ class Storage(
             soundOn = prefs.getBoolean(KEY_SOUND, true),
             buzzOn = prefs.getBoolean(KEY_BUZZ, true),
             musicOn = prefs.getBoolean(KEY_MUSIC, true),
+            bedtimeMinutes = prefs.getInt(KEY_BEDTIME, 0),
         )
 
     fun saveSettings(settings: Settings) =
@@ -36,6 +37,7 @@ class Storage(
             putBoolean(KEY_SOUND, settings.soundOn)
             putBoolean(KEY_BUZZ, settings.buzzOn)
             putBoolean(KEY_MUSIC, settings.musicOn)
+            putInt(KEY_BEDTIME, settings.bedtimeMinutes)
         }
 
     /** Ids of the kids who play on this phone, in the order they joined: just player 0 until a second one joins. */
@@ -108,6 +110,11 @@ class Storage(
         get() = if (prefs.contains(KEY_NEWS_SEEN)) prefs.getInt(KEY_NEWS_SEEN, 0) else null
         set(value) = prefs.edit { if (value == null) remove(KEY_NEWS_SEEN) else putInt(KEY_NEWS_SEEN, value) }
 
+    /** Today's play on this phone for the bedtime timer ([PlayDay.encode]), or null before any. */
+    var playDay: String?
+        get() = prefs.getString(KEY_PLAY_DAY, null)
+        set(value) = prefs.edit { putString(KEY_PLAY_DAY, value) }
+
     companion object {
         /** Kids per phone: enough for a family, and their pictures still fit in one row. */
         const val MAX_PLAYERS = 4
@@ -120,5 +127,7 @@ class Storage(
         private const val KEY_PLAYERS = "players"
         private const val KEY_PLAYER = "player"
         private const val KEY_NEWS_SEEN = "news_seen"
+        private const val KEY_BEDTIME = "bedtime_minutes"
+        private const val KEY_PLAY_DAY = "play_day"
     }
 }

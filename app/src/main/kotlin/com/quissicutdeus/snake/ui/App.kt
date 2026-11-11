@@ -140,13 +140,14 @@ fun SniddleApp(
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage) }
     val notes = remember { DeviceNotes(storage) }
+    val bedtime = remember { Bedtime(storage, me) }
     var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun play() {
         me.dismissAlreadyEarned()
         notes.dismissNews()
         round++
-        screen = Screen.Play(round)
+        screen = if (bedtime.refresh()) Screen.Title else Screen.Play(round)
     }
 
     SniddleTheme {
@@ -155,6 +156,7 @@ fun SniddleApp(
                 TitleRoute(
                     me,
                     notes,
+                    bedtime,
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onAddPlayer = { if (me.addPlayer()) screen = Screen.MySnake },
@@ -174,6 +176,7 @@ fun SniddleApp(
                     onSound = { if (me.settings.soundOn) playSound(it) },
                     onMusic = { playMusic(it && me.settings.soundOn && me.settings.musicOn) },
                     showTips = remember(s.round) { tipsDue(me.stats) },
+                    bedtime = bedtime.forGame { screen = Screen.Title },
                 )
             }
 
@@ -211,17 +214,18 @@ fun SniddleApp(
  * The title screen, fed from the [Profile]: look, settings, who's playing
  * and any looks earned without a cheer. One card at a time: "What's new"
  * first, then (once that's tapped away, or on the next visit) the
- * already-earned looks.
+ * already-earned looks. Past [bedtime], the rest screen instead.
  */
 @Composable
 private fun TitleRoute(
     me: Profile,
     notes: DeviceNotes,
+    bedtime: Bedtime,
     onPlay: () -> Unit,
     onMySnake: () -> Unit,
     onAddPlayer: () -> Unit,
     onHighScores: () -> Unit,
-) {
+) = BedtimeHome(bedtime, me.style, onMySnake, onHighScores) {
     TitleScreen(
         style = me.style,
         onPlay = onPlay,

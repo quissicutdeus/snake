@@ -106,6 +106,13 @@ private class GameHolder(
 
     var reported = false
 
+    /** Ends the game early (bedtime) by handing [report] how it went, unless it's already over and reported. */
+    fun stop(report: (GameResult) -> Unit) {
+        if (reported) return
+        reported = true
+        report(result())
+    }
+
     /** How the game went, for the game-over screen. */
     fun result(): GameResult {
         val p = sim.player!!
@@ -137,6 +144,8 @@ fun GameScreen(
     /** Show the first-game tips; [onTipsDone] runs once the kid has seen them all. */
     showTips: Boolean = false,
     onTipsDone: () -> Unit = {},
+    /** The bedtime timer, if any: it counts the play and can stop the game at a calm moment. */
+    bedtime: GameBedtime? = null,
 ) {
     val density = LocalDensity.current
     val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
@@ -151,6 +160,7 @@ fun GameScreen(
     var paused by rememberSaveable(key) { mutableStateOf(false) }
     val tips = rememberFirstGameTips(key, showTips)
     val currentOnTipsDone by rememberUpdatedState(onTipsDone)
+    val nap = rememberBedtimeInGame(key, bedtime)
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)
     val currentOnSound by rememberUpdatedState(onSound)
@@ -174,6 +184,7 @@ fun GameScreen(
                 val buzz = step(game, dt, paused, currentOnSound)
                 if (buzz != null && buzzOn) view.performHapticFeedback(hapticFor(buzz))
                 tips?.onFrame(game.sim, game.stick, dt, paused, currentOnTipsDone)
+                nap?.onFrame(game.sim, dt, paused, game::stop)
                 if (game.sim.gameOver && !game.reported && game.overTimer > GAME_OVER_DELAY_SECONDS) {
                     game.reported = true
                     currentOnGameOver(game.result())
@@ -197,6 +208,7 @@ fun GameScreen(
             )
         }
         TipCard(tips, hidden = paused || game.sim.gameOver, style, Modifier.align(Alignment.BottomCenter))
+        BedtimeNote(nap, Modifier.align(Alignment.TopCenter))
         if (paused) {
             PauseOverlay(settings, onSettingsChange, onResume = { paused = false }, onQuit = onQuit)
         }

@@ -124,6 +124,28 @@ is on, lots of the computer snakes dress up for it too:
 The game-over screen also shows who gobbled you, and how long you were the
 biggest snake.
 
+## For grown-ups
+
+**Bedtime timer** (off unless you turn it on). Tap the small gear in the
+title screen's top corner and answer a times-table question (like
+"What is 17 × 8?", typed on the number pad; a wrong answer brings a new
+question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
+45, 60 or 90 minutes.
+
+- Only time a game is actually running counts: not paused, not the menus.
+  It adds up for the whole phone (brothers and sisters share it) and starts
+  again at midnight. Closing the app, or the phone closing it, doesn't reset it.
+- Two minutes before the end a "2 minutes left!" note pops up in the game.
+- When time's up, the game ends at the first calm moment (no bigger snake
+  coming, not mid-bump; at most a minute later). It counts like any finished
+  game, and a high score goes on the list under the snake's name. Then the kid's
+  snake curls up asleep: "Time to rest, snake! 😴 See you tomorrow!" Play is
+  gone until tomorrow; My Snake and the high scores still work.
+- **Grown-ups: 10 more minutes** on that screen gives extra time today,
+  after the same question.
+- Turning the phone's clock back doesn't give more time. (Setting it ahead to
+  the next day would; that needs the phone's settings, which you can lock.)
+
 ## Install it on a Pixel
 
 Needs **Android 11 or newer**: any recent Pixel, and older phones such as a
@@ -242,6 +264,9 @@ app/    Android app (Jetpack Compose)
                     also the newest news seen, per phone
   ui/FirstGameTips  the first-game tips; ui/News the "New!" lines (add
                     one per release with the next number)
+  PlayClock         the bedtime timer's count (pure Kotlin, unit-tested);
+                    ui/Bedtime, ui/GrownUps (gear, question, settings),
+                    ui/RestScreen
   SoundPlayer       plays the effects (one preloaded AudioTrack each) and
                     loops the music
 ```

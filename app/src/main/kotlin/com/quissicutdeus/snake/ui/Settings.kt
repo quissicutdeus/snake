@@ -26,6 +26,8 @@ data class Settings(
     val soundOn: Boolean = true,
     val buzzOn: Boolean = true,
     val musicOn: Boolean = true,
+    /** The grown-ups' bedtime timer: minutes of play a day on this phone, 0 for no limit. */
+    val bedtimeMinutes: Int = 0,
 )
 
 /** Music, buzz and sound switches as round picture buttons, for the title and pause screens. */

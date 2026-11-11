@@ -40,6 +40,10 @@ object FaceArt {
         eyes: Eyes,
     ) {
         val mood = face.mood
+        if (mood == Mood.ASLEEP) {
+            drawAsleep(c, face)
+            return
+        }
         for (side in SIDES) {
             val ex = face.fx + side * face.hr * 0.42f
             when (eyes) {
@@ -152,7 +156,7 @@ object FaceArt {
                 c.line(ex + side * er * 0.75f, ey - er * 1.75f, ex - side * er * 0.55f, ey - er * 1.1f, bw * 1.3f, face.ink)
             }
 
-            Mood.HAPPY -> {}
+            Mood.HAPPY, Mood.ASLEEP -> {}
         }
     }
 
@@ -183,7 +187,39 @@ object FaceArt {
                 path.arc(fx, fy + hr * 0.75f, hr * 0.28f, PI_F * 1.25f, PI_F * 1.75f, moveFirst = true, steps = 10)
                 c.strokePath(path, mw, face.ink)
             }
+
+            Mood.ASLEEP -> {
+                // A little round "o", breathing slowly.
+                c.fillCircle(fx, fy + hr * 0.45f, hr * 0.1f, face.ink)
+            }
         }
+    }
+
+    /**
+     * Fast asleep, whatever eyes the snake wears: each eye is a closed lid
+     * (a smiley curve with three lashes) and the face is calm, no eyebrows.
+     */
+    private fun drawAsleep(
+        c: Canvas2D,
+        face: Face,
+    ) {
+        val hr = face.hr
+        val er = face.er
+        val lw = hr * 0.08f
+        for (side in SIDES) {
+            val ex = face.fx + side * hr * 0.42f
+            val ey = face.ey + er * 0.1f
+            path.reset()
+            path.arc(ex, ey - er * 0.35f, er * 0.85f, PI_F * 0.2f, PI_F * 0.8f, moveFirst = true, steps = 10)
+            c.strokePath(path, lw, face.ink)
+            for (k in -1..1) {
+                val a = PI_F * (0.5f + k * 0.22f)
+                val x0 = ex + cos(a) * er * 0.85f
+                val y0 = ey - er * 0.35f + sin(a) * er * 0.85f
+                c.line(x0, y0, x0 + cos(a) * er * 0.35f, y0 + sin(a) * er * 0.35f, lw * 0.7f, face.ink)
+            }
+        }
+        drawMouth(c, face, Mood.ASLEEP)
     }
 
     private fun drawSweatDrop(
