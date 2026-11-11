@@ -14,13 +14,14 @@ plugins {
 //   ./gradlew spotlessCheck   fails on badly formatted code
 //   ./gradlew spotlessApply   fixes it
 spotless {
-    // Build output, Gradle/IDE state and local.properties are left out while
+    // Build output, Gradle/IDE state, local.properties and other git worktrees
+    // checked out under .claude/worktrees are left out while
     // walking the tree (not filtered afterwards with targetExclude), so a task
     // writing to app/build at the same time can't break the check.
     fun sources(vararg patterns: String) =
         fileTree(rootDir) {
             include(*patterns)
-            exclude("**/build/**", ".gradle/**", ".idea/**", ".kotlin/**", "local.properties")
+            exclude("**/build/**", ".gradle/**", ".idea/**", ".kotlin/**", "local.properties", ".claude/worktrees/**")
         }
 
     kotlin {
