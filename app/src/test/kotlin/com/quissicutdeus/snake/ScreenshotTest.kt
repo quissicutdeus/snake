@@ -84,7 +84,7 @@ class ScreenshotTest {
     }
 
     private fun playScene(name: String) {
-        show { GameScreen(key = 1, style = style, onGameOver = {}, onQuit = {}) }
+        show { GameScreen(key = 1, style = style, playerName = "Caleb", onGameOver = {}, onQuit = {}) }
         advance(300)
         // Hold a finger up and to the right of the snake for a while, then down-left.
         compose.onRoot().performTouchInput { down(Offset(width * 0.8f, height * 0.25f)) }
@@ -102,6 +102,7 @@ class ScreenshotTest {
             GameScreen(
                 key = 1,
                 style = style,
+                playerName = "You",
                 onGameOver = {},
                 onQuit = {},
                 settings = settings,
@@ -149,7 +150,7 @@ class ScreenshotTest {
         name: String,
         look: SnakeStyle = style,
     ) {
-        show { MySnakeScreen(look, {}, {}) }
+        show { MySnakeScreen(look, {}, {}, name = "Caleb", onNameChange = {}, knownNames = listOf("Caleb", "Mya", "Dad")) }
         advance(800)
         snap(name)
     }

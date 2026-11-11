@@ -7,7 +7,7 @@ import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.sim.Scoreboard
 import com.quissicutdeus.snake.ui.Settings
 
-/** Everything saved on the device: the player's snake look, high scores, player names and the settings. */
+/** Everything saved on the device: the player's snake look, high scores, player names, the snake's name and the settings. */
 class Storage(
     context: Context,
 ) {
@@ -36,6 +36,11 @@ class Storage(
             putBoolean(KEY_BUZZ, settings.buzzOn)
         }
 
+    /** The name the player gave their snake ("" for none). */
+    fun loadSnakeName(): String = prefs.getString(KEY_SNAKE_NAME, null).orEmpty()
+
+    fun saveSnakeName(name: String) = prefs.edit { putString(KEY_SNAKE_NAME, name) }
+
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
     fun saveNames(names: List<String>) = prefs.edit { putString(KEY_NAMES, Scoreboard.encodeNames(names)) }
@@ -52,5 +57,6 @@ class Storage(
         const val KEY_NAMES = "names"
         const val KEY_SOUND = "sound"
         const val KEY_BUZZ = "buzz"
+        const val KEY_SNAKE_NAME = "snake_name"
     }
 }

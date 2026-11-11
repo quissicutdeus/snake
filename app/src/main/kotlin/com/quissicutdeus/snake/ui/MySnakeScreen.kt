@@ -18,11 +18,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,12 +38,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.quissicutdeus.snake.game.model.Eyes
 import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.Pattern
 import com.quissicutdeus.snake.game.model.SnakeStyle
+import com.quissicutdeus.snake.game.sim.Scoreboard
 import kotlin.random.Random
 
 private val COLOR_NAMES =
@@ -59,14 +65,18 @@ private val COLOR_NAMES =
         "Chocolate",
     )
 
-/** Customize your snake. Everything is unlocked; every change is saved straight away. */
+/** Customize your snake and name it. Every change is saved straight away. */
 @Composable
 fun MySnakeScreen(
     style: SnakeStyle,
     onChange: (SnakeStyle) -> Unit,
     onDone: () -> Unit,
+    name: String,
+    onNameChange: (String) -> Unit,
+    knownNames: List<String>,
     modifier: Modifier = Modifier,
 ) {
+    val naming = Naming(name, onNameChange, knownNames)
     BoxWithConstraints(
         modifier
             .fillMaxSize()
@@ -77,13 +87,13 @@ fun MySnakeScreen(
             Row(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, onChange, onDone, 170.dp, Modifier.weight(1f).fillMaxHeight())
                 Spacer(Modifier.size(12.dp))
-                StyleControls(style, onChange, Modifier.weight(1.1f).fillMaxHeight())
+                StyleControls(style, onChange, naming, Modifier.weight(1.1f).fillMaxHeight())
             }
         } else {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, onChange, onDone, 150.dp, Modifier.fillMaxWidth())
                 Spacer(Modifier.size(10.dp))
-                StyleControls(style, onChange, Modifier.fillMaxWidth().weight(1f))
+                StyleControls(style, onChange, naming, Modifier.fillMaxWidth().weight(1f))
             }
         }
     }
@@ -113,6 +123,7 @@ private fun SnakePreview(
 private fun StyleControls(
     style: SnakeStyle,
     onChange: (SnakeStyle) -> Unit,
+    naming: Naming,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier, shape = RoundedCornerShape(24.dp), color = KidColors.Panel) {
@@ -121,6 +132,9 @@ private fun StyleControls(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
+            Section("Name") {
+                NamePicker(naming)
+            }
             Section("Body color") {
                 Swatches(style.color1, { onChange(style.copy(color1 = it)) })
             }
@@ -138,6 +152,34 @@ private fun StyleControls(
             }
         }
     }
+}
+
+/** The snake's name and how to change it (kept together to keep parameter lists short). */
+private class Naming(
+    val name: String,
+    val onChange: (String) -> Unit,
+    val known: List<String>,
+)
+
+/** Tap a name used before (from the high scores), or type one. Blank means "You". */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NamePicker(naming: Naming) {
+    val current = Scoreboard.snakeName(naming.name)
+    val options = (listOf("You") + naming.known).distinct()
+    if (options.size > 1) {
+        Choices(options, current, { it }, { naming.onChange(if (it == "You") "" else it) })
+        Spacer(Modifier.height(10.dp))
+    }
+    OutlinedTextField(
+        value = naming.name,
+        onValueChange = { naming.onChange(it.take(Scoreboard.MAX_NAME_LENGTH)) },
+        label = { Text("Type a name") },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+        modifier = Modifier.widthIn(max = 260.dp),
+        textStyle = MaterialTheme.typography.titleLarge,
+    )
 }
 
 @Composable

@@ -42,6 +42,9 @@ object Scoreboard {
         entry: ScoreEntry,
     ): List<ScoreEntry> = (entries + entry).sortedWith(order).take(MAX_ENTRIES)
 
+    /** The name the player's snake goes by in a game: what they typed, tidied, or "You". */
+    fun snakeName(typed: String): String = if (typed.isBlank()) "You" else cleanName(typed)
+
     /** Tidies a typed name: no control characters, single spaces, at most [MAX_NAME_LENGTH] characters. */
     fun cleanName(raw: String): String {
         val cleaned = raw.filter { !it.isISOControl() }.trim().replace(Regex("\\s+"), " ")

@@ -70,8 +70,9 @@ private class GameHolder(
     style: SnakeStyle,
     val stick: Thumbstick,
     resume: SavedRun? = null,
+    playerName: String = "You",
 ) {
-    val sim = GameSim(playerStyle = style, resume = resume)
+    val sim = GameSim(playerStyle = style, playerName = playerName, resume = resume)
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()
@@ -101,6 +102,7 @@ private val StickLeash = 56.dp
 fun GameScreen(
     key: Int,
     style: SnakeStyle,
+    playerName: String,
     onGameOver: (GameResult) -> Unit,
     onQuit: () -> Unit,
     modifier: Modifier = Modifier,
@@ -117,7 +119,7 @@ fun GameScreen(
             save = { it.sim.snapshot()?.encode() },
             restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it) } },
         )
-    val game = rememberSaveable(key, saver = saver) { GameHolder(style, newStick()) }
+    val game = rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName) }
     var paused by rememberSaveable(key) { mutableStateOf(false) }
     var frame by remember { mutableIntStateOf(0) }
     val currentOnGameOver by rememberUpdatedState(onGameOver)

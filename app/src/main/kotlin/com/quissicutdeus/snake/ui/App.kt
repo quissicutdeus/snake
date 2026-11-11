@@ -13,6 +13,7 @@ import com.quissicutdeus.snake.Storage
 import com.quissicutdeus.snake.game.audio.Sound
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.sim.Eater
+import com.quissicutdeus.snake.game.sim.Scoreboard
 
 /** Result of one game, handed from the play screen to the game-over screen. */
 data class GameResult(
@@ -127,14 +128,8 @@ fun SniddleApp(
     // Saved with the activity, so after Android closes the app in the background
     // the kid comes back to the same screen (a game comes back paused).
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
-    var settings by remember { mutableStateOf(storage.loadSettings()) }
-    var style by remember { mutableStateOf(storage.loadStyle()) }
+    val me = remember { Profile(storage) }
     var round by rememberSaveable { mutableIntStateOf(0) }
-
-    fun changeSettings(new: Settings) {
-        settings = new
-        storage.saveSettings(new)
-    }
 
     fun play() {
         round++
@@ -145,24 +140,25 @@ fun SniddleApp(
         when (val s = screen) {
             Screen.Title -> {
                 TitleScreen(
-                    style = style,
+                    style = me.style,
                     onPlay = ::play,
                     onMySnake = { screen = Screen.MySnake },
                     onHighScores = { screen = Screen.HighScores() },
-                    settings = settings,
-                    onSettingsChange = ::changeSettings,
+                    settings = me.settings,
+                    onSettingsChange = me::changeSettings,
                 )
             }
 
             is Screen.Play -> {
                 GameScreen(
                     key = s.round,
-                    style = style,
+                    style = me.style,
+                    playerName = Scoreboard.snakeName(me.snakeName),
                     onGameOver = { screen = Screen.GameOver(it) },
                     onQuit = { screen = Screen.Title },
-                    settings = settings,
-                    onSettingsChange = ::changeSettings,
-                    onSound = { if (settings.soundOn) playSound(it) },
+                    settings = me.settings,
+                    onSettingsChange = me::changeSettings,
+                    onSound = { if (me.settings.soundOn) playSound(it) },
                 )
             }
 
@@ -178,12 +174,12 @@ fun SniddleApp(
 
             Screen.MySnake -> {
                 MySnakeScreen(
-                    style = style,
-                    onChange = {
-                        style = it
-                        storage.saveStyle(it)
-                    },
+                    style = me.style,
+                    onChange = me::changeStyle,
                     onDone = { screen = Screen.Title },
+                    name = me.snakeName,
+                    onNameChange = me::changeSnakeName,
+                    knownNames = storage.loadNames(),
                 )
             }
 

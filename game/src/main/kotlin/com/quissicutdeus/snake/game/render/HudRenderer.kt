@@ -119,7 +119,7 @@ object HudRenderer {
             val size = 12f * ui
             c.fillCircle(x0 + 16f * ui, y - 4f * ui, 4.5f * ui, s.style.bodyColor)
             c.text("$rank", x0 + 28f * ui, y, size, col)
-            val name = fit(c, if (me) "You" else s.name, size, pw - 78f * ui)
+            val name = fit(c, s.name, size, pw - 78f * ui)
             c.text(name, x0 + 44f * ui, y, size, col, bold = me)
             c.text("${GameConfig.scoreFor(s.length)}", x0 + pw - 10f * ui, y, size, col, TextAlign.RIGHT)
         }
