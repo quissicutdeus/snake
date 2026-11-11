@@ -89,6 +89,13 @@ class Profile(
         return true
     }
 
+    /** Takes kid [id] off the phone (never the last one); if they were playing, another kid takes over. */
+    fun removePlayer(id: Int) {
+        if (!storage.removePlayer(id)) return
+        players = loadPlayers()
+        switchTo(storage.loadCurrentPlayer())
+    }
+
     /**
      * Counts a finished game, played while [season]'s holidays were on.
      * Returns the looks it unlocked (usually none), which the game-over screen cheers.

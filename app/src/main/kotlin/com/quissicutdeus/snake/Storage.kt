@@ -76,6 +76,23 @@ class Storage(
         return id
     }
 
+    /**
+     * Takes kid [id] off the phone; if they were playing, the first kid left
+     * plays next. Never removes the last kid (false then). Everyone else's
+     * totals were written down when they joined (see [addPlayer]), so the
+     * high-score list can't leak into them, and a kid who later gets [id]
+     * has every key written afresh.
+     */
+    fun removePlayer(id: Int): Boolean {
+        val ids = loadPlayers()
+        val left = ids - id
+        if (left.isEmpty() || left.size == ids.size) return false
+        if (loadCurrentPlayer() == id) saveCurrentPlayer(left[0])
+        prefs.edit { putString(KEY_PLAYERS, left.joinToString(",")) }
+        player(id).clear()
+        return true
+    }
+
     fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
 
     fun saveNames(names: List<String>) = prefs.edit { putString(KEY_NAMES, Scoreboard.encodeNames(names)) }

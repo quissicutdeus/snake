@@ -15,6 +15,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -490,6 +491,92 @@ class ScreenshotTest {
         assertEquals(Stats(40, 2, 1), storage.player(1).loadStats())
         assertEquals(Stats(bestScore = 120), storage.player(0).loadStats())
         assertEquals(style, storage.player(0).loadStyle())
+    }
+
+    /** Removing a kid who isn't playing takes away only their snake; their high scores stay. */
+    @Test fun removingAPlayerWhoIsntPlaying() {
+        seedThreePlayers()
+        storage.addScore(ScoreEntry("Mya", 77, 1, sirNoodles, 3000L))
+        Profile(storage).removePlayer(1)
+        assertEquals(listOf(0, 2), storage.loadPlayers())
+        assertEquals(0, storage.loadCurrentPlayer())
+        assertEquals(emptyList<String>(), rawPrefs().all.keys.filter { it.startsWith("p1.") })
+        assertEquals(listOf("Mya"), storage.loadScores().map { it.name })
+        assertEquals(style, storage.player(0).loadStyle())
+        launchApp()
+        compose.onNodeWithContentDescription("Caleb is playing").assertExists()
+        compose.onNodeWithContentDescription("Switch to Mya").assertDoesNotExist()
+    }
+
+    /** Scrolls My Snake's choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
+    private fun scrollMySnakeToBottom() {
+        repeat(4) {
+            compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }
+            advance(1500)
+        }
+    }
+
+    /** The kid playing removes themselves from My Snake: asked first, "Keep" backs out, then home with someone else playing. */
+    @Test fun removingThePlayerWhoIsPlaying() {
+        seedThreePlayers()
+        launchApp()
+        compose.onNodeWithContentDescription("Switch to Mya").performClick()
+        advance(300)
+        compose.onNodeWithText("My Snake").performClick()
+        advance(500)
+        scrollMySnakeToBottom()
+        compose.onNodeWithText("Remove player").performClick()
+        advance(500)
+        compose.onNodeWithText("Remove Mya's snake?").assertExists()
+        saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), "players_remove_ask")
+        compose.onNodeWithText("Keep").performClick()
+        advance(500)
+        compose.onNodeWithText("Remove Mya's snake?").assertDoesNotExist()
+        assertEquals(listOf(0, 1, 2), storage.loadPlayers())
+
+        compose.onNodeWithText("Remove player").performClick()
+        advance(500)
+        compose.onNodeWithText("Yes, remove Mya").performClick()
+        advance(500)
+        compose.onNodeWithText("Play!").assertExists()
+        compose.onNodeWithContentDescription("Caleb is playing").assertExists()
+        compose.onNodeWithContentDescription("Switch to Mya").assertDoesNotExist()
+        assertEquals(listOf(0, 2), storage.loadPlayers())
+        assertEquals(0, storage.loadCurrentPlayer())
+        snap("players_removed")
+    }
+
+    /**
+     * The first kid (the old unprefixed keys) leaves: the others keep their own
+     * totals, and a kid who later gets the first kid's place starts from zero,
+     * not from the high-score list.
+     */
+    @Test fun removingTheFirstPlayerThenAddingANewOne() {
+        seedOldScores()
+        val me = Profile(storage)
+        me.addPlayer(kotlin.random.Random(1))
+        me.recordGame(GameResult(40, 2, style, 2000L), season = emptySet())
+        me.removePlayer(0)
+        assertEquals(listOf(1), storage.loadPlayers())
+        listOf("style", "snake_name", "stats", "announced").forEach { assertEquals(false, rawPrefs().contains(it)) }
+        assertEquals(Stats(40, 2, 1), storage.player(1).loadStats())
+        assertEquals(10, storage.loadScores().size)
+
+        me.addPlayer(kotlin.random.Random(2))
+        assertEquals(listOf(1, 0), storage.loadPlayers())
+        assertEquals(0, me.playerId)
+        assertEquals(Stats(), me.stats)
+        assertEquals(emptyList<Any>(), me.alreadyEarned)
+        // The last kid can't be removed.
+        me.removePlayer(1)
+        me.removePlayer(0)
+        assertEquals(listOf(0), storage.loadPlayers())
+        launchApp()
+        compose.onNodeWithText("+ Add player").assertExists()
+        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("My Snake").performClick()
+        advance(500)
+        compose.onNodeWithText("Remove player").assertDoesNotExist()
     }
 
     // ---- Phone, landscape (the class default) ----

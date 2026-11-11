@@ -91,6 +91,8 @@ fun MySnakeScreen(
     knownNames: List<String>,
     stats: Stats,
     modifier: Modifier = Modifier,
+    /** How to take this kid off the phone; null when they're the only one. */
+    removal: Removal? = null,
 ) {
     val naming = Naming(name, onNameChange, knownNames)
     BoxWithConstraints(
@@ -103,13 +105,13 @@ fun MySnakeScreen(
             Row(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, stats, onChange, onDone, 170.dp, Modifier.weight(1f).fillMaxHeight())
                 Spacer(Modifier.size(12.dp))
-                StyleControls(style, stats, onChange, naming, Modifier.weight(1.1f).fillMaxHeight())
+                StyleControls(style, stats, onChange, naming, removal, Modifier.weight(1.1f).fillMaxHeight())
             }
         } else {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
                 SnakePreview(style, stats, onChange, onDone, 150.dp, Modifier.fillMaxWidth())
                 Spacer(Modifier.size(10.dp))
-                StyleControls(style, stats, onChange, naming, Modifier.fillMaxWidth().weight(1f))
+                StyleControls(style, stats, onChange, naming, removal, Modifier.fillMaxWidth().weight(1f))
             }
         }
     }
@@ -142,6 +144,7 @@ private fun StyleControls(
     stats: Stats,
     onChange: (SnakeStyle) -> Unit,
     naming: Naming,
+    removal: Removal?,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier, shape = RoundedCornerShape(24.dp), color = KidColors.Panel) {
@@ -168,6 +171,8 @@ private fun StyleControls(
             Section("Hat") {
                 Choices(Hat.entries, style.hat, stats, { onChange(style.copy(hat = it)) })
             }
+            // Last, at the bottom of the list, so it's out of the way.
+            if (removal != null) RemovePlayerButton(removal, style, Modifier.padding(top = 8.dp))
         }
     }
 }

@@ -63,7 +63,9 @@ the title screen and a new kid gets a fresh snake to name and dress up. After
 that the title screen shows a little picture of everyone's snake: tap yours
 before you play. Each kid has their own name, look and unlocked looks (up to
 four kids per phone); the sound switches and the "Biggest snakes" list are
-shared. The phone remembers who played last.
+shared. The phone remembers who played last. To take a kid off the phone, pick
+them, open My Snake and tap **Remove player** at the bottom (it asks first;
+their high scores stay, and the last kid can't be removed).
 
 **My Snake** lets you name your snake (the name shows in the "Biggest snakes"
 list, and is the first one offered when you get a high score) and pick

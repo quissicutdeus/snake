@@ -48,6 +48,12 @@ class SavedPlayer internal constructor(
 
     fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(key(KEY_ANNOUNCED), keys.toSet()) }
 
+    /** Forgets this kid's snake altogether (their high scores stay: those are everyone's). */
+    fun clear() =
+        prefs.edit {
+            listOf(KEY_STYLE, KEY_SNAKE_NAME, KEY_STATS, KEY_ANNOUNCED).forEach { remove(key(it)) }
+        }
+
     private companion object {
         const val KEY_STYLE = "style"
         const val KEY_SNAKE_NAME = "snake_name"

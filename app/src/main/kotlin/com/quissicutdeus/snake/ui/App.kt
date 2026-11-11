@@ -229,7 +229,10 @@ private fun TitleRoute(
     )
 }
 
-/** My Snake, fed from the [Profile]: look, name (with names from the high scores) and unlocks. */
+/**
+ * My Snake, fed from the [Profile]: look, name (with names from the high
+ * scores), unlocks, and removing this kid (back to the title after).
+ */
 @Composable
 private fun MySnakeRoute(
     me: Profile,
@@ -244,5 +247,12 @@ private fun MySnakeRoute(
         onNameChange = me::changeSnakeName,
         knownNames = remember { storage.loadNames() },
         stats = me.stats,
+        removal =
+            me.players.takeIf { it.size > 1 }?.firstOrNull { it.id == me.playerId }?.let { p ->
+                Removal(p.label) {
+                    me.removePlayer(p.id)
+                    onDone()
+                }
+            },
     )
 }
