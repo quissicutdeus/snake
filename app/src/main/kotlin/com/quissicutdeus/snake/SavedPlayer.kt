@@ -2,6 +2,7 @@ package com.quissicutdeus.snake
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.quissicutdeus.snake.game.model.Birthday
 import com.quissicutdeus.snake.game.model.ScoreEntry
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Stats
@@ -53,10 +54,25 @@ class SavedPlayer internal constructor(
 
     fun saveLittleKid(on: Boolean) = prefs.edit { putBoolean(key(KEY_LITTLE_KID), on) }
 
+    /** The kid's birthday (month and day only), or null if they haven't said. */
+    fun loadBirthday(): Birthday? = Birthday.decode(prefs.getInt(key(KEY_BIRTHDAY), 0))
+
+    fun saveBirthday(birthday: Birthday?) =
+        prefs.edit {
+            if (birthday == null) remove(key(KEY_BIRTHDAY)) else putInt(key(KEY_BIRTHDAY), birthday.encode())
+        }
+
     /** Forgets this kid's snake altogether (their high scores stay: those are everyone's). */
     fun clear() =
         prefs.edit {
-            listOf(KEY_STYLE, KEY_SNAKE_NAME, KEY_STATS, KEY_ANNOUNCED, KEY_LITTLE_KID).forEach { remove(key(it)) }
+            listOf(
+                KEY_STYLE,
+                KEY_SNAKE_NAME,
+                KEY_STATS,
+                KEY_ANNOUNCED,
+                KEY_LITTLE_KID,
+                KEY_BIRTHDAY,
+            ).forEach { remove(key(it)) }
         }
 
     private companion object {
@@ -65,5 +81,6 @@ class SavedPlayer internal constructor(
         const val KEY_STATS = "stats"
         const val KEY_ANNOUNCED = "announced"
         const val KEY_LITTLE_KID = "little_kid"
+        const val KEY_BIRTHDAY = "birthday"
     }
 }

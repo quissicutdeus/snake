@@ -16,25 +16,25 @@ import kotlin.test.assertTrue
 
 class HolidayTest {
     @Test fun eachHolidayHasItsDays() {
-        assertEquals(setOf(Holiday.HALLOWEEN), Holiday.on(10, 31))
-        assertEquals(setOf(Holiday.THANKSGIVING), Holiday.on(11, 26))
-        assertEquals(setOf(Holiday.THANKSGIVING, Holiday.FLAG_DAYS), Holiday.on(11, 11)) // Veterans Day
-        assertEquals(setOf(Holiday.CHRISTMAS), Holiday.on(12, 25))
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(7, 4))
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(5, 26)) // Memorial Day
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2, 16)) // Presidents' Day
-        assertEquals(emptySet(), Holiday.on(3, 15))
-        assertEquals(emptySet(), Holiday.on(9, 30))
+        assertEquals(setOf(Holiday.HALLOWEEN), Holiday.on(2026, 10, 31))
+        assertEquals(setOf(Holiday.THANKSGIVING), Holiday.on(2026, 11, 26))
+        assertEquals(setOf(Holiday.THANKSGIVING, Holiday.FLAG_DAYS), Holiday.on(2026, 11, 11)) // Veterans Day
+        assertEquals(setOf(Holiday.CHRISTMAS), Holiday.on(2026, 12, 25))
+        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 7, 4))
+        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 5, 26)) // Memorial Day
+        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 2, 16)) // Presidents' Day
+        assertEquals(setOf(Holiday.ST_PATRICK), Holiday.on(2026, 3, 15))
+        assertEquals(emptySet(), Holiday.on(2026, 9, 30))
     }
 
     @Test fun playingOnAHolidayKeepsItsLooksForGood() {
         val fresh = Stats()
         assertFalse(Unlocks.isUnlocked(Hat.SANTA, fresh))
-        val christmas = fresh.after(score = 20, eaten = 0, season = Holiday.on(12, 24))
+        val christmas = fresh.after(score = 20, eaten = 0, season = Holiday.on(2026, 12, 24))
         assertEquals(listOf(Hat.SANTA), Unlocks.newlyUnlocked(fresh, christmas).map { it.item })
-        val january = christmas.after(score = 20, eaten = 0, season = Holiday.on(1, 15))
+        val january = christmas.after(score = 20, eaten = 0, season = Holiday.on(2026, 1, 15))
         assertTrue(Unlocks.isUnlocked(Hat.SANTA, january))
-        val july = january.after(score = 20, eaten = 0, season = Holiday.on(7, 4))
+        val july = january.after(score = 20, eaten = 0, season = Holiday.on(2026, 7, 4))
         assertEquals(listOf(Pattern.FLAG, Hat.STAR_HAT), Unlocks.newlyUnlocked(january, july).map { it.item })
     }
 
@@ -55,7 +55,7 @@ class HolidayTest {
         assertEquals("250,41,33", Stats(250, 41, 33).encode())
         assertEquals(Stats(250, 41, 33), Stats.decode("250,41,33"))
         // A holiday this version doesn't know about is skipped, not a reason to lose the totals.
-        assertEquals(Stats(1, 2, 3, setOf(Holiday.CHRISTMAS)), Stats.decode("1,2,3,CHRISTMAS+EASTER"))
+        assertEquals(Stats(1, 2, 3, setOf(Holiday.CHRISTMAS)), Stats.decode("1,2,3,CHRISTMAS+GROUNDHOG_DAY"))
         assertEquals(null, Stats.decode("1,2,3,4,5"))
     }
 

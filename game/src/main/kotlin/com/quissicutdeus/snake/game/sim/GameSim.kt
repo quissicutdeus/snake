@@ -2,6 +2,7 @@ package com.quissicutdeus.snake.game.sim
 
 import com.quissicutdeus.snake.game.Difficulty
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.ArenaSeason
 import com.quissicutdeus.snake.game.model.Food
 import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.Pellet
@@ -36,6 +37,8 @@ data class SimOptions(
     val season: Set<Holiday> = emptySet(),
     /** How hard the game is (a saved game comes back as it was saved, whatever this says). */
     val difficulty: Difficulty = Difficulty.NORMAL,
+    /** What the arena floor looks like: grass, autumn leaves or snow. */
+    val arena: ArenaSeason = ArenaSeason.GRASS,
 )
 
 /**

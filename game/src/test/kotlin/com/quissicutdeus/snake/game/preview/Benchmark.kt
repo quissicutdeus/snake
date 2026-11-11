@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.game.preview
 
 import com.quissicutdeus.snake.game.GameConfig
+import com.quissicutdeus.snake.game.model.ArenaSeason
 import com.quissicutdeus.snake.game.render.Camera
 import com.quissicutdeus.snake.game.render.Canvas2D
 import com.quissicutdeus.snake.game.render.Fx
@@ -10,6 +11,7 @@ import com.quissicutdeus.snake.game.render.TextAlign
 import com.quissicutdeus.snake.game.sim.Ai
 import com.quissicutdeus.snake.game.sim.AiBrain
 import com.quissicutdeus.snake.game.sim.GameSim
+import com.quissicutdeus.snake.game.sim.SimOptions
 import com.quissicutdeus.snake.game.sim.SteerInput
 import kotlin.random.Random
 
@@ -24,12 +26,17 @@ import kotlin.random.Random
  *
  * The checksum is a fingerprint of the final world. An optimisation that is
  * meant to change nothing must leave it identical.
+ *
+ * Draws the summer grass unless given an [ArenaSeason] to draw instead
+ * (./gradlew :game:benchmark --args=SNOW); the floor never changes the
+ * game, so the checksum is the same for every season.
  */
-fun main() {
+fun main(args: Array<String>) {
+    val arena = args.firstOrNull()?.let { ArenaSeason.valueOf(it.uppercase()) } ?: ArenaSeason.GRASS
     // Warm up the JIT on a game that isn't measured.
-    playGame(seed = 1000L, steps = STEPS)
-    val results = SEEDS.map { playGame(it, STEPS) }
-    println("Benchmark: ${SEEDS.size} games x $STEPS steps (${STEPS / STEPS_PER_SECOND} s of play each)")
+    playGame(seed = 1000L, steps = STEPS, arena)
+    val results = SEEDS.map { playGame(it, STEPS, arena) }
+    println("Benchmark: ${SEEDS.size} games x $STEPS steps (${STEPS / STEPS_PER_SECOND} s of play each), ${arena.name} arena")
     for (r in results) {
         println(
             "  seed %d: step %6.1f us (median %6.1f, p99 %6.1f)  frame %6.1f us  %5d draw calls/frame  player len %5.0f  checksum %08x"
@@ -72,8 +79,9 @@ private class Result(
 private fun playGame(
     seed: Long,
     steps: Int,
+    arena: ArenaSeason,
 ): Result {
-    val sim = GameSim(seed = seed)
+    val sim = GameSim(seed = seed, options = SimOptions(arena = arena))
     val p = sim.player!!
     p.brain = AiBrain(Random(seed))
     val input = SteerInput()

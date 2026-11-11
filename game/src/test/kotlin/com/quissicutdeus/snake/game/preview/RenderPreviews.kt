@@ -39,6 +39,7 @@ fun main(args: Array<String>) {
     dangerArrows(out)
     biggestSnake(out)
     portraitHud(out)
+    calendarPreviews(out)
     println("Previews written to ${out.absolutePath}")
 }
 
@@ -223,8 +224,9 @@ private fun board(
 
 private fun patterns(out: File) {
     val entries = Pattern.entries
-    board("patterns.png", 4, 2, 520, 300, out) { c, col, r ->
-        val i = r * 4 + col
+    val cols = 5
+    board("patterns.png", cols, (entries.size + cols - 1) / cols, 520, 300, out) { c, col, r ->
+        val i = r * cols + col
         if (i >= entries.size) return@board ""
         val pattern = entries[i]
         val ps =

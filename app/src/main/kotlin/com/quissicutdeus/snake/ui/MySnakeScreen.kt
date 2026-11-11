@@ -95,8 +95,10 @@ fun MySnakeScreen(
     removal: Removal? = null,
     /** This kid's little kid mode switch; null to leave it out. */
     littleKid: LittleKidMode? = null,
+    /** The kid's birthday and how to change it; null to leave it out. */
+    birthday: BirthdaySetting? = null,
 ) {
-    val extras = Extras(littleKid, removal)
+    val extras = Extras(littleKid, removal, birthday)
     val naming = Naming(name, onNameChange, knownNames)
     BoxWithConstraints(
         modifier
@@ -175,6 +177,7 @@ private fun StyleControls(
             Section("Hat") {
                 Choices(Hat.entries, style.hat, stats, { onChange(style.copy(hat = it)) })
             }
+            extras.birthday?.let { Section("My birthday") { BirthdayButton(it) } }
             // Last, at the bottom of the list, so it's out of the way.
             extras.removal?.let { RemovePlayerButton(it, style, Modifier.padding(top = 8.dp)) }
         }
@@ -185,6 +188,7 @@ private fun StyleControls(
 private class Extras(
     val littleKid: LittleKidMode?,
     val removal: Removal?,
+    val birthday: BirthdaySetting?,
 )
 
 /** The snake's name and how to change it (kept together to keep parameter lists short). */

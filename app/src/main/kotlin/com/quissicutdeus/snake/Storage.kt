@@ -74,6 +74,7 @@ class Storage(
             saveStats(Stats())
             saveAnnounced(emptySet())
             saveLittleKid(false)
+            saveBirthday(null)
         }
         prefs.edit { putString(KEY_PLAYERS, (ids + id).joinToString(",")) }
         return id

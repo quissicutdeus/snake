@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quissicutdeus.snake.ComposeCanvas2D
+import com.quissicutdeus.snake.game.model.ArenaSeason
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.render.Camera
@@ -52,8 +53,10 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /** AI snakes roaming the arena behind the menu, with a slowly drifting camera. */
-private class AttractMode {
-    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420, season = holidaysToday()))
+private class AttractMode(
+    arena: ArenaSeason,
+) {
+    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420, season = holidaysToday(), arena = arena))
     val camera = Camera()
     val fx = Fx()
     val adapter = ComposeCanvas2D()
@@ -64,8 +67,11 @@ private class AttractMode {
 }
 
 @Composable
-private fun ArenaBackground(modifier: Modifier = Modifier) {
-    val attract = remember { AttractMode() }
+private fun ArenaBackground(
+    arena: ArenaSeason,
+    modifier: Modifier = Modifier,
+) {
+    val attract = remember(arena) { AttractMode(arena) }
     var frame by remember { mutableIntStateOf(0) }
     LaunchedEffect(attract) {
         var last = 0L
@@ -98,11 +104,13 @@ fun TitleScreen(
     settings: Settings,
     onSettingsChange: (Settings) -> Unit,
     modifier: Modifier = Modifier,
+    /** The arena behind the menu: grass, autumn leaves or snow, as at this time of year. */
+    arena: ArenaSeason = todaysOptions().arena,
     /** Extra content shown under the snake, e.g. [AlreadyEarnedBanner]. */
     content: @Composable () -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
-        ArenaBackground(Modifier.fillMaxSize())
+        ArenaBackground(arena, Modifier.fillMaxSize())
         SettingsButtons(
             settings,
             onSettingsChange,

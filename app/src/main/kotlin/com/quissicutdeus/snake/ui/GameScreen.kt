@@ -74,16 +74,10 @@ private class GameHolder(
     val stick: Thumbstick,
     resume: SavedRun? = null,
     playerName: String = "You",
-    /** Ignored when carrying on a saved game: that comes back as hard as it was. */
-    difficulty: Difficulty = Difficulty.NORMAL,
+    /** Today's holidays and arena season (see [Profile.todaysOptions]); its difficulty is ignored when carrying on a saved game. */
+    options: SimOptions = todaysOptions(),
 ) {
-    val sim =
-        GameSim(
-            playerStyle = style,
-            playerName = playerName,
-            options = SimOptions(season = holidaysToday(), difficulty = difficulty),
-            resume = resume,
-        )
+    val sim = GameSim(playerStyle = style, playerName = playerName, options = options, resume = resume)
     val camera = Camera()
     val fx = Fx()
     val haptics = Haptics()
@@ -158,8 +152,10 @@ fun GameScreen(
     bedtime: GameBedtime? = null,
     /** This kid plays in little kid mode (a saved game carries on as it was saved, though). */
     littleKid: Boolean = false,
+    /** Today's holidays (and birthday) and arena season, see [Profile.todaysOptions]. */
+    options: SimOptions = todaysOptions(),
 ) {
-    val game = rememberGame(key, style, playerName, difficultyFor(littleKid))
+    val game = rememberGame(key, style, playerName, options.copy(difficulty = difficultyFor(littleKid)))
     var paused by rememberSaveable(key) { mutableStateOf(false) }
     val tips = rememberFirstGameTips(key, showTips)
     val currentOnTipsDone by rememberUpdatedState(onTipsDone)
@@ -228,16 +224,16 @@ private fun rememberGame(
     key: Int,
     style: SnakeStyle,
     playerName: String,
-    difficulty: Difficulty,
+    options: SimOptions,
 ): GameHolder {
     val density = LocalDensity.current
     val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
     val saver =
         Saver<GameHolder, String>(
             save = { it.sim.snapshot()?.encode() },
-            restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it) } },
+            restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it, options = options) } },
         )
-    return rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName, difficulty = difficulty) }
+    return rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName, options = options) }
 }
 
 /** After being gobbled, the world keeps going this long (the GULP! effect) before the game-over screen. */

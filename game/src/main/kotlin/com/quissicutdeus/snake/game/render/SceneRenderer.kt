@@ -46,7 +46,7 @@ object SceneRenderer {
     }
 
     /** The part of the world on screen this frame (plus a margin), in world units. */
-    private object View {
+    internal object View {
         var left = 0f
             private set
         var top = 0f
@@ -92,14 +92,14 @@ object SceneRenderer {
         showHud: Boolean = true,
     ) {
         val ui = uiUnit(c)
-        c.fillRect(0f, 0f, c.width, c.height, Colors.OUTSIDE)
+        c.fillRect(0f, 0f, c.width, c.height, ArenaArt.outside(sim.options.arena))
         c.save()
         c.translate(c.width / 2f + fx.shakeX, c.height / 2f + fx.shakeY)
         c.scale(cam.scale)
         c.translate(-cam.x, -cam.y)
         View.set(cam, c.width, c.height)
 
-        drawFloor(c, sim.world.width, sim.world.height)
+        ArenaArt.drawFloor(c, sim.options.arena, sim.world.width, sim.world.height)
         drawFood(c, sim, time)
         drawSnakes(c, sim, time)
         // Name tags only in play, not behind the menus.
@@ -196,94 +196,6 @@ object SceneRenderer {
     ) {
         val blink = s.invulnerable > 0f && floor(time * 10f).toInt() % 2 == 0
         SnakeArt.drawSnake(c, s, mood, time, blink, alpha)
-    }
-
-    private const val FENCE_WIDTH = 26f
-
-    private fun drawFloor(
-        c: Canvas2D,
-        aw: Float,
-        ah: Float,
-    ) {
-        // Fence first (it sits just outside the grass).
-        val fw = FENCE_WIDTH
-        c.fillRoundRect(-fw, -fw, aw + 2 * fw, ah + 2 * fw, 34f, Colors.FENCE_DARK)
-        c.fillRoundRect(-fw * 0.6f, -fw * 0.6f, aw + 1.2f * fw, ah + 1.2f * fw, 26f, Colors.FENCE)
-        c.fillRect(0f, 0f, aw, ah, Colors.GRASS)
-        drawGrass(c, aw, ah)
-        drawFencePosts(c, aw, ah)
-    }
-
-    /** Grass dots and the odd flower, on a fixed grid so they don't move. */
-    private fun drawGrass(
-        c: Canvas2D,
-        aw: Float,
-        ah: Float,
-    ) {
-        val span = max(View.right - View.left, View.bottom - View.top)
-        val step = if (span > 2600f) 180f else 90f
-        val gx0 = max(0, floor(View.left / step).toInt())
-        val gx1 = min((aw / step).toInt(), ceil(View.right / step).toInt())
-        val gy0 = max(0, floor(View.top / step).toInt())
-        val gy1 = min((ah / step).toInt(), ceil(View.bottom / step).toInt())
-        val inner = 10f
-        for (gy in gy0..gy1) {
-            for (gx in gx0..gx1) {
-                val x = gx * step + (if (gy % 2 == 0) 0f else step / 2f)
-                val y = gy * step
-                val insideFence = x in inner..(aw - inner) && y in inner..(ah - inner)
-                val hash = (gx * 73856093) xor (gy * 19349663)
-                when {
-                    !insideFence -> {}
-
-                    step == 90f && hash.mod(29) == 0 -> {
-                        drawFlower(c, x, y, FLOWER_COLORS[hash.mod(FLOWER_COLORS.size)])
-                    }
-
-                    else -> {
-                        c.fillCircle(x, y, 6f, Colors.GRASS_DOT)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun drawFencePosts(
-        c: Canvas2D,
-        aw: Float,
-        ah: Float,
-    ) {
-        val post = 250f
-        val r = 15f
-        val off = FENCE_WIDTH * 0.5f
-        var p = 0f
-        while (p <= aw) {
-            if (View.contains(p, -off, r)) c.fillCircle(p, -off, r, Colors.FENCE_DARK)
-            if (View.contains(p, ah + off, r)) c.fillCircle(p, ah + off, r, Colors.FENCE_DARK)
-            p += post
-        }
-        p = 0f
-        while (p <= ah) {
-            if (View.contains(-off, p, r)) c.fillCircle(-off, p, r, Colors.FENCE_DARK)
-            if (View.contains(aw + off, p, r)) c.fillCircle(aw + off, p, r, Colors.FENCE_DARK)
-            p += post
-        }
-    }
-
-    private val FLOWER_COLORS = intArrayOf(0xFFFFFFFF.toInt(), 0xFFFFF176.toInt(), 0xFFFFB3D9.toInt(), 0xFFB3E5FC.toInt())
-
-    private fun drawFlower(
-        c: Canvas2D,
-        x: Float,
-        y: Float,
-        petal: Int,
-    ) {
-        val r = 6f
-        c.fillCircle(x - r, y, r, petal)
-        c.fillCircle(x + r, y, r, petal)
-        c.fillCircle(x, y - r, r, petal)
-        c.fillCircle(x, y + r, r, petal)
-        c.fillCircle(x, y, r * 0.8f, 0xFFFFB300.toInt())
     }
 
     private fun drawFx(

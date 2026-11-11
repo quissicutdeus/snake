@@ -18,6 +18,7 @@ enum class Pattern(
     CHECKER("Checker"),
     STARS("Stars"),
     FLAG("Red, white & blue"),
+    HEARTS("Hearts"),
 }
 
 enum class Eyes(
@@ -43,6 +44,9 @@ enum class Hat(
     TURKEY("Turkey hat"),
     GHOST("Ghost hat"),
     STAR_HAT("Star hat"),
+    SHAMROCK("Shamrock hat"),
+    BUNNY("Bunny ears"),
+    BIRTHDAY_CAKE("Birthday cake"),
 }
 
 /**

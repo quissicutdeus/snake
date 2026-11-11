@@ -5,11 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quissicutdeus.snake.SavedPlayer
 import com.quissicutdeus.snake.Storage
+import com.quissicutdeus.snake.game.model.ArenaSeason
+import com.quissicutdeus.snake.game.model.Birthday
 import com.quissicutdeus.snake.game.model.Holiday
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Stats
 import com.quissicutdeus.snake.game.model.Unlock
 import com.quissicutdeus.snake.game.model.Unlocks
+import com.quissicutdeus.snake.game.sim.SimOptions
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -28,6 +31,8 @@ data class PlayerCard(
  */
 class Profile(
     private val storage: Storage,
+    /** Today's date (a fixed one in tests). */
+    private val today: () -> LocalDate = LocalDate::now,
 ) {
     var settings: Settings by mutableStateOf(storage.loadSettings())
         private set
@@ -42,6 +47,10 @@ class Profile(
 
     /** What the kid typed as their snake's name ("" for none). */
     var snakeName: String by mutableStateOf(saved.loadSnakeName())
+        private set
+
+    /** The kid's birthday, month and day, or null if not set. */
+    var birthday: Birthday? by mutableStateOf(saved.loadBirthday())
         private set
 
     /** Lifetime totals (best length, snakes eaten, games played) that unlock looks. */
@@ -78,6 +87,7 @@ class Profile(
         saved = storage.player(id)
         style = saved.loadStyle()
         snakeName = saved.loadSnakeName()
+        birthday = saved.loadBirthday()
         stats = saved.loadStats()
         littleKid = saved.loadLittleKid()
         alreadyEarned = notYetCheered()
@@ -107,7 +117,7 @@ class Profile(
      */
     fun recordGame(
         result: GameResult,
-        season: Set<Holiday> = holidaysToday(),
+        season: Set<Holiday> = holidaysToday(birthday, today()),
     ): List<Unlock> {
         val before = stats
         stats = before.after(result.score, result.snakesEaten, season)
@@ -146,6 +156,17 @@ class Profile(
         saved.saveLittleKid(on)
     }
 
+    fun changeBirthday(new: Birthday?) {
+        birthday = new
+        saved.saveBirthday(new)
+    }
+
+    /** It's this kid's birthday today. */
+    val isBirthday: Boolean get() = Holiday.BIRTHDAY in holidaysToday(birthday, today())
+
+    /** A game for this kid today: the holidays that are on (and their birthday), on this season's arena. */
+    fun todaysOptions(): SimOptions = todaysOptions(birthday, today())
+
     fun changeSnakeName(new: String) {
         snakeName = new
         saved.saveSnakeName(new)
@@ -153,5 +174,14 @@ class Profile(
     }
 }
 
-/** The holidays that are on today, by this phone's calendar. */
-fun holidaysToday(): Set<Holiday> = LocalDate.now().let { Holiday.on(it.monthValue, it.dayOfMonth) }
+/** The holidays that are on [today] (by this phone's calendar), with [Holiday.BIRTHDAY] if it's the [birthday]. */
+fun holidaysToday(
+    birthday: Birthday? = null,
+    today: LocalDate = LocalDate.now(),
+): Set<Holiday> = Holiday.on(today.year, today.monthValue, today.dayOfMonth, birthday)
+
+/** A game [today]: its holidays (with [birthday], if it's then) for the computer snakes, and the season's arena. */
+fun todaysOptions(
+    birthday: Birthday? = null,
+    today: LocalDate = LocalDate.now(),
+): SimOptions = SimOptions(season = holidaysToday(birthday, today), arena = ArenaSeason.forMonth(today.monthValue))

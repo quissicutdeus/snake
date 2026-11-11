@@ -1,6 +1,7 @@
 package com.quissicutdeus.snake.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -9,12 +10,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import com.quissicutdeus.snake.Storage
 import com.quissicutdeus.snake.game.audio.Sound
+import com.quissicutdeus.snake.game.model.Hat
 import com.quissicutdeus.snake.game.model.SnakeStyle
 import com.quissicutdeus.snake.game.model.Unlock
+import com.quissicutdeus.snake.game.model.Unlocks
 import com.quissicutdeus.snake.game.sim.Eater
 import com.quissicutdeus.snake.game.sim.Scoreboard
+import java.time.LocalDate
 
 /** Result of one game, handed from the play screen to the game-over screen. */
 data class GameResult(
@@ -139,9 +144,11 @@ fun SniddleApp(
     storage: Storage,
     playSound: (Sound) -> Unit,
     playMusic: (Boolean) -> Unit = {},
+    /** A fixed date for tests to play on; null for today's. */
+    today: (() -> LocalDate)? = null,
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
-    val me = remember { Profile(storage) }
+    val me = remember { if (today == null) Profile(storage) else Profile(storage, today) }
     val notes = remember { DeviceNotes(storage) }
     val bedtime = remember { Bedtime(storage, me) }
     var round by rememberSaveable { mutableIntStateOf(0) }
@@ -237,6 +244,7 @@ private fun PlayRoute(
         onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
         showTips = remember(round) { tipsDue(me.stats) },
         bedtime = bedtime.forGame(onHome),
+        options = remember(round) { me.todaysOptions() },
     )
 }
 
@@ -263,8 +271,10 @@ private fun TitleRoute(
         onHighScores = onHighScores,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
+        arena = remember { me.todaysOptions().arena },
         content = {
             WhoIsPlaying(me.players, me.playerId, me::switchTo, onAddPlayer)
+            if (me.isBirthday) HappyBirthday(me.snakeName, Unlocks.isUnlocked(Hat.BIRTHDAY_CAKE, me.stats))
             if (notes.news.isNotEmpty()) {
                 WhatsNewCard(notes.news, notes::newsShown, notes::dismissNews)
             } else {
@@ -272,6 +282,8 @@ private fun TitleRoute(
             }
         },
     )
+    // Over everything, each time the birthday kid is picked.
+    if (me.isBirthday) BirthdayConfetti(me.playerId, Modifier.fillMaxSize())
 }
 
 /**
@@ -293,6 +305,7 @@ private fun MySnakeRoute(
         knownNames = remember { storage.loadNames() },
         stats = me.stats,
         littleKid = LittleKidMode(me.littleKid, me::changeLittleKid),
+        birthday = BirthdaySetting(me.birthday, me::changeBirthday),
         removal =
             me.players.takeIf { it.size > 1 }?.firstOrNull { it.id == me.playerId }?.let { p ->
                 Removal(p.label) {

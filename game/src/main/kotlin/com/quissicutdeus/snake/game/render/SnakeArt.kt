@@ -51,6 +51,7 @@ object SnakeArt {
             Pattern.CHECKER -> if (band(d, r * 1.3f) % 2 == 0) style.bodyColor else style.patternColor
             Pattern.RAINBOW -> Colors.hsv(d / (r * 9f), 0.68f, 1f)
             Pattern.FLAG -> FLAG_COLORS[band(d, r * 1.4f).mod(FLAG_COLORS.size)]
+            Pattern.HEARTS -> CalendarArt.HEART_BANDS[band(d, r * 1.4f).mod(CalendarArt.HEART_BANDS.size)]
         }
 
     /** Red, white and blue bands, whatever colours were picked. */
@@ -68,6 +69,7 @@ object SnakeArt {
         when {
             mood == Mood.ANGRY -> Colors.ANGRY_RED
             style.pattern == Pattern.FLAG -> Colors.darken(Colors.FLAG_BLUE, 0.45f)
+            style.pattern == Pattern.HEARTS -> Colors.darken(CalendarArt.HEART_RED, 0.45f)
             else -> Colors.darken(style.bodyColor, 0.45f)
         }
 
@@ -106,6 +108,10 @@ object SnakeArt {
 
             Pattern.STARS -> {
                 drawStars(c, s, wash)
+            }
+
+            Pattern.HEARTS -> {
+                CalendarArt.drawHearts(c, s, wash)
             }
 
             else -> {} // solid, stripes and rainbow are just body colors
