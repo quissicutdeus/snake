@@ -116,6 +116,11 @@ object HudRenderer {
             val col = if (me) Colors.INK else Colors.WHITE
             val size = 12f * ui
             c.fillCircle(x0 + 16f * ui, y - 4f * ui, 4.5f * ui, s.style.bodyColor)
+            // The biggest snake wears a little crown on its colour dot.
+            if (rank == 1) {
+                HatArt.crownOutline(c, x0 + 16f * ui, y - 9f * ui, 9f * ui, 2.2f * ui)
+                HatArt.drawHat(c, x0 + 16f * ui, y - 9f * ui, 9f * ui, Hat.CROWN, s.style)
+            }
             c.text("$rank", x0 + 28f * ui, y, size, col)
             val name = fit(c, s.name, size, pw - 78f * ui)
             c.text(name, x0 + 44f * ui, y, size, col, bold = me)

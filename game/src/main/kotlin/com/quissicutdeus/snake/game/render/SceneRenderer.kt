@@ -300,8 +300,31 @@ object SceneRenderer {
             val grow = 1f + 0.35f * (1f - min(1f, (1f - k) * 6f)) // quick pop, then settle
             val size = wd.size * 0.75f * textUnit * grow
             val a = min(1f, k * 3f)
-            shadowText(c, wd.text, wd.x, wd.y, size, Colors.withAlpha(wd.color, a), TextAlign.CENTER, size * 0.08f, a)
+            comicText(c, wd.text, wd.x, wd.y, size, wd.color, a)
         }
+    }
+
+    /**
+     * A floating comic word: white letters in a thick outline of [color], ringed
+     * in ink and dropped onto a soft shadow, so it reads on grass and on any snake.
+     */
+    @Suppress("LongParameterList") // the text, where, how big, and its colour and fade
+    private fun comicText(
+        c: Canvas2D,
+        text: String,
+        x: Float,
+        y: Float,
+        size: Float,
+        color: Int,
+        alpha: Float,
+    ) {
+        val rim = size * 0.2f
+        val edge = rim + size * 0.1f
+        val off = size * 0.07f
+        c.strokeText(text, x + off, y + off, size, edge, Colors.withAlpha(Colors.INK, 0.45f * alpha), TextAlign.CENTER)
+        c.strokeText(text, x, y, size, edge, Colors.withAlpha(Colors.INK, 0.85f * alpha), TextAlign.CENTER)
+        c.strokeText(text, x, y, size, rim, Colors.withAlpha(color, alpha), TextAlign.CENTER)
+        c.text(text, x, y, size, Colors.withAlpha(Colors.WHITE, alpha), TextAlign.CENTER)
     }
 
     fun shadowText(

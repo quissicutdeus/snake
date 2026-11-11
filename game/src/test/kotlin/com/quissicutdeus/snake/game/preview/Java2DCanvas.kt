@@ -8,6 +8,7 @@ import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.font.TextLayout
 import java.awt.geom.AffineTransform
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Line2D
@@ -163,14 +164,37 @@ class Java2DCanvas(
     ) {
         g.font = font(size, bold)
         g.color = color(color)
-        val w = g.fontMetrics.stringWidth(text)
-        val dx =
-            when (align) {
-                TextAlign.LEFT -> 0f
-                TextAlign.CENTER -> -w / 2f
-                TextAlign.RIGHT -> -w.toFloat()
-            }
-        g.drawString(text, x + dx, y)
+        g.drawString(text, x + alignOffset(text, align), y)
+    }
+
+    override fun strokeText(
+        text: String,
+        x: Float,
+        y: Float,
+        size: Float,
+        width: Float,
+        color: Int,
+        align: TextAlign,
+    ) {
+        g.font = font(size, true)
+        val outline = TextLayout(text, g.font, g.fontRenderContext).getOutline(null)
+        val at = AffineTransform.getTranslateInstance((x + alignOffset(text, align)).toDouble(), y.toDouble())
+        g.color = color(color)
+        g.stroke = BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(at.createTransformedShape(outline))
+    }
+
+    /** How far to shift [text] (in the current font) so it lines up as [align] asks. */
+    private fun alignOffset(
+        text: String,
+        align: TextAlign,
+    ): Float {
+        val w = g.fontMetrics.stringWidth(text).toFloat()
+        return when (align) {
+            TextAlign.LEFT -> 0f
+            TextAlign.CENTER -> -w / 2f
+            TextAlign.RIGHT -> -w
+        }
     }
 
     override fun measureText(

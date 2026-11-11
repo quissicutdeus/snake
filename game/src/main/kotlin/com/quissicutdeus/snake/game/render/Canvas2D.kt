@@ -91,6 +91,17 @@ interface Canvas2D {
         bold: Boolean = true,
     )
 
+    /** Strokes the outline of bold [text] (round joins), [width] wide, with its baseline at [y]. */
+    fun strokeText(
+        text: String,
+        x: Float,
+        y: Float,
+        size: Float,
+        width: Float,
+        color: Int,
+        align: TextAlign = TextAlign.LEFT,
+    )
+
     fun measureText(
         text: String,
         size: Float,

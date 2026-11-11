@@ -38,6 +38,7 @@ fun main(args: Array<String>) {
     powerUps(out)
     dangerArrows(out)
     biggestSnake(out)
+    portraitHud(out)
     println("Previews written to ${out.absolutePath}")
 }
 
@@ -136,6 +137,25 @@ private fun biggestSnake(out: File) {
     val c = Java2DCanvas(W, H)
     SceneRenderer.draw(c, sim, cam, fx, 0.3f, HudInsets())
     c.writePng(File(out, "biggest_snake.png"))
+}
+
+/**
+ * A portrait phone (720x1600 at 2x, pause button at the top centre), where the
+ * "Biggest snakes" panel narrows. A long-named computer snake holds the crown.
+ */
+private fun portraitHud(out: File) {
+    val w = 720
+    val h = 1600
+    val sim = GameSim(seed = 5, options = SimOptions(aiCount = 0, pelletCount = 120, spawnPlayer = false, powerUps = false))
+    val p = sim.addSnake("You", SnakeStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES), true, 2000f, 2000f, 0.3f, 300f)
+    nearby(sim, "Sir Wigglesworth the Third", 1400f, 2200f, 1700f, 2.6f)
+    nearby(sim, "Squiggle", 500f, 1800f, 2300f, -0.4f)
+    sim.step()
+    val cam = Camera()
+    cam.snapTo(p.x, p.y, p.radius, w.toFloat(), h.toFloat())
+    val c = Java2DCanvas(w, h)
+    SceneRenderer.draw(c, sim, cam, Fx(), 0.2f, HudInsets(top = 48f, topCenter = 104f))
+    c.writePng(File(out, "portrait_hud.png"))
 }
 
 /** A big player has just bitten through an AI snake: the tail lies on the ground in pieces. */

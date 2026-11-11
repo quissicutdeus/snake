@@ -237,6 +237,18 @@ private class CountingCanvas(
         calls++
     }
 
+    override fun strokeText(
+        text: String,
+        x: Float,
+        y: Float,
+        size: Float,
+        width: Float,
+        color: Int,
+        align: TextAlign,
+    ) {
+        calls++
+    }
+
     // Roughly what a real font measures, so the HUD's name fitting does its usual work.
     override fun measureText(
         text: String,

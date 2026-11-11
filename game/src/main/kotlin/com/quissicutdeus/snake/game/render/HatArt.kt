@@ -56,15 +56,7 @@ object HatArt {
         u: Float,
         wash: Float,
     ) {
-        path.reset()
-        path.moveTo(x - 0.55f * u, y)
-        path.lineTo(x - 0.6f * u, y - 0.5f * u)
-        path.lineTo(x - 0.28f * u, y - 0.24f * u)
-        path.lineTo(x, y - 0.64f * u)
-        path.lineTo(x + 0.28f * u, y - 0.24f * u)
-        path.lineTo(x + 0.6f * u, y - 0.5f * u)
-        path.lineTo(x + 0.55f * u, y)
-        path.close()
+        crownPath(x, y, u)
         c.fillPath(path, Colors.washed(Colors.GOLD, wash))
         c.strokePath(path, max(1f, u * 0.06f), Colors.washed(0xFFB8860B.toInt(), wash))
         val tip = Colors.washed(0xFFFFF59D.toInt(), wash)
@@ -74,6 +66,34 @@ object HatArt {
         c.fillCircle(x, y - 0.14f * u, 0.09f * u, Colors.washed(0xFFE53935.toInt(), wash))
         c.fillCircle(x - 0.32f * u, y - 0.1f * u, 0.06f * u, Colors.washed(0xFF3FA9F5.toInt(), wash))
         c.fillCircle(x + 0.32f * u, y - 0.1f * u, 0.06f * u, Colors.washed(0xFF3FA9F5.toInt(), wash))
+    }
+
+    /** A dark edge around the crown [drawHat] would draw at the same spot, so it stands out on gold. */
+    fun crownOutline(
+        c: Canvas2D,
+        x: Float,
+        y: Float,
+        hr: Float,
+        width: Float,
+    ) {
+        crownPath(x, y, hr)
+        c.strokePath(path, width, Colors.INK)
+    }
+
+    private fun crownPath(
+        x: Float,
+        y: Float,
+        u: Float,
+    ) {
+        path.reset()
+        path.moveTo(x - 0.55f * u, y)
+        path.lineTo(x - 0.6f * u, y - 0.5f * u)
+        path.lineTo(x - 0.28f * u, y - 0.24f * u)
+        path.lineTo(x, y - 0.64f * u)
+        path.lineTo(x + 0.28f * u, y - 0.24f * u)
+        path.lineTo(x + 0.6f * u, y - 0.5f * u)
+        path.lineTo(x + 0.55f * u, y)
+        path.close()
     }
 
     @Suppress("LongParameterList") // position, size and look of the hat

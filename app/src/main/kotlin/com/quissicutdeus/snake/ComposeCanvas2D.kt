@@ -32,6 +32,12 @@ class ComposeCanvas2D : Canvas2D {
         }
     private val plainStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val textStroke =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeJoin = Paint.Join.ROUND
+            typeface = Typeface.DEFAULT_BOLD
+        }
     private val path = Path()
     private val rect = RectF()
 
@@ -179,14 +185,32 @@ class ComposeCanvas2D : Canvas2D {
     ) {
         setupText(size, bold)
         textPaint.color = color
-        textPaint.textAlign =
-            when (align) {
-                TextAlign.LEFT -> Paint.Align.LEFT
-                TextAlign.CENTER -> Paint.Align.CENTER
-                TextAlign.RIGHT -> Paint.Align.RIGHT
-            }
+        textPaint.textAlign = androidAlign(align)
         c.drawText(text, x, y, textPaint)
     }
+
+    override fun strokeText(
+        text: String,
+        x: Float,
+        y: Float,
+        size: Float,
+        width: Float,
+        color: Int,
+        align: TextAlign,
+    ) {
+        textStroke.textSize = size
+        textStroke.strokeWidth = width
+        textStroke.color = color
+        textStroke.textAlign = androidAlign(align)
+        c.drawText(text, x, y, textStroke)
+    }
+
+    private fun androidAlign(align: TextAlign) =
+        when (align) {
+            TextAlign.LEFT -> Paint.Align.LEFT
+            TextAlign.CENTER -> Paint.Align.CENTER
+            TextAlign.RIGHT -> Paint.Align.RIGHT
+        }
 
     override fun measureText(
         text: String,
