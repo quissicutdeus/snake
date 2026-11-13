@@ -5,9 +5,10 @@
   iosApp/scripts/make-icon.sh; see docs/ios.md.
 
   Handles the subset of VectorDrawable the Sniddle icon uses: <group> with
-  pivot/scale/translate, and <path> with fill and stroke attributes. Anything
-  else in the drawable stops the conversion (see the catch-all templates at the
-  bottom), so a new kind of element can't silently drop out of the icon.
+  pivot/scale/translate, and <path> with fill and stroke attributes. Any other
+  element or attribute (fillAlpha, fillType, trimPath*, rotation, a gradient...)
+  stops the conversion, so nothing can silently drop out of the icon: teach the
+  converter the new feature, then add it to the attribute lists below.
 
   Parameters:
     bg   background colour as #RRGGBB (the adaptive icon's background)
@@ -28,6 +29,9 @@
         <xsl:if test="not(starts-with($bg, '#')) or string-length($bg) != 7">
             <xsl:message terminate="yes">vector-to-svg: bg must be #RRGGBB, got '<xsl:value-of select="$bg"/>'</xsl:message>
         </xsl:if>
+        <xsl:call-template name="known-attributes">
+            <xsl:with-param name="known" select="'|name|width|height|viewportWidth|viewportHeight|'"/>
+        </xsl:call-template>
         <xsl:if test="@android:viewportWidth != 108 or @android:viewportHeight != 108">
             <xsl:message terminate="yes">vector-to-svg: expected a 108x108 adaptive-icon viewport</xsl:message>
         </xsl:if>
@@ -49,9 +53,9 @@
         <xsl:variable name="ty" select="sum(@android:translateY)"/>
         <xsl:variable name="sx" select="sum(@android:scaleX) + number(not(@android:scaleX))"/>
         <xsl:variable name="sy" select="sum(@android:scaleY) + number(not(@android:scaleY))"/>
-        <xsl:if test="@android:rotation">
-            <xsl:message terminate="yes">vector-to-svg: group rotation is not supported</xsl:message>
-        </xsl:if>
+        <xsl:call-template name="known-attributes">
+            <xsl:with-param name="known" select="'|name|pivotX|pivotY|scaleX|scaleY|translateX|translateY|'"/>
+        </xsl:call-template>
         <g xmlns="http://www.w3.org/2000/svg">
             <xsl:attribute name="transform">
                 <xsl:value-of select="concat(
@@ -65,6 +69,10 @@
     </xsl:template>
 
     <xsl:template match="path">
+        <xsl:call-template name="known-attributes">
+            <xsl:with-param name="known"
+                select="'|name|pathData|fillColor|strokeColor|strokeWidth|strokeLineCap|strokeLineJoin|'"/>
+        </xsl:call-template>
         <path xmlns="http://www.w3.org/2000/svg" d="{@android:pathData}">
             <xsl:choose>
                 <xsl:when test="@android:fillColor">
@@ -127,7 +135,16 @@
         </xsl:choose>
     </xsl:template>
 
-    <!-- Fail loudly on anything this converter does not understand. -->
+    <!-- Stops on any attribute of the current element that isn't android:<one of known>. -->
+    <xsl:template name="known-attributes">
+        <xsl:param name="known"/>
+        <xsl:for-each select="@*[namespace-uri() != 'http://schemas.android.com/apk/res/android'
+                or not(contains($known, concat('|', local-name(), '|')))]">
+            <xsl:message terminate="yes">vector-to-svg: unsupported attribute <xsl:value-of select="name()"/> on &lt;<xsl:value-of select="name(..)"/>&gt;</xsl:message>
+        </xsl:for-each>
+    </xsl:template>
+
+    <!-- Fail loudly on any element this converter does not understand. -->
     <xsl:template match="*">
         <xsl:message terminate="yes">vector-to-svg: unsupported element &lt;<xsl:value-of select="name()"/>&gt;</xsl:message>
     </xsl:template>
