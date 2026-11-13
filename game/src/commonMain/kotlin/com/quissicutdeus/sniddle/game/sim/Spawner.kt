@@ -69,7 +69,7 @@ class Spawner(
         val outward = atan2(y - sim.world.height / 2f, x - sim.world.width / 2f)
         val heading = outward + (rng.nextFloat() - 0.5f) * 1.2f
         return sim.addSnail(
-            name = sim.pickAiName(),
+            name = pickAiName(sim),
             style = Holiday.dressUp(SnailStyle.random(rng), rng, sim.options.season),
             isPlayer = false,
             x = x,
@@ -77,6 +77,17 @@ class Spawner(
             heading = heading,
             length = length,
         )
+    }
+
+    /** A name for a new computer snail: one no live snail has, if any is left. */
+    private fun pickAiName(sim: GameSim): String {
+        val used =
+            sim.world.snails
+                .filter { it.alive }
+                .map { it.name }
+                .toSet()
+        val free = AI_NAMES.filter { it !in used }
+        return if (free.isNotEmpty()) free[sim.rng.nextInt(free.size)] else AI_NAMES[sim.rng.nextInt(AI_NAMES.size)]
     }
 
     /** A random spot well off-screen and not on top of another snail's head. */
@@ -139,5 +150,47 @@ class Spawner(
     private companion object {
         /** Random spots tried when looking for a free off-screen place to spawn. */
         const val SPAWN_TRIES = 30
+
+        private val AI_NAMES =
+            listOf(
+                "Noodle",
+                "Sir Slime",
+                "Wiggles",
+                "Shelly",
+                "Zippy",
+                "Captain Shell",
+                "Sheldon",
+                "Slowpoke",
+                "Lord Wiggleton",
+                "Swirly",
+                "Pickle",
+                "Sprinkles",
+                "Doodle",
+                "Mr. Snoot",
+                "Lady Glide",
+                "Jellybean",
+                "Pretzel",
+                "Waffles",
+                "Bean Sprout",
+                "Ziggy",
+                "Professor Scales",
+                "Bubbles",
+                "Sir Noodles",
+                "Taco",
+                "Marshmallow",
+                "Escargot",
+                "Gummy",
+                "Princess Goo",
+                "Wobble",
+                "Scooter",
+                "Pudding",
+                "Captain Zig",
+                "Snickerdoodle",
+                "Lil' Turbo",
+                "Mustard",
+                "Tater Tot",
+                "Rascal",
+                "Biscuit",
+            )
     }
 }
