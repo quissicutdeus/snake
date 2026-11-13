@@ -1,6 +1,5 @@
 package com.quissicutdeus.sniddle.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -236,7 +235,7 @@ internal fun <R : Any> rememberGameFrames(
     val currentNap by rememberUpdatedState(nap)
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { current.onPausedChange(true) }
-    BackHandler { current.onPausedChange(!isPaused) }
+    SystemBack { current.onPausedChange(!isPaused) }
 
     // Leaving the game (quit, game over, another app) always stops the music.
     DisposableEffect(loop) { onDispose { current.onMusic(false) } }

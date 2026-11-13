@@ -1,6 +1,5 @@
 package com.quissicutdeus.sniddle.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -221,7 +220,7 @@ fun SniddleApp(
             }
         }
         // Back always leads home (the play screen handles back itself to pause).
-        BackHandler(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
+        SystemBack(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
     }
 }
 
