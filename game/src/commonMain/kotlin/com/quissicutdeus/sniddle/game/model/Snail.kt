@@ -71,9 +71,6 @@ class Snail(
 
     private val trail = Trail()
 
-    /** AI state; null for the player. */
-    var brain: com.quissicutdeus.sniddle.game.sim.AiBrain? = null
-
     // Body circles sampled from the head (index 0) towards the tail.
     var segCount = 0
         private set

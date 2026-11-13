@@ -56,6 +56,11 @@ internal class AiScan {
     var preyDistance = Float.MAX_VALUE
 }
 
+/** Drops the memories of the computer snails about to be cleared away (the dead ones). */
+internal fun GameSim.forgetBrainsOfTheGone() {
+    for (i in world.snails.indices) world.snails[i].let { if (!it.alive && !it.isPlayer) brains.remove(it) }
+}
+
 /** Wander -> seek food -> chase smaller snails -> flee bigger ones. Same rules as the player. */
 object Ai {
     /** Returns the heading this AI snail wants this step. */
@@ -64,7 +69,7 @@ object Ai {
         s: Snail,
         dt: Float,
     ): Float {
-        val brain = s.brain ?: return Float.NaN
+        val brain = sim.brains[s] ?: return Float.NaN
         brain.chaseRest = (brain.chaseRest - dt).coerceAtLeast(0f)
         brain.fleeTimer = (brain.fleeTimer - dt).coerceAtLeast(0f)
         brain.wanderTimer -= dt
