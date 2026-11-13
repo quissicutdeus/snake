@@ -1,0 +1,7 @@
+# Generated from project.yml by XcodeGen; never edited or committed.
+Sniddle.xcodeproj/
+# Xcode's per-user and build output
+xcuserdata/
+DerivedData/
+build/
+*.ipa
