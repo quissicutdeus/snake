@@ -18,7 +18,8 @@ uses them moves without changes.
 Phase 1 put each platform service behind a small Kotlin interface. Each
 interface has an Android implementation, and those are passed in at the top:
 `MainActivity` calls `SniddleApp(storage, calendar, sound, buzzer)`. No screen
-reads `LocalContext` or `LocalView`, and none calls an Android API.
+reads `LocalContext` or `LocalView`, and apart from `ui/SystemBack.kt` none
+calls an Android API.
 
 | Service | Seam (common) | Android implementation | iOS replacement |
 | --- | --- | --- | --- |
@@ -41,7 +42,7 @@ reads `LocalContext` or `LocalView`, and none calls an Android API.
 | `Dialog` (`onDismissRequest` only), `KeyboardOptions` (Words capitalization, Number keyboard, Done action) | `BirthdaySetting`, `Removal`, `GrownUps`, `GameOverScreen`, `MySnailScreen` | Common. No Android-only options are used. |
 | Material3 (`MaterialTheme`, `Typography`, `lightColorScheme`, `Button`, `TextButton`, `Surface`, `Switch`, `OutlinedTextField`, `Text`) | Everywhere | `org.jetbrains.compose.material3`. Everything used exists. |
 | Fonts and emoji (default font family; text such as 🐣, 😴, ❤️) | `Theme`, the text | iOS uses the system font and Apple Color Emoji. The text metrics differ from Roboto, so iOS screenshots won't match Android's pixel for pixel. |
-| Keep screen on, edge-to-edge, immersive system bars | `MainActivity` | `UIApplication.idleTimerDisabled = true`, plus `prefersStatusBarHidden` and `prefersHomeIndicatorAutoHidden` on the view controller hosting `ComposeUIViewController`. |
+| Keep screen on, edge-to-edge, immersive system bars | `MainActivity` | `UIApplication.sharedApplication.idleTimerDisabled = true`, plus `prefersStatusBarHidden` and `prefersHomeIndicatorAutoHidden` on the view controller hosting `ComposeUIViewController`. |
 | Screen orientation | Manifest: no lock; `configChanges` keep the activity alive across rotation | `Info.plist`: allow every orientation on iPad, plus both landscapes on iPhone. |
 | Resources (`R.string.app_name`, launcher icon, theme) | Manifest and `res/` only; the UI uses no resources | Name and icon go in the Xcode project. The icon is an Android vector drawable, so iOS needs an asset catalog of PNGs. |
 | `android.util.Log`, `Handler`/`Looper`, threads | `SoundPlayer` only | Part of the iOS sound implementation. |
