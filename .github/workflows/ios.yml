@@ -12,8 +12,8 @@ name: iOS
 #               it, which CI can't do: a free Apple ID has no certificate to export.
 #
 # PHASE 1/2 UNKNOWNS, marked "PHASE" below:
-#   - :game:iosSimulatorArm64Test exists once game/ is Kotlin Multiplatform with
-#     an iosSimulatorArm64 target (phase 1). Until then game-tests fails.
+#   - :game:iosSimulatorArm64Test and :game:linkDebugTestIosArm64 exist once game/ is Kotlin Multiplatform with
+#     iosArm64 and iosSimulatorArm64 targets (phase 1, names confirmed). Until then game-tests fails.
 #   - The shared UI module (:composeApp, framework "ComposeApp") is configured in
 #     iosApp/project.yml (phase 2). Until then ipa builds a placeholder app,
 #     which is enough to try the install path on a real device.
@@ -79,11 +79,13 @@ jobs:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
 
-      # PHASE 1: task name assumed from the Kotlin Multiplatform conventions
-      # (<target>Test). Kotlin picks the simulator Xcode lists as its default
-      # test device, so no device name is hard-coded here.
-      - name: Game tests (iosSimulatorArm64)
-        run: ./gradlew :game:iosSimulatorArm64Test --console=plain
+      # Task names confirmed by the KMP conversion (phase 1). Kotlin picks the
+      # simulator Xcode lists as its default test device, so no device name is
+      # hard-coded here. linkDebugTestIosArm64 also links the tests for a real
+      # (arm64) device, which the simulator run doesn't prove. Both fail on
+      # purpose, rather than being skipped, on a host that isn't a Mac.
+      - name: Game tests (iosSimulatorArm64) and device test link (iosArm64)
+        run: ./gradlew :game:iosSimulatorArm64Test :game:linkDebugTestIosArm64 --console=plain
 
       - name: Upload test reports
         if: failure()
