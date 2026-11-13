@@ -96,6 +96,14 @@ jobs:
           path: ~/.m2/repository/org/robolectric
           key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
 
+      # The Kotlin/Native compiler (several hundred MB), which Gradle downloads
+      # into ~/.konan the first time it compiles the game for iOS below.
+      - name: Cache the Kotlin/Native compiler
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
       - name: Pick the release version (appVersion + next unused patch)
         id: version
         run: |
@@ -115,10 +123,13 @@ jobs:
 
       # One Gradle run, so the game tests, the Robolectric screenshot tests and
       # the release build (R8) can overlap. Only the release APK is built: it's
-      # the one that gets installed.
+      # the one that gets installed. The game's iOS code and tests are compiled
+      # too (Linux can compile them but not link or run them), so a change that
+      # breaks the iPhone build fails here rather than in the by-hand iOS run.
       - name: Tests and release APK (version ${{ env.VERSION_NAME }})
         run: >-
-          ./gradlew :game:test :app:testDebugUnitTest :app:assembleRelease --console=plain
+          ./gradlew :game:test :app:testDebugUnitTest :app:assembleRelease
+          :game:compileTestKotlinIosArm64 :game:compileTestKotlinIosSimulatorArm64 --console=plain
           -PversionCode=${{ github.run_number }} -PversionName=${{ env.VERSION_NAME }}
 
       - name: Upload test reports
@@ -194,7 +205,7 @@ jobs:
             exit 0
           fi
           app_files=$(git diff --name-only "$last" HEAD |
-            grep -Ev '^(README\.md|PLAN\.md|docs/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
+            grep -Ev '^(README\.md|PLAN\.md|docs/|iosApp/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
           if [ -n "$app_files" ]; then
             echo "app=true" >> "$GITHUB_OUTPUT"
           else

@@ -288,11 +288,11 @@ Every rule that is switched off or loosened is explained next to the setting.
 ## Tune the game
 
 All gameplay numbers live in one file (detekt makes sure they stay there):
-[`game/src/main/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt`](game/src/main/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt).
+[`game/src/commonMain/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt`](game/src/commonMain/kotlin/com/quissicutdeus/sniddle/game/GameConfig.kt).
 After a change, run `./gradlew :game:test :game:balanceReport` to see how games go.
 The few numbers that make little kid mode gentler (hearts, food, the share of
 smaller snails, how bigger snails chase you) are in
-[`Difficulty.kt`](game/src/main/kotlin/com/quissicutdeus/sniddle/game/Difficulty.kt)
+[`Difficulty.kt`](game/src/commonMain/kotlin/com/quissicutdeus/sniddle/game/Difficulty.kt)
 next to it; `LittleKidTest` checks it stays gentler than a normal game.
 
 | Want… | Change |
@@ -310,7 +310,7 @@ next to it; `LittleKidTest` checks it stays gentler than a normal game.
 ## How it's built
 
 ```text
-game/   pure Kotlin, no Android: all rules, AI and drawing code
+game/   shared Kotlin for Android and iOS: all rules, AI and drawing code
   model/   Snail (its slime trail is the path its head took), food,
            SnailStyle, scores,
            Holiday (which are on for a date, and dressing computer snails
