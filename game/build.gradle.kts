@@ -25,6 +25,10 @@ kotlin {
         }
     }
 
+    // iPhones and iPads, and the simulator on Apple-silicon Macs.
+    iosArm64()
+    iosSimulatorArm64()
+
     compilerOptions {
         // Compiler checks: every warning (plus the extra K2 checks, e.g. unused
         // variables and redundant code) fails the build, on every target.
@@ -70,6 +74,19 @@ tasks.register("test") {
     group = "verification"
     description = "Runs the game tests on the JVM (jvmTest)."
     dependsOn("jvmTest")
+}
+
+// Kotlin/Native can compile the iOS code anywhere, but only a Mac can link it
+// and run its tests; elsewhere those tasks are skipped and the build still
+// passes. Asking for them by name off a Mac is a mistake (a CI job on the wrong
+// runner), so it fails instead of passing with nothing tested.
+val iosOnlyOnMac = Regex("""(^|:)(ios\w*Test|ios\w*Binaries|link\w*Ios\w*)$""")
+val askedForIos = gradle.startParameter.taskNames.filter { iosOnlyOnMac.containsMatchIn(it) }
+if (askedForIos.isNotEmpty() && !System.getProperty("os.name").startsWith("Mac")) {
+    throw GradleException(
+        "$askedForIos link or run iOS code, which needs a Mac. " +
+            "Here, :game:compileTestKotlinIosArm64 checks that the iOS code compiles.",
+    )
 }
 
 // The previews, balance report and benchmark below run from the JVM test code,
