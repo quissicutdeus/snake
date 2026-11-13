@@ -1,7 +1,5 @@
 package com.quissicutdeus.sniddle
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
 import com.quissicutdeus.sniddle.game.model.Birthday
 import com.quissicutdeus.sniddle.game.model.ScoreEntry
 import com.quissicutdeus.sniddle.game.model.SnailStyle
@@ -14,19 +12,19 @@ import com.quissicutdeus.sniddle.game.model.Stats
  * copying; other players put "p2." and so on in front of the same keys.
  */
 class SavedPlayer internal constructor(
-    private val prefs: SharedPreferences,
+    private val prefs: KeyValueStore,
     val id: Int,
     /** The shared high-score list, which player 0's totals start from (see [loadStats]). */
     private val oldGames: () -> List<ScoreEntry>,
 ) {
     private fun key(base: String) = if (id == 0) base else "p$id.$base"
 
-    fun loadStyle(): SnailStyle = SnailStyle.decode(prefs.getString(key(KEY_STYLE), null))
+    fun loadStyle(): SnailStyle = SnailStyle.decode(prefs.getString(key(KEY_STYLE)))
 
     fun saveStyle(style: SnailStyle) = prefs.edit { putString(key(KEY_STYLE), style.encode()) }
 
     /** The name the kid gave their snail ("" for none). */
-    fun loadSnailName(): String = prefs.getString(key(KEY_SNAIL_NAME), null).orEmpty()
+    fun loadSnailName(): String = prefs.getString(key(KEY_SNAIL_NAME)).orEmpty()
 
     fun saveSnailName(name: String) = prefs.edit { putString(key(KEY_SNAIL_NAME), name) }
 
@@ -36,7 +34,7 @@ class SavedPlayer internal constructor(
      * count too. Everyone else starts from nothing.
      */
     fun loadStats(): Stats =
-        Stats.decode(prefs.getString(key(KEY_STATS), null)) ?: if (id == 0) {
+        Stats.decode(prefs.getString(key(KEY_STATS))) ?: if (id == 0) {
             oldGames().let { scores -> Stats(scores.maxOfOrNull { it.score } ?: 0, scores.sumOf { it.snailsEaten }, scores.size) }
         } else {
             Stats()
@@ -45,9 +43,9 @@ class SavedPlayer internal constructor(
     fun saveStats(stats: Stats) = prefs.edit { putString(key(KEY_STATS), stats.encode()) }
 
     /** Unlocked looks this kid has been told about ("Hat.TOP_HAT"...); any others get a cheer on the title screen. */
-    fun loadAnnounced(): Set<String> = prefs.getStringSet(key(KEY_ANNOUNCED), null)?.toSet().orEmpty()
+    fun loadAnnounced(): Set<String> = prefs.getStringSet(key(KEY_ANNOUNCED)).orEmpty()
 
-    fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(key(KEY_ANNOUNCED), keys.toSet()) }
+    fun saveAnnounced(keys: Set<String>) = prefs.edit { putStringSet(key(KEY_ANNOUNCED), keys) }
 
     /** Little kid mode: gentler games for this kid (see Difficulty.LITTLE). Off unless switched on. */
     fun loadLittleKid(): Boolean = prefs.getBoolean(key(KEY_LITTLE_KID), false)

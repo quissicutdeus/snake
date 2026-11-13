@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // Keep the screen awake while the game is open.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        val storage = Storage(applicationContext)
+        val storage = phoneStorage(applicationContext)
         setContent { SniddleApp(storage, sounds::play, sounds::music) }
     }
 

@@ -81,7 +81,7 @@ abstract class ScreenTest {
     protected lateinit var storage: Storage
 
     @Before fun setUp() {
-        storage = Storage(RuntimeEnvironment.getApplication())
+        storage = phoneStorage(RuntimeEnvironment.getApplication())
         compose.mainClock.autoAdvance = false
     }
 
