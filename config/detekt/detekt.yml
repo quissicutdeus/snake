@@ -23,6 +23,9 @@ style:
     # sound synthesis (notes in Hz, durations in seconds).
     excludes:
       - '**/test/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/iosTest/**'
       - '**/*.kts'
       - '**/render/**'
       - '**/audio/**'

@@ -1,27 +1,50 @@
-// Pure Kotlin/JVM game logic: no Android or UI dependencies, so it can be unit
-// tested on any machine and reused by a future iOS port.
+// Kotlin Multiplatform game logic: no Android or UI dependencies, so it can be
+// unit tested on any machine and shared by the Android app (the jvm target) and
+// an iOS port (the ios targets).
+//   src/commonMain   the game itself: everything but the code below
+//   src/jvmMain      what each platform does its own way (see the expect
+//   src/iosMain        declarations in commonMain)
+//   src/commonTest   tests run on every target
+//   src/jvmTest      the Java2D previews, sound previews, balance report and
+//                    benchmark (desktop tools, so JVM only)
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.lint) // Android Lint for a plain Kotlin module
     alias(libs.plugins.detekt)
 }
 
-// Built with JDK 21, but emits Java 17 bytecode like the Android app, so the
-// app can use (and inline) game code.
 kotlin {
+    // Built with JDK 21, but emits Java 17 bytecode like the Android app, so the
+    // app can use (and inline) game code.
     jvmToolchain(21)
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         // Compiler checks: every warning (plus the extra K2 checks, e.g. unused
-        // variables and redundant code) fails the build.
+        // variables and redundant code) fails the build, on every target.
         allWarningsAsErrors.set(true)
         extraWarnings.set(true)
+    }
+
+    sourceSets {
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
     }
 }
 
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    // detekt's defaults are src/main and src/test, which don't exist here:
+    // without this it would check nothing and pass. Every source set instead.
+    source.setFrom("src")
 }
 
 lint {
@@ -33,16 +56,7 @@ lint {
     disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-dependencies {
-    testImplementation(kotlin("test"))
-}
-
-tasks.test {
+tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
     testLogging {
         events("failed")
@@ -50,12 +64,27 @@ tasks.test {
     }
 }
 
+// CI and the README run the game tests as `:game:test`: on the JVM, like the
+// Android app. (The iOS tests run on a Mac: see iosSimulatorArm64Test.)
+tasks.register("test") {
+    group = "verification"
+    description = "Runs the game tests on the JVM (jvmTest)."
+    dependsOn("jvmTest")
+}
+
+// The previews, balance report and benchmark below run from the JVM test code,
+// on the same JDK 21 toolchain the code is built with.
+val jvmTestCompilation = kotlin.jvm().compilations["test"]
+val jvmTestClasspath = files(jvmTestCompilation.output.allOutputs, jvmTestCompilation.runtimeDependencyFiles)
+val jdk21 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) }
+
 // Renders the real game art to PNG files with Java2D (no phone needed):
 //   ./gradlew :game:renderPreviews   ->  game/build/previews/*.png
 tasks.register<JavaExec>("renderPreviews") {
     group = "verification"
     description = "Renders PNG previews of the game art into build/previews."
-    classpath = sourceSets["test"].runtimeClasspath
+    classpath = jvmTestClasspath
+    javaLauncher.set(jdk21)
     mainClass.set("com.quissicutdeus.sniddle.game.preview.RenderPreviewsKt")
     args(
         layout.buildDirectory
@@ -71,7 +100,8 @@ tasks.register<JavaExec>("renderPreviews") {
 tasks.register<JavaExec>("soundPreviews") {
     group = "verification"
     description = "Writes the synthesized sound effects as WAV files into build/sounds."
-    classpath = sourceSets["test"].runtimeClasspath
+    classpath = jvmTestClasspath
+    javaLauncher.set(jdk21)
     mainClass.set("com.quissicutdeus.sniddle.game.preview.SoundPreviewsKt")
     args(
         layout.buildDirectory
@@ -86,7 +116,8 @@ tasks.register<JavaExec>("soundPreviews") {
 tasks.register<JavaExec>("balanceReport") {
     group = "verification"
     description = "Prints how bot-played games go with the current GameConfig."
-    classpath = sourceSets["test"].runtimeClasspath
+    classpath = jvmTestClasspath
+    javaLauncher.set(jdk21)
     mainClass.set("com.quissicutdeus.sniddle.game.preview.BalanceReportKt")
 }
 
@@ -96,6 +127,7 @@ tasks.register<JavaExec>("balanceReport") {
 tasks.register<JavaExec>("benchmark") {
     group = "verification"
     description = "Times GameSim.step() and SceneRenderer.draw() on the JVM."
-    classpath = sourceSets["test"].runtimeClasspath
+    classpath = jvmTestClasspath
+    javaLauncher.set(jdk21)
     mainClass.set("com.quissicutdeus.sniddle.game.preview.BenchmarkKt")
 }
