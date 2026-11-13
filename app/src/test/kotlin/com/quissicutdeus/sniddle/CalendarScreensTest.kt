@@ -26,7 +26,7 @@ import java.time.LocalDate
 class CalendarScreensTest : ScreenTest() {
     private fun launchOn(date: LocalDate) {
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, playSound = {}, today = { date }) }
+        compose.setContent { SniddleApp(storage, { date.toDay() }, playSound = {}) }
         advance(800)
     }
 
@@ -62,7 +62,7 @@ class CalendarScreensTest : ScreenTest() {
         storage.player(0).saveSnailName("Caleb")
         storage.player(0).saveBirthday(Birthday(9, 12))
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, playSound = {}, today = { LocalDate.of(2026, 9, 12) }) }
+        compose.setContent { SniddleApp(storage, { Day(2026, 9, 12) }, playSound = {}) }
         advance(300)
         compose.onNodeWithText("🎂 Happy birthday, Caleb! 🎉").assertExists()
         compose.onNodeWithText("Play a game to get your birthday cake hat!").assertExists()
@@ -92,27 +92,27 @@ class CalendarScreensTest : ScreenTest() {
 
     @Test fun theDayBeforeAndAfterIsJustAnotherDay() {
         storage.player(0).saveBirthday(Birthday(9, 12))
-        assertFalse(Profile(storage) { LocalDate.of(2026, 9, 11) }.isBirthday)
-        assertFalse(Profile(storage) { LocalDate.of(2026, 9, 13) }.isBirthday)
-        assertTrue(Profile(storage) { LocalDate.of(2031, 9, 12) }.isBirthday)
+        assertFalse(Profile(storage) { Day(2026, 9, 11) }.isBirthday)
+        assertFalse(Profile(storage) { Day(2026, 9, 13) }.isBirthday)
+        assertTrue(Profile(storage) { Day(2031, 9, 12) }.isBirthday)
     }
 
     @Test fun aLeapDayBirthdayIsOnThe28thInOtherYears() {
         storage.player(0).saveBirthday(Birthday(2, 29))
-        assertTrue(Profile(storage) { LocalDate.of(2027, 2, 28) }.isBirthday)
-        assertFalse(Profile(storage) { LocalDate.of(2027, 3, 1) }.isBirthday)
-        assertFalse(Profile(storage) { LocalDate.of(2028, 2, 28) }.isBirthday)
-        assertTrue(Profile(storage) { LocalDate.of(2028, 2, 29) }.isBirthday)
+        assertTrue(Profile(storage) { Day(2027, 2, 28) }.isBirthday)
+        assertFalse(Profile(storage) { Day(2027, 3, 1) }.isBirthday)
+        assertFalse(Profile(storage) { Day(2028, 2, 28) }.isBirthday)
+        assertTrue(Profile(storage) { Day(2028, 2, 29) }.isBirthday)
     }
 
     @Test fun aGameOnTheirBirthdayEarnsTheCakeHatForGood() {
         storage.player(0).saveBirthday(Birthday(9, 12))
-        val me = Profile(storage) { LocalDate.of(2026, 9, 12) }
+        val me = Profile(storage) { Day(2026, 9, 12) }
         val options = me.todaysOptions()
         assertTrue(Holiday.BIRTHDAY in options.season) // party hats for the computer snails
         val unlocked = me.recordGame(GameResult(30, 0, style, 1L))
         assertEquals(listOf(Hat.BIRTHDAY_CAKE), unlocked.map { it.item })
-        val nextWeek = Profile(storage) { LocalDate.of(2026, 9, 19) }
+        val nextWeek = Profile(storage) { Day(2026, 9, 19) }
         assertFalse(nextWeek.isBirthday)
         assertTrue(Holiday.BIRTHDAY !in nextWeek.todaysOptions().season)
         assertTrue(Holiday.BIRTHDAY in nextWeek.stats.holidays)
@@ -120,7 +120,7 @@ class CalendarScreensTest : ScreenTest() {
 
     @Test fun eachKidHasTheirOwnBirthdayAndRemovingForgetsIt() {
         storage.player(0).saveBirthday(Birthday(9, 12))
-        val me = Profile(storage) { LocalDate.of(2026, 9, 12) }
+        val me = Profile(storage) { Day(2026, 9, 12) }
         me.addPlayer(kotlin.random.Random(1))
         assertNull(me.birthday)
         assertFalse(me.isBirthday)
@@ -137,9 +137,9 @@ class CalendarScreensTest : ScreenTest() {
     }
 
     @Test fun theArenaFollowsTheSeasons() {
-        assertEquals(ArenaSeason.SNOW, Profile(storage) { LocalDate.of(2026, 12, 20) }.todaysOptions().arena)
-        assertEquals(ArenaSeason.AUTUMN, Profile(storage) { LocalDate.of(2026, 10, 20) }.todaysOptions().arena)
-        assertEquals(ArenaSeason.GRASS, Profile(storage) { LocalDate.of(2026, 5, 20) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.SNOW, Profile(storage) { Day(2026, 12, 20) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.AUTUMN, Profile(storage) { Day(2026, 10, 20) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.GRASS, Profile(storage) { Day(2026, 5, 20) }.todaysOptions().arena)
     }
 
     @Test fun theTitleAndTheGameShowTheSnow() {

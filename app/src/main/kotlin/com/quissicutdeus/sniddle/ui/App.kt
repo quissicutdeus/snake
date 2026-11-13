@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.quissicutdeus.sniddle.PhoneCalendar
 import com.quissicutdeus.sniddle.Storage
 import com.quissicutdeus.sniddle.game.audio.Sound
 import com.quissicutdeus.sniddle.game.model.Hat
@@ -19,7 +20,6 @@ import com.quissicutdeus.sniddle.game.model.Unlock
 import com.quissicutdeus.sniddle.game.model.Unlocks
 import com.quissicutdeus.sniddle.game.sim.Eater
 import com.quissicutdeus.sniddle.game.sim.Scoreboard
-import java.time.LocalDate
 
 /** Result of one game, handed from the play screen to the game-over screen. */
 data class GameResult(
@@ -147,15 +147,15 @@ private fun eaterAt(p: List<String>): Eater? {
 @Composable
 fun SniddleApp(
     storage: Storage,
+    /** Today's date (a fixed one in tests). */
+    calendar: PhoneCalendar,
     playSound: (Sound) -> Unit,
     playMusic: (Boolean) -> Unit = {},
-    /** A fixed date for tests to play on; null for today's. */
-    today: (() -> LocalDate)? = null,
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
-    val me = remember { if (today == null) Profile(storage) else Profile(storage, today) }
+    val me = remember { Profile(storage, calendar) }
     val notes = remember { DeviceNotes(storage) }
-    val bedtime = remember { Bedtime(storage, me) }
+    val bedtime = remember { Bedtime(storage, me, calendar) }
     var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun play() {
@@ -283,6 +283,8 @@ private fun TitleRoute(
         settings = me.settings,
         onSettingsChange = me::changeSettings,
         arena = remember { me.todaysOptions().arena },
+        // The computer snails behind the menu dress up for today's holidays, but not for a birthday.
+        holidays = remember { holidaysToday(birthday = null, today = me.calendar.today()) },
         content = {
             WhoIsPlaying(me.players, me.playerId, me::switchTo, onAddPlayer)
             if (me.isBirthday) HappyBirthday(me.snailName, Unlocks.isUnlocked(Hat.BIRTHDAY_CAKE, me.stats))

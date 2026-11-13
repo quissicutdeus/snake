@@ -1,7 +1,5 @@
 package com.quissicutdeus.sniddle
 
-import java.time.LocalDate
-
 /**
  * One day's play on this phone: which day ([day], as days since 1970 on the
  * phone's calendar), how long games really ran, and extra time a grown-up
@@ -47,7 +45,7 @@ class PlayClock(
     private val limitMinutes: () -> Int,
     private val load: () -> String?,
     private val save: (String) -> Unit,
-    private val today: () -> LocalDate,
+    private val today: PhoneCalendar,
 ) {
     private var record = PlayDay.decode(load()) ?: PlayDay(todayNumber())
 
@@ -55,7 +53,7 @@ class PlayClock(
     private var unsavedMs = 0L
     private var fractionMs = 0f
 
-    private fun todayNumber() = today().toEpochDay()
+    private fun todayNumber() = today.today().epochDay
 
     /** Today's record (the first look on a new day starts it afresh). */
     private fun current(): PlayDay {

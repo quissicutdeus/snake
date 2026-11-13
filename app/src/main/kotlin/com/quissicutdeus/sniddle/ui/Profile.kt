@@ -3,6 +3,8 @@ package com.quissicutdeus.sniddle.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.quissicutdeus.sniddle.Day
+import com.quissicutdeus.sniddle.PhoneCalendar
 import com.quissicutdeus.sniddle.SavedPlayer
 import com.quissicutdeus.sniddle.Storage
 import com.quissicutdeus.sniddle.game.model.ArenaSeason
@@ -13,7 +15,6 @@ import com.quissicutdeus.sniddle.game.model.Stats
 import com.quissicutdeus.sniddle.game.model.Unlock
 import com.quissicutdeus.sniddle.game.model.Unlocks
 import com.quissicutdeus.sniddle.game.sim.SimOptions
-import java.time.LocalDate
 import kotlin.random.Random
 
 /** One kid on the title screen's "who's playing?" row. */
@@ -32,7 +33,7 @@ data class PlayerCard(
 class Profile(
     private val storage: Storage,
     /** Today's date (a fixed one in tests). */
-    private val today: () -> LocalDate = LocalDate::now,
+    val calendar: PhoneCalendar,
 ) {
     var settings: Settings by mutableStateOf(storage.loadSettings())
         private set
@@ -117,7 +118,7 @@ class Profile(
      */
     fun recordGame(
         result: GameResult,
-        season: Set<Holiday> = holidaysToday(birthday, today()),
+        season: Set<Holiday> = holidaysToday(birthday, calendar.today()),
     ): List<Unlock> {
         val before = stats
         stats = before.after(result.score, result.snailsEaten, season)
@@ -135,11 +136,11 @@ class Profile(
         /** The holidays on; null for today's, with that kid's own birthday. */
         season: Set<Holiday>? = null,
     ): List<Unlock> {
-        if (id == playerId) return recordGame(result, season ?: holidaysToday(birthday, today()))
+        if (id == playerId) return recordGame(result, season ?: holidaysToday(birthday, calendar.today()))
         if (players.none { it.id == id }) return emptyList()
         val kid = storage.player(id)
         val before = kid.loadStats()
-        val after = before.after(result.score, result.snailsEaten, season ?: holidaysToday(kid.loadBirthday(), today()))
+        val after = before.after(result.score, result.snailsEaten, season ?: holidaysToday(kid.loadBirthday(), calendar.today()))
         kid.saveStats(after)
         val unlocked = Unlocks.newlyUnlocked(before, after)
         if (unlocked.isNotEmpty()) kid.saveAnnounced(kid.loadAnnounced() + unlocked.map { it.key })
@@ -180,10 +181,10 @@ class Profile(
     }
 
     /** It's this kid's birthday today. */
-    val isBirthday: Boolean get() = Holiday.BIRTHDAY in holidaysToday(birthday, today())
+    val isBirthday: Boolean get() = Holiday.BIRTHDAY in holidaysToday(birthday, calendar.today())
 
     /** A game for this kid today: the holidays that are on (and their birthday), on this season's arena. */
-    fun todaysOptions(): SimOptions = todaysOptions(birthday, today())
+    fun todaysOptions(): SimOptions = todaysOptions(birthday, calendar.today())
 
     /**
      * A two-player game for this kid and kid [partnerId] ([GUEST_ID] for a
@@ -194,7 +195,7 @@ class Profile(
     fun togetherOptions(partnerId: Int): SimOptions {
         val partner = storage.player(partnerId).takeIf { players.any { it.id == partnerId } }
         val mine = todaysOptions()
-        val theirs = holidaysToday(partner?.loadBirthday(), today())
+        val theirs = holidaysToday(partner?.loadBirthday(), calendar.today())
         val bothLittle = littleKid && partner?.loadLittleKid() == true
         return mine.copy(season = mine.season + theirs, difficulty = difficultyFor(bothLittle))
     }
@@ -208,12 +209,12 @@ class Profile(
 
 /** The holidays that are on [today] (by this phone's calendar), with [Holiday.BIRTHDAY] if it's the [birthday]. */
 fun holidaysToday(
-    birthday: Birthday? = null,
-    today: LocalDate = LocalDate.now(),
-): Set<Holiday> = Holiday.on(today.year, today.monthValue, today.dayOfMonth, birthday)
+    birthday: Birthday?,
+    today: Day,
+): Set<Holiday> = Holiday.on(today.year, today.month, today.dayOfMonth, birthday)
 
 /** A game [today]: its holidays (with [birthday], if it's then) for the computer snails, and the season's arena. */
 fun todaysOptions(
-    birthday: Birthday? = null,
-    today: LocalDate = LocalDate.now(),
-): SimOptions = SimOptions(season = holidaysToday(birthday, today), arena = ArenaSeason.forMonth(today.monthValue))
+    birthday: Birthday?,
+    today: Day,
+): SimOptions = SimOptions(season = holidaysToday(birthday, today), arena = ArenaSeason.forMonth(today.month))

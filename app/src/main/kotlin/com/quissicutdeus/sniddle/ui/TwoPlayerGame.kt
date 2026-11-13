@@ -8,6 +8,7 @@ import com.quissicutdeus.sniddle.game.sim.GameSim
 import com.quissicutdeus.sniddle.game.sim.SecondPlayer
 import com.quissicutdeus.sniddle.game.sim.SimOptions
 import com.quissicutdeus.sniddle.game.sim.Thumbstick
+import kotlin.time.Clock
 
 /** How one kid's two-player game went, for the end screen, the high scores and their unlocks. */
 data class KidResult(
@@ -76,7 +77,7 @@ internal class TwoPlayerGame(
                 val state = together.kids[i]
                 KidResult(card.id, card.label, card.style, s.score, s.snailsEaten, state.biggestSeconds.toInt(), state.timesGobbled)
             }
-        return TogetherResult(kidResults, System.currentTimeMillis(), littleKid = sim.difficulty == Difficulty.LITTLE)
+        return TogetherResult(kidResults, Clock.System.now().toEpochMilliseconds(), littleKid = sim.difficulty == Difficulty.LITTLE)
     }
 
     /**

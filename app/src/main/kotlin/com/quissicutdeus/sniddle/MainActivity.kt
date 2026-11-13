@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         // Keep the screen awake while the game is open.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val storage = phoneStorage(applicationContext)
-        setContent { SniddleApp(storage, sounds::play, sounds::music) }
+        setContent { SniddleApp(storage, SystemCalendar, sounds::play, sounds::music) }
     }
 
     override fun onPause() {

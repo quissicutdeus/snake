@@ -70,7 +70,7 @@ class LittleKidModeTest : ScreenTest() {
     @Test fun eachKidHasTheirOwnSwitchAndANewKidStartsWithItOff() {
         seedTwoKids()
         storage.player(1).saveLittleKid(true)
-        val me = Profile(storage)
+        val me = Profile(storage, SystemCalendar)
         assertFalse(me.littleKid)
         me.switchTo(1)
         assertTrue(me.littleKid)
@@ -86,7 +86,7 @@ class LittleKidModeTest : ScreenTest() {
 
     /** Four hearts in the corner, and plenty of food. */
     @Test fun aLittleKidGame() {
-        show { GameScreen(key = 1, style = sirNoodles, playerName = "Bea", onGameOver = {}, onQuit = {}, littleKid = true) }
+        show { GameScreen(key = 1, style = sirNoodles, playerName = "Bea", onGameOver = {}, onQuit = {}, today, littleKid = true) }
         advance(1500)
         snap("little_kid_game")
         assertTrue("a 4th heart in the corner", fourthHeartShows())
@@ -102,7 +102,7 @@ class LittleKidModeTest : ScreenTest() {
         storage.saveCurrentPlayer(1)
         storage.player(1).saveLittleKid(true)
         val app = SavedAndRestored()
-        compose.setContent { Restorable(app) { SniddleApp(storage, playSound = {}) } }
+        compose.setContent { Restorable(app) { SniddleApp(storage, SystemCalendar, playSound = {}) } }
         advance(100)
         compose.onNodeWithText("Play!").performClick()
         advance(1000)

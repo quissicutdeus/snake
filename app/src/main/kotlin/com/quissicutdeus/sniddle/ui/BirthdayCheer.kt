@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -67,7 +68,7 @@ fun HappyBirthday(
 private class Piece(
     rng: Random,
 ) {
-    private val angle = -Math.PI.toFloat() * (0.1f + 0.8f * rng.nextFloat())
+    private val angle = -PI.toFloat() * (0.1f + 0.8f * rng.nextFloat())
     private val speed = 0.5f + 0.9f * rng.nextFloat()
     val vx = cos(angle) * speed
     val vy = sin(angle) * speed

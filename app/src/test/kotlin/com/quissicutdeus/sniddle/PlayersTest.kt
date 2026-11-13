@@ -71,7 +71,7 @@ class PlayersTest : ScreenTest() {
             putStringSet("announced", setOf("Hat.TOP_HAT", "Pattern.STARS", "Eyes.HEARTS"))
         }
         storage.addScore(ScoreEntry("Caleb", 120, 4, sirNoodles, 1000L))
-        val me = Profile(storage)
+        val me = Profile(storage, SystemCalendar)
         assertEquals(sirNoodles, me.style)
         assertEquals("Caleb", me.snailName)
         assertEquals(Stats(120, 11, 10), me.stats)
@@ -95,7 +95,7 @@ class PlayersTest : ScreenTest() {
         seedOldScores()
         val first = storage.player(0).loadStats()
         assertEquals(Stats(120, 0, 10), first)
-        val me = Profile(storage)
+        val me = Profile(storage, SystemCalendar)
         me.addPlayer(kotlin.random.Random(1))
         assertEquals(1, me.playerId)
         assertEquals(Stats(), me.stats)
@@ -196,7 +196,7 @@ class PlayersTest : ScreenTest() {
         compose.onNode(hasSetTextAction() and hasText("Mya")).assertExists()
         // Caleb's top hat is his: Mya hasn't reached length 100 yet.
         compose.onNodeWithContentDescription("Top hat, locked", substring = true).assertExists()
-        val mya = Profile(storage)
+        val mya = Profile(storage, SystemCalendar)
         assertEquals(sirNoodles, mya.style)
         mya.recordGame(GameResult(40, 2, sirNoodles, 2000L), season = emptySet())
         assertEquals(Stats(40, 2, 1), storage.player(1).loadStats())
@@ -208,7 +208,7 @@ class PlayersTest : ScreenTest() {
     @Test fun removingAPlayerWhoIsntPlaying() {
         seedThreePlayers()
         storage.addScore(ScoreEntry("Mya", 77, 1, sirNoodles, 3000L))
-        Profile(storage).removePlayer(1)
+        Profile(storage, SystemCalendar).removePlayer(1)
         assertEquals(listOf(0, 2), storage.loadPlayers())
         assertEquals(0, storage.loadCurrentPlayer())
         assertEquals(emptyList<String>(), rawPrefs().all.keys.filter { it.startsWith("p1.") })
@@ -256,7 +256,7 @@ class PlayersTest : ScreenTest() {
      */
     @Test fun removingTheFirstPlayerThenAddingANewOne() {
         seedOldScores()
-        val me = Profile(storage)
+        val me = Profile(storage, SystemCalendar)
         me.addPlayer(kotlin.random.Random(1))
         me.recordGame(GameResult(40, 2, style, 2000L), season = emptySet())
         me.removePlayer(0)

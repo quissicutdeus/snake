@@ -67,6 +67,7 @@ import com.quissicutdeus.sniddle.game.sim.SavedRun
 import com.quissicutdeus.sniddle.game.sim.SimOptions
 import com.quissicutdeus.sniddle.game.sim.SteerInput
 import com.quissicutdeus.sniddle.game.sim.Thumbstick
+import kotlin.time.Clock
 
 /**
  * A one-player game: the world and the kid's [Seat], which fills the screen,
@@ -78,7 +79,7 @@ private class GameHolder(
     resume: SavedRun? = null,
     playerName: String = "You",
     /** Today's holidays and arena season (see [Profile.todaysOptions]); its difficulty is ignored when carrying on a saved game. */
-    options: SimOptions = todaysOptions(),
+    options: SimOptions,
 ) {
     val sim = GameSim(playerStyle = style, playerName = playerName, options = options, resume = resume)
     val seat = Seat(stick)
@@ -90,7 +91,8 @@ private class GameHolder(
     private fun result(): GameResult {
         val p = sim.player!!
         val little = sim.difficulty == Difficulty.LITTLE
-        return GameResult(p.score, p.snailsEaten, p.style, System.currentTimeMillis(), sim.eatenBy, sim.biggestSeconds.toInt(), little)
+        val now = Clock.System.now().toEpochMilliseconds()
+        return GameResult(p.score, p.snailsEaten, p.style, now, sim.eatenBy, sim.biggestSeconds.toInt(), little)
     }
 }
 
@@ -110,6 +112,8 @@ fun GameScreen(
     playerName: String,
     onGameOver: (GameResult) -> Unit,
     onQuit: () -> Unit,
+    /** Today's holidays (and birthday) and arena season, see [Profile.todaysOptions]. */
+    options: SimOptions,
     modifier: Modifier = Modifier,
     settings: Settings = Settings(),
     onSettingsChange: (Settings) -> Unit = {},
@@ -122,8 +126,6 @@ fun GameScreen(
     bedtime: GameBedtime<GameResult>? = null,
     /** This kid plays in little kid mode (a saved game carries on as it was saved, though). */
     littleKid: Boolean = false,
-    /** Today's holidays (and birthday) and arena season, see [Profile.todaysOptions]. */
-    options: SimOptions = todaysOptions(),
 ) {
     val game = rememberGame(key, style, playerName, options.copy(difficulty = difficultyFor(littleKid)))
     var paused by rememberSaveable(key) { mutableStateOf(false) }

@@ -47,6 +47,7 @@ import com.quissicutdeus.sniddle.ui.SniddleApp
 import com.quissicutdeus.sniddle.ui.SniddleTheme
 import com.quissicutdeus.sniddle.ui.TitleScreen
 import com.quissicutdeus.sniddle.ui.WhatsNew
+import com.quissicutdeus.sniddle.ui.todaysOptions
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -96,6 +97,9 @@ abstract class ScreenTest {
 
     protected fun snap(name: String) = saveScreenshot(compose.onRoot().captureToImage().asAndroidBitmap(), name)
 
+    /** Today's holidays and arena, as the app picks them for a game (so the screenshots follow the time of year). */
+    protected val today get() = todaysOptions(null, SystemCalendar.today())
+
     protected val alreadyEarned = "You've already earned: Top hat and Stars!"
 
     /**
@@ -110,7 +114,7 @@ abstract class ScreenTest {
     /** The whole app; bumping the returned counter starts it afresh (like the next launch). */
     protected fun launchApp(): androidx.compose.runtime.MutableIntState {
         val launch = androidx.compose.runtime.mutableIntStateOf(0)
-        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, playSound = {}) } }
+        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, SystemCalendar, playSound = {}) } }
         advance(800)
         return launch
     }
