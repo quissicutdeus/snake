@@ -58,7 +58,7 @@ explains this well.
 | Tool | Linux today? | Weekly refresh | Verdict |
 | --- | --- | --- | --- |
 | [Impactor](https://github.com/khcrysalis/PlumeImpactor) (formerly PlumeImpactor), GUI + `plumesign` CLI | Yes: AppImage, [Flathub](https://flathub.org/en/apps/dev.khcrysalis.PlumeImpactor), v2.7.2 (2026-10-24) | Plug in at the computer. Its auto-refresh on Linux only works "when a device is plugged in" (no Wi-Fi, because `usbmuxd` has none) | **Recommended** |
-| [iloader](https://github.com/nab138/iloader) | Yes: AppImage, .deb, .rpm, v2.4.1 (2026-10-28) | Plug in at the computer and "Import IPA" again | Good fallback. Built mainly to install SideStore |
+| [iloader](https://github.com/nab138/iloader) | Yes: AppImage, .deb, .rpm, v2.4.1 (2026-10-28) | Plug in at the computer and "Import IPA" again | Fallback. Built mainly to install SideStore; on iOS 27, imported apps reported to close at launch ([#1082](https://github.com/nab138/iloader/issues/1082)) |
 | [SideStore](https://github.com/SideStore/SideStore), installed once with iloader | First install only | On the device: LocalDevVPN on, Wi-Fi, tap refresh in SideStore (or a Shortcuts automation) | Too fragile for kids right now (see below) |
 | [AltServer-Linux](https://github.com/NyaMisty/AltServer-Linux) | Last release v0.0.5, April 2022 | Computer on the same Wi-Fi | Unmaintained. Open issue: AltStore crashes on iOS 26.4 |
 | [Sideloadly](https://sideloadly.io/) | **No**: "macOS 10.12+ · Windows 7+" | Its own daemon | Not an option without Windows or a Mac |
@@ -143,7 +143,9 @@ Retry it once the family is comfortable with the basic path. "SideStore + Sniddl
    [iOS workflow](../.github/workflows/ios.yml). After that, it comes from the
    [latest release](../../../releases/latest).
 3. Plug the device in with a cable and unlock it. Tap **Trust** on the device and enter its passcode.
-4. Open Impactor and sign in with the sideloading Apple ID, entering the two-factor code when asked.
+4. *Then* open Impactor. On Linux, `usbmuxd` can stop while no device is connected, so plug in first; if the
+   device isn't listed, quit and reopen Impactor (its README's Linux note). Sign in with the sideloading
+   Apple ID, entering the two-factor code when asked.
 5. Pick the device, drop `sniddle.ipa` onto Impactor, and install.
 6. On the device, trust the developer
    ([as in SideStore's guide](https://docs.sidestore.io/docs/installation/install)): **Settings → General →
@@ -160,7 +162,7 @@ locks the device to Sniddle until a grown-up triple-clicks and enters a code.
 Do it on a fixed day, for example every Sunday, for each device, well inside the 7 days:
 
 1. Download the newest `sniddle.ipa`. Same file name, so it simply replaces the old one.
-2. Open Impactor, plug the device in, and unlock it.
+2. Plug the device in and unlock it, *then* open Impactor (quit and reopen it if the device isn't listed).
 3. Install `sniddle.ipa` again (the same steps 5 and 8 as above, with the same Apple ID). No need to trust
    or enable anything again.
 
@@ -172,7 +174,14 @@ available. Do the weekly steps; the kids' snails, names and scores are all still
 an app's data while the app stays installed. **Don't delete the app**, because that deletes its data.
 
 **After an iOS update:** expect to tap **Trust** on the device again. If Impactor fails, check its
-[issues](https://github.com/khcrysalis/PlumeImpactor/issues) and try iloader with the same Apple ID.
+[issues](https://github.com/khcrysalis/PlumeImpactor/issues) first. iloader with the same Apple ID is the
+fallback, but it is a real switch, not a one-off:
+
+- iloader may create its own certificate and revoke Impactor's (rule 3). If it does, reinstall with iloader
+  on **every** device that same day, or the others stop opening.
+- On iOS 27, apps installed with iloader's "Import IPA" have been reported to close at launch while the same
+  signed app installed another way works ([iloader #1082](https://github.com/nab138/iloader/issues/1082)).
+  Check that it is fixed first.
 
 ### For the command line
 
@@ -219,11 +228,16 @@ workflow** until phases 1 and 2 land, so it can't block a push or ship anything.
   37.2.
 - It keeps only the newest patch of each Xcode, so when 26.4.1 is replaced the job fails at "Xcode version"
   instead of quietly building with another one. Raise the Xcode version together with Kotlin.
+- The same table lists Kotlin 2.4.20–2.4.21 with Gradle up to 9.7.0 and the Android Gradle plugin up to
+  9.3.1. This repository is on Gradle 9.9 and AGP 9.5.1. That works for Android today, but it is outside
+  what JetBrains lists for Kotlin Multiplatform, so it is the first suspect if the iOS build misbehaves.
 
 ### Jobs
 
-- **`game-tests`:** `./gradlew :game:iosSimulatorArm64Test`, which compiles the game rules with Kotlin/Native
-  and runs their tests in an iOS simulator.
+- **`game-tests`:** `./gradlew :game:iosSimulatorArm64Test :game:linkDebugTestIosArm64`. It compiles the game
+  rules with Kotlin/Native, runs their tests in an iOS simulator, and links the tests for a real arm64
+  device too. These task names are confirmed by the KMP conversion. On Linux,
+  `:game:compileTestKotlinIosArm64` compiles them, but linking and running need a Mac.
   - Kotlin picks Xcode's default test simulator itself
     ([KotlinNativeTestRunFactories.kt](https://github.com/JetBrains/kotlin/blob/v2.4.21/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/native/KotlinNativeTestRunFactories.kt)),
     so no device name is hard-coded.
@@ -325,8 +339,8 @@ and macOS is included. Rough estimates, to be replaced with real timings after t
   - The result is a single-size `AppIcon.appiconset` (Xcode makes every other size).
   - The PNG is committed, because the macOS runners have no librsvg. Run the script again when the Android
     icon changes.
-  - The XSLT stops on any element or attribute it doesn't understand, rather than leaving part of the
-    icon out.
+  - The XSLT stops on any element or attribute it doesn't understand (each element has a list of the
+    attributes it handles), rather than leaving part of the icon out.
 
 ## Phase 2: iOS platform services
 
@@ -445,4 +459,7 @@ of them needs Swift.
 5. **Release cadence:** once iOS is in the pipeline, should every app change also build the IPA (slower
    releases, free macOS minutes), or only some?
 6. **Try the placeholder now?** Running the iOS workflow by hand gives a placeholder IPA. Installing it on
-   one device would prove the whole install path before any porting work.
+   one device would prove the whole install path before any porting work. The placeholder counts its
+   launches and keeps the count in `UserDefaults`. If the count keeps going up after a weekly reinstall,
+   and after a missed week followed by a reinstall, then the claim this page depends on holds on a real
+   device: the kids' data survives.
