@@ -1,0 +1,190 @@
+name: iOS
+
+# The iOS build, kept apart from build.yml while the port is under way.
+# Only "Run workflow" (workflow_dispatch) starts it, so it can't block a push
+# or publish anything: it uploads an unsigned sniddle.ipa as a workflow
+# artifact, never a release. docs/ios.md explains the whole design.
+#
+#   game-tests  the shared game rules' tests, compiled for and run on an iOS
+#               simulator (Kotlin/Native), on top of the JVM tests build.yml runs
+#   ipa         the app for real iPhones and iPads (arm64), unsigned. The family's
+#               sideload tool signs it with their free Apple ID when it installs
+#               it, which CI can't do: a free Apple ID has no certificate to export.
+#
+# PHASE 1/2 UNKNOWNS, marked "PHASE" below:
+#   - :game:iosSimulatorArm64Test exists once game/ is Kotlin Multiplatform with
+#     an iosSimulatorArm64 target (phase 1). Until then game-tests fails.
+#   - The shared UI module (:composeApp, framework "ComposeApp") is configured in
+#     iosApp/project.yml (phase 2). Until then ipa builds a placeholder app,
+#     which is enough to try the install path on a real device.
+#
+# When iOS ships: move both jobs into build.yml, make the release job need
+# them, attach sniddle.ipa to the same release as sniddle.apk, and count
+# iosApp/ as an app change there. Until then build.yml should list iosApp/
+# among the paths that don't release.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Xcode 26.4.1 on the macos-26 image: Kotlin 2.4.20-2.4.21 is listed as
+  # compatible with Xcode 26.4 (kotlinlang.org multiplatform compatibility
+  # guide). Raise it with Kotlin. The image keeps only the newest patch of each
+  # Xcode minor version, so this path moves when 26.4.x does; then the job
+  # fails at "Xcode version" rather than building with something else.
+  # https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md
+  DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+  XCODE_VERSION: 26.4.1
+
+jobs:
+  game-tests:
+    name: Game tests on an iOS simulator
+    # Pinned to an OS version, not macos-latest, so the image (and its Xcode
+    # versions) only change when this file does. Apple Silicon: the simulator
+    # target is iosSimulatorArm64.
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - &xcode
+        name: Xcode version
+        run: |
+          xcodebuild -version
+          xcodebuild -version | grep -qx "Xcode $XCODE_VERSION"
+
+      - &java
+        uses: actions/setup-java@v6.2.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Same Gradle cache terms as build.yml (gradle-actions-caching, agreed 2026-11-10).
+      - &gradle
+        uses: gradle/actions/setup-gradle@v6.4.1
+
+      # Kotlin/Native's compiler and Apple toolchain bits (~1 GB), downloaded
+      # by the first build into ~/.konan. Caching them is most of the time
+      # (and macOS minutes) saved. The Kotlin version lives in libs.versions.toml.
+      - &konan
+        name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      # PHASE 1: task name assumed from the Kotlin Multiplatform conventions
+      # (<target>Test). Kotlin picks the simulator Xcode lists as its default
+      # test device, so no device name is hard-coded here.
+      - name: Game tests (iosSimulatorArm64)
+        run: ./gradlew :game:iosSimulatorArm64Test --console=plain
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ios-test-reports
+          path: game/build/reports
+
+  ipa:
+    name: Unsigned IPA
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - *xcode
+      - *java
+      - *gradle
+      - *konan
+
+      # XcodeGen turns iosApp/project.yml into the Xcode project. From its
+      # GitHub release, checked against the release's published sha256, not
+      # Homebrew (which can't pin a version).
+      - name: Install XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          echo "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806  $RUNNER_TEMP/xcodegen.zip" |
+            shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Generate the Xcode project
+        working-directory: iosApp
+        run: |
+          xcodegen --version
+          xcodegen generate --spec project.yml
+
+      # Same MAJOR.MINOR as the APK (appVersion in gradle.properties). This
+      # stand-alone workflow doesn't pick a release patch number; once the
+      # job moves into build.yml it takes needs.build.outputs.version instead.
+      # CFBundleVersion must only be digits and dots.
+      - name: Pick the version
+        run: |
+          base=$(sed -n 's/^appVersion=//p' gradle.properties)
+          if ! printf '%s\n' "$base" | grep -Eqx '[0-9]+\.[0-9]+'; then
+            echo "::error file=gradle.properties::appVersion must be MAJOR.MINOR, found '$base'"
+            exit 1
+          fi
+          echo "VERSION_NAME=$base.0" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+
+      # A device build (iphoneos, arm64) with signing switched off: the sideload
+      # tool re-signs everything anyway, and a free Apple ID can't sign here.
+      # The "Compile Kotlin framework" phase in project.yml runs Gradle.
+      - name: Build Sniddle.app (unsigned, version ${{ env.VERSION_NAME }})
+        run: >-
+          xcodebuild build
+          -project iosApp/Sniddle.xcodeproj
+          -scheme Sniddle
+          -configuration Release
+          -sdk iphoneos
+          -destination generic/platform=iOS
+          -derivedDataPath "$RUNNER_TEMP/DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=
+          MARKETING_VERSION="$VERSION_NAME"
+          CURRENT_PROJECT_VERSION="$VERSION_CODE"
+
+      # An .ipa is a zip with the app under Payload/. Each check fails the job
+      # rather than shipping something broken or incomplete.
+      - name: Package and check sniddle.ipa
+        run: |
+          app="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/Sniddle.app"
+          test -d "$app"
+          lipo -info "$app/Sniddle"
+          lipo -archs "$app/Sniddle" | grep -qx arm64
+          test "$(plutil -extract CFBundleIdentifier raw "$app/Info.plist")" = com.quissicutdeus.sniddle
+          test "$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")" = "$VERSION_NAME"
+          test "$(plutil -extract CFBundleVersion raw "$app/Info.plist")" = "$VERSION_CODE"
+          test -f "$app/Assets.car"
+          # PHASE 2: once the shared UI module exists, the app must contain it.
+          # Before that this is a placeholder build, and says so.
+          if [ -d composeApp ]; then
+            if ! grep -aq MainViewController "$app/Sniddle"; then
+              echo "::error::composeApp exists but the app has no Kotlin UI in it (no MainViewController symbol)"
+              exit 1
+            fi
+          else
+            echo "::warning::Placeholder app: no composeApp module yet, so there is no game in this IPA."
+          fi
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$app" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/sniddle.ipa" Payload)
+          unzip -l sniddle.ipa | grep -q 'Payload/Sniddle.app/Sniddle$'
+          ls -l sniddle.ipa
+
+      - name: Upload sniddle.ipa (unsigned, the sideload tool signs it)
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sniddle-ipa
+          path: sniddle.ipa
+          if-no-files-found: error
