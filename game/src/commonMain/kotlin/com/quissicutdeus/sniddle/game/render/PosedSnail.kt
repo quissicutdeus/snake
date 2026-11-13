@@ -2,6 +2,7 @@ package com.quissicutdeus.sniddle.game.render
 
 import com.quissicutdeus.sniddle.game.model.Snail
 import com.quissicutdeus.sniddle.game.model.SnailStyle
+import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
@@ -33,7 +34,7 @@ class PosedSnail(
         wavelength: Float = 150f,
         speed: Float = 2.2f,
     ) {
-        val k = 2f * Math.PI.toFloat() / wavelength
+        val k = 2f * PI.toFloat() / wavelength
         // Walk along the curve in small steps so the body length is measured along it.
         var x = headX
         var y = headY + amplitude * 0.35f * sin(-time * speed)
@@ -66,7 +67,7 @@ class PosedSnail(
     ): Float {
         val r = snail.radius
         val outer = r * 4.6f
-        val gap = r * 2.5f / (2f * Math.PI.toFloat())
+        val gap = r * 2.5f / (2f * PI.toFloat())
         var phi = 0f
         for (i in 0 until count) {
             val rho = kotlin.math.max(r * 1.3f, outer - gap * phi)

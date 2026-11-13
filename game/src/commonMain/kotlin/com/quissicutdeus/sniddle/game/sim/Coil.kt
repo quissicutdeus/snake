@@ -1,6 +1,7 @@
 package com.quissicutdeus.sniddle.game.sim
 
 import com.quissicutdeus.sniddle.game.GameConfig
+import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -31,7 +32,7 @@ class Coil private constructor(
             radius: Float,
             length: Float,
         ): Coil {
-            val b = RING_GAP_RADII * radius / (2f * Math.PI.toFloat()) // ring gap per radian
+            val b = RING_GAP_RADII * radius / (2f * PI.toFloat()) // ring gap per radian
             var r = INNER_RADII * radius
             var angle = 0f
             var walked = 0f

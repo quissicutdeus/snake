@@ -4,6 +4,7 @@ import com.quissicutdeus.sniddle.game.model.Snail
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.sim.GameSim
 import com.quissicutdeus.sniddle.game.sim.SimOptions
+import kotlin.math.PI
 
 /** An empty arena (no food, no spawner refills, AI off) for rule tests. */
 fun emptySim(
@@ -45,6 +46,6 @@ fun GameSim.stepUntil(
 }
 
 const val EAST = 0f
-const val WEST = Math.PI.toFloat()
-const val SOUTH = (Math.PI / 2).toFloat()
-const val NORTH = (-Math.PI / 2).toFloat()
+const val WEST = PI.toFloat()
+const val SOUTH = (PI / 2).toFloat()
+const val NORTH = (-PI / 2).toFloat()

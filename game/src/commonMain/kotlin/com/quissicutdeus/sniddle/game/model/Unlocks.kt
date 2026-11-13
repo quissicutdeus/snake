@@ -54,7 +54,7 @@ enum class GoalKind(
     HOLIDAY("%d holiday game"),
     ;
 
-    fun describe(amount: Int) = text.format(amount)
+    fun describe(amount: Int) = text.replace("%d", amount.toString())
 }
 
 /** One look ([item]: a [Hat], [Eyes] or [Pattern]) that unlocks at a goal. */

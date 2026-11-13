@@ -2,7 +2,6 @@ package com.quissicutdeus.sniddle.game.sim
 
 import com.quissicutdeus.sniddle.game.model.ScoreEntry
 import com.quissicutdeus.sniddle.game.model.SnailStyle
-import java.text.BreakIterator
 
 /**
  * The offline, on-device high-score list: ranking, inserting, trimming,
@@ -81,21 +80,18 @@ object Scoreboard {
      * a single cluster piled high with combining marks, which would otherwise be one "letter" as
      * tall or wide as the screen; such a cluster is left out whole.
      *
-     * Clusters come from [BreakIterator.getCharacterInstance], which follows the Unicode extended
-     * grapheme rules (emoji ZWJ sequences included) on JDK 20 and later and on Android, where it is
-     * backed by ICU.
+     * Clusters come from the platform's Unicode text library (see [graphemeEnds]).
      */
     fun fitName(
         text: String,
         maxLength: Int = MAX_NAME_LENGTH,
     ): String {
-        val clusters = BreakIterator.getCharacterInstance()
-        clusters.setText(text)
+        val clusters = graphemeEnds(text)
         var end = 0
         var count = 0
-        while (count < maxLength) {
+        while (count < maxLength && clusters.hasNext()) {
             val next = clusters.next()
-            if (next == BreakIterator.DONE || next > MAX_NAME_CHARS) break
+            if (next > MAX_NAME_CHARS) break
             end = next
             count++
         }

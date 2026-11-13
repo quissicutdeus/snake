@@ -72,6 +72,6 @@ class Trail(
     }
 
     private companion object {
-        fun powerOfTwoAtLeast(n: Int): Int = Integer.highestOneBit(maxOf(n, 2) - 1) shl 1
+        fun powerOfTwoAtLeast(n: Int): Int = (maxOf(n, 2) - 1).takeHighestOneBit() shl 1
     }
 }
