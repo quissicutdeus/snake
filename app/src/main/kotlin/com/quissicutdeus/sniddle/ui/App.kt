@@ -1,6 +1,5 @@
 package com.quissicutdeus.sniddle.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,15 +10,16 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.quissicutdeus.sniddle.Buzzer
+import com.quissicutdeus.sniddle.PhoneCalendar
+import com.quissicutdeus.sniddle.SoundOutput
 import com.quissicutdeus.sniddle.Storage
-import com.quissicutdeus.sniddle.game.audio.Sound
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.Unlock
 import com.quissicutdeus.sniddle.game.model.Unlocks
 import com.quissicutdeus.sniddle.game.sim.Eater
 import com.quissicutdeus.sniddle.game.sim.Scoreboard
-import java.time.LocalDate
 
 /** Result of one game, handed from the play screen to the game-over screen. */
 data class GameResult(
@@ -147,15 +147,15 @@ private fun eaterAt(p: List<String>): Eater? {
 @Composable
 fun SniddleApp(
     storage: Storage,
-    playSound: (Sound) -> Unit,
-    playMusic: (Boolean) -> Unit = {},
-    /** A fixed date for tests to play on; null for today's. */
-    today: (() -> LocalDate)? = null,
+    /** Today's date (a fixed one in tests). */
+    calendar: PhoneCalendar,
+    sound: SoundOutput,
+    buzzer: Buzzer,
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
-    val me = remember { if (today == null) Profile(storage) else Profile(storage, today) }
+    val me = remember { Profile(storage, calendar) }
     val notes = remember { DeviceNotes(storage) }
-    val bedtime = remember { Bedtime(storage, me) }
+    val bedtime = remember { Bedtime(storage, me, calendar) }
     var round by rememberSaveable { mutableIntStateOf(0) }
 
     fun play() {
@@ -180,7 +180,7 @@ fun SniddleApp(
             }
 
             is TogetherScreen -> {
-                TogetherRoute(s, Household(me, storage, notes, bedtime), Speakers(playSound, playMusic), { ++round }) { screen = it }
+                TogetherRoute(s, Household(me, storage, notes, bedtime), Speakers(sound, buzzer), { ++round }) { screen = it }
             }
 
             is Screen.Play -> {
@@ -188,7 +188,7 @@ fun SniddleApp(
                     s.round,
                     me,
                     bedtime,
-                    Speakers(playSound, playMusic),
+                    Speakers(sound, buzzer),
                     onGameOver = { screen = Screen.GameOver(it, me.recordGame(it)) },
                     onHome = { screen = Screen.Title },
                 )
@@ -220,14 +220,14 @@ fun SniddleApp(
             }
         }
         // Back always leads home (the play screen handles back itself to pause).
-        BackHandler(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
+        SystemBack(enabled = screen !is Screen.Title && screen !is Screen.Play) { screen = Screen.Title }
     }
 }
 
-/** Where the game's sound effects and music go. */
+/** Where the game's sound effects, music and buzz go. */
 internal class Speakers(
-    val playSound: (Sound) -> Unit,
-    val playMusic: (Boolean) -> Unit,
+    val sound: SoundOutput,
+    val buzzer: Buzzer,
 )
 
 /** A one-player game for the kid playing, in their look and mode, with their tips and the bedtime timer. */
@@ -249,8 +249,9 @@ private fun PlayRoute(
         onQuit = onHome,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
-        onSound = { if (me.settings.soundOn) speakers.playSound(it) },
-        onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+        onSound = { if (me.settings.soundOn) speakers.sound.play(it) },
+        onMusic = { speakers.sound.music(it && me.settings.soundOn && me.settings.musicOn) },
+        onBuzz = speakers.buzzer::buzz,
         showTips = remember(round) { tipsDue(me.stats) },
         bedtime = bedtime.forGame(onHome),
         options = remember(round) { me.todaysOptions() },
@@ -283,6 +284,8 @@ private fun TitleRoute(
         settings = me.settings,
         onSettingsChange = me::changeSettings,
         arena = remember { me.todaysOptions().arena },
+        // The computer snails behind the menu dress up for today's holidays, but not for a birthday.
+        holidays = remember { holidaysToday(birthday = null, today = me.calendar.today()) },
         content = {
             WhoIsPlaying(me.players, me.playerId, me::switchTo, onAddPlayer)
             if (me.isBirthday) HappyBirthday(me.snailName, Unlocks.isUnlocked(Hat.BIRTHDAY_CAKE, me.stats))

@@ -1,7 +1,5 @@
 package com.quissicutdeus.sniddle.ui
 
-import android.view.HapticFeedbackConstants
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -13,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.quissicutdeus.sniddle.ComposeCanvas2D
@@ -207,6 +204,7 @@ internal class GameLoop<R : Any>(
 internal class GameLoopCallbacks<R>(
     val onSound: (Sound) -> Unit,
     val onMusic: (Boolean) -> Unit,
+    val onBuzz: (Buzz) -> Unit,
     val onGameOver: (R) -> Unit,
     /** Pause (true) or carry on: the app went to the background, or the back button was pressed. */
     val onPausedChange: (Boolean) -> Unit,
@@ -235,10 +233,9 @@ internal fun <R : Any> rememberGameFrames(
     val buzz by rememberUpdatedState(buzzOn)
     val current by rememberUpdatedState(callbacks)
     val currentNap by rememberUpdatedState(nap)
-    val view = LocalView.current
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { current.onPausedChange(true) }
-    BackHandler { current.onPausedChange(!isPaused) }
+    SystemBack { current.onPausedChange(!isPaused) }
 
     // Leaving the game (quit, game over, another app) always stops the music.
     DisposableEffect(loop) { onDispose { current.onMusic(false) } }
@@ -250,7 +247,7 @@ internal fun <R : Any> rememberGameFrames(
                 val dt = if (last == 0L) 0f else ((now - last) / NANOS_PER_SECOND).coerceAtMost(MAX_FRAME_SECONDS)
                 last = now
                 val b = loop.step(dt, isPaused, current.onSound)
-                if (b != null && buzz) view.performHapticFeedback(hapticFor(b))
+                if (b != null && buzz) current.onBuzz(b)
                 current.onFrame(dt)
                 currentNap?.onFrame(loop.sim, dt, isPaused, loop::stop)
                 loop.finish(current.onGameOver)
@@ -266,17 +263,3 @@ private const val NANOS_PER_SECOND = 1_000_000_000f
 
 /** A frame never counts for more than this, however long the hitch. */
 private const val MAX_FRAME_SECONDS = 0.1f
-
-/**
- * System haptics: no permission needed, and they follow the phone's own
- * "vibration & haptics" setting, so turning that off silences the game too
- * (as does the game's own buzz switch).
- */
-internal fun hapticFor(buzz: Buzz): Int =
-    when (buzz) {
-        Buzz.TAP -> HapticFeedbackConstants.CLOCK_TICK
-        Buzz.THUD -> HapticFeedbackConstants.VIRTUAL_KEY
-        Buzz.CHEER -> HapticFeedbackConstants.CONFIRM
-        Buzz.OUCH -> HapticFeedbackConstants.LONG_PRESS
-        Buzz.GOBBLED -> HapticFeedbackConstants.REJECT
-    }

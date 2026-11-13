@@ -1,6 +1,5 @@
 package com.quissicutdeus.sniddle.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -203,7 +202,7 @@ private fun GrownUpsCard(
     onClose: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    BackHandler(onBack = onClose)
+    SystemBack(onBack = onClose)
     Box(
         Modifier
             .fillMaxSize()

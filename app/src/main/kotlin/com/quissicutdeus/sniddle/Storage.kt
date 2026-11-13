@@ -1,7 +1,5 @@
 package com.quissicutdeus.sniddle
 
-import android.content.Context
-import androidx.core.content.edit
 import com.quissicutdeus.sniddle.game.model.ScoreEntry
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.Stats
@@ -13,12 +11,9 @@ import com.quissicutdeus.sniddle.ui.Settings
  * settings, which everyone shares, and each kid's own snail ([player]).
  */
 class Storage(
-    context: Context,
+    private val prefs: KeyValueStore,
 ) {
-    // Renaming this file would lose everyone's saved high scores.
-    private val prefs = context.getSharedPreferences("sniddle", Context.MODE_PRIVATE)
-
-    fun loadScores(): List<ScoreEntry> = Scoreboard.decode(prefs.getString(KEY_SCORES, null))
+    fun loadScores(): List<ScoreEntry> = Scoreboard.decode(prefs.getString(KEY_SCORES))
 
     fun saveScores(scores: List<ScoreEntry>) = prefs.edit { putString(KEY_SCORES, Scoreboard.encode(scores)) }
 
@@ -43,7 +38,7 @@ class Storage(
     /** Ids of the kids who play on this phone, in the order they joined: just player 0 until a second one joins. */
     fun loadPlayers(): List<Int> =
         prefs
-            .getString(KEY_PLAYERS, null)
+            .getString(KEY_PLAYERS)
             ?.split(',')
             ?.mapNotNull { it.trim().toIntOrNull() }
             ?.filter { it in 0 until MAX_PLAYERS }
@@ -97,7 +92,7 @@ class Storage(
         return true
     }
 
-    fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES, null))
+    fun loadNames(): List<String> = Scoreboard.decodeNames(prefs.getString(KEY_NAMES))
 
     fun saveNames(names: List<String>) = prefs.edit { putString(KEY_NAMES, Scoreboard.encodeNames(names)) }
 
@@ -109,12 +104,12 @@ class Storage(
 
     /** The newest "What's new" entry shown on this device, or null if this install has never set it. */
     var newsSeen: Int?
-        get() = if (prefs.contains(KEY_NEWS_SEEN)) prefs.getInt(KEY_NEWS_SEEN, 0) else null
+        get() = if (KEY_NEWS_SEEN in prefs) prefs.getInt(KEY_NEWS_SEEN, 0) else null
         set(value) = prefs.edit { if (value == null) remove(KEY_NEWS_SEEN) else putInt(KEY_NEWS_SEEN, value) }
 
     /** Today's play on this phone for the bedtime timer ([PlayDay.encode]), or null before any. */
     var playDay: String?
-        get() = prefs.getString(KEY_PLAY_DAY, null)
+        get() = prefs.getString(KEY_PLAY_DAY)
         set(value) = prefs.edit { putString(KEY_PLAY_DAY, value) }
 
     companion object {

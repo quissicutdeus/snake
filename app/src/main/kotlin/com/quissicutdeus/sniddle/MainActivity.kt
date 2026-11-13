@@ -5,6 +5,8 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -18,8 +20,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // Keep the screen awake while the game is open.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        val storage = Storage(applicationContext)
-        setContent { SniddleApp(storage, sounds::play, sounds::music) }
+        val storage = phoneStorage(applicationContext)
+        setContent {
+            // The app's own view buzzes, as the game screens' did before.
+            val view = LocalView.current
+            SniddleApp(storage, SystemCalendar, sounds, remember(view) { ViewBuzzer(view) })
+        }
     }
 
     override fun onPause() {

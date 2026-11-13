@@ -142,7 +142,7 @@ class PlayTogetherTest : ScreenTest() {
         var back: OnBackPressedDispatcher? = null
         compose.setContent {
             back = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-            SniddleApp(storage, playSound = {})
+            SniddleApp(storage, SystemCalendar, NoSound, NoBuzz)
         }
         advance(800)
         compose.onNodeWithText("Play together").performClick()
@@ -281,7 +281,7 @@ class PlayTogetherTest : ScreenTest() {
     /** Each kid's game counts for that kid, both go on the high scores, and a guest unlocks nothing. */
     @Test fun resultsCountForEachKid() {
         seedKids(three = false)
-        val me = Profile(storage)
+        val me = Profile(storage, SystemCalendar)
         val result =
             TogetherResult(
                 listOf(
@@ -305,7 +305,7 @@ class PlayTogetherTest : ScreenTest() {
     /** Gentle only when both kids have little kid mode on (a guest isn't little); both kids' holidays and the season's arena. */
     @Test fun twoPlayerOptionsFollowBothKids() {
         seedKids(three = false)
-        val june2 = LocalDate.of(2026, 6, 2)
+        val june2 = Day(2026, 6, 2)
         storage.player(1).saveBirthday(Birthday(6, 2))
         val me = Profile(storage) { june2 }
         assertEquals(Difficulty.NORMAL, me.togetherOptions(1).difficulty)

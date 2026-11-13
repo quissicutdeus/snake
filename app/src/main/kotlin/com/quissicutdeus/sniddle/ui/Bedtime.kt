@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.quissicutdeus.sniddle.PhoneCalendar
 import com.quissicutdeus.sniddle.PlayClock
 import com.quissicutdeus.sniddle.Storage
 import com.quissicutdeus.sniddle.game.model.ScoreEntry
@@ -29,7 +30,6 @@ import com.quissicutdeus.sniddle.game.model.Unlock
 import com.quissicutdeus.sniddle.game.sim.GameSim
 import com.quissicutdeus.sniddle.game.sim.Scoreboard
 import com.quissicutdeus.sniddle.game.sim.dangers
-import java.time.LocalDate
 
 /** The game bedtime stopped, for the rest screen: how it went and what it unlocked. */
 data class BedtimeGame(
@@ -45,7 +45,7 @@ data class BedtimeGame(
 class Bedtime(
     private val storage: Storage,
     private val me: Profile,
-    today: () -> LocalDate = LocalDate::now,
+    today: PhoneCalendar,
 ) {
     val clock = PlayClock({ me.settings.bedtimeMinutes }, { storage.playDay }, { storage.playDay = it }, today)
 

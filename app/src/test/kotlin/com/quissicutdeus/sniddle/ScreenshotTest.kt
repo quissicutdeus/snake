@@ -71,13 +71,13 @@ class ScreenshotTest : ScreenTest() {
         name: String,
         settings: Settings = Settings(),
     ) {
-        show { TitleScreen(style, {}, {}, {}, settings = settings, onSettingsChange = {}) }
+        show { TitleScreen(style, {}, {}, {}, settings, {}, today.arena, today.season) }
         advance(1500)
         snap(name)
     }
 
     private fun playScene(name: String) {
-        show { GameScreen(key = 1, style = style, playerName = "Caleb", onGameOver = {}, onQuit = {}) }
+        show { GameScreen(key = 1, style = style, playerName = "Caleb", onGameOver = {}, onQuit = {}, options = today) }
         advance(300)
         // Hold a finger up and to the right of the snail for a while, then down-left.
         compose.onRoot().performTouchInput { down(Offset(width * 0.8f, height * 0.25f)) }
@@ -98,6 +98,7 @@ class ScreenshotTest : ScreenTest() {
                 playerName = "You",
                 onGameOver = {},
                 onQuit = {},
+                options = today,
                 settings = settings,
                 onSettingsChange = {
                     settings = it
@@ -128,7 +129,7 @@ class ScreenshotTest : ScreenTest() {
      */
     @Test fun aPausedGameSurvivesTheAppBeingClosed() {
         val app = SavedAndRestored()
-        compose.setContent { Restorable(app) { SniddleApp(storage, playSound = {}) } }
+        compose.setContent { Restorable(app) { SniddleApp(storage, SystemCalendar, NoSound, NoBuzz) } }
         advance(100)
         compose.onNodeWithText("Play!").performClick()
         advance(1000)
@@ -190,16 +191,16 @@ class ScreenshotTest : ScreenTest() {
 
     @Test fun looksCheeredAtGameOverAreNotAnnouncedAgain() {
         storage.addScore(ScoreEntry("Caleb", 90, 0, style, 1000L))
-        val unlocked = Profile(storage).recordGame(GameResult(120, 0, style, 2000L), season = emptySet())
+        val unlocked = Profile(storage, SystemCalendar).recordGame(GameResult(120, 0, style, 2000L), season = emptySet())
         assertEquals(listOf<Any>(Hat.TOP_HAT), unlocked.map { it.item })
-        assertEquals(emptyList<Any>(), Profile(storage).alreadyEarned.map { it.item })
+        assertEquals(emptyList<Any>(), Profile(storage, SystemCalendar).alreadyEarned.map { it.item })
         launchApp()
         compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
     }
 
     @Test fun musicPlaysOnlyWhileTheGameRuns() {
         val calls = mutableListOf<Boolean>()
-        show { GameScreen(key = 1, style = style, playerName = "You", onGameOver = {}, onQuit = {}, onMusic = { calls += it }) }
+        show { GameScreen(key = 1, style = style, playerName = "You", onGameOver = {}, onQuit = {}, today, onMusic = { calls += it }) }
         advance(300)
         assertEquals(listOf(true), calls)
         compose.onNodeWithContentDescription("Pause").performClick()
@@ -267,7 +268,7 @@ class ScreenshotTest : ScreenTest() {
 
     /** A game in November earns the turkey hat for good; Santa waits for December, with no progress bar. */
     @Test fun holidayLooksComeFromPlayingOnTheDay() {
-        val profile = Profile(storage)
+        val profile = Profile(storage, SystemCalendar)
         val unlocked = profile.recordGame(GameResult(20, 0, style, 2000L), season = setOf(Holiday.THANKSGIVING))
         assertEquals(listOf<Any>(Hat.TURKEY), unlocked.map { it.item })
         show {

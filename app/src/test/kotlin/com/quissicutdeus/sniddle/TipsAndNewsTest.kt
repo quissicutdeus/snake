@@ -143,6 +143,7 @@ class TipsAndNewsTest : ScreenTest() {
                 playerName = "You",
                 onGameOver = {},
                 onQuit = {},
+                options = today,
                 showTips = true,
                 onTipsDone = { done++ },
             )
@@ -177,7 +178,7 @@ class TipsAndNewsTest : ScreenTest() {
 
     /** A finger landing on the tip card still steers: the card lets touches through. */
     @Test fun theTipCardDoesNotBlockSteering() {
-        show { GameScreen(key = 1, style = style, playerName = "You", onGameOver = {}, onQuit = {}, showTips = true) }
+        show { GameScreen(key = 1, style = style, playerName = "You", onGameOver = {}, onQuit = {}, options = today, showTips = true) }
         advance(2500)
         val card = compose.onNodeWithText("Drag anywhere to steer")
         card.performTouchInput { down(center) }
@@ -192,7 +193,7 @@ class TipsAndNewsTest : ScreenTest() {
         val launch = launchApp()
         playFromTitle()
         compose.onNodeWithText("Drag anywhere to steer").assertExists()
-        Profile(storage).recordGame(GameResult(20, 0, style, 1000L), season = emptySet())
+        Profile(storage, SystemCalendar).recordGame(GameResult(20, 0, style, 1000L), season = emptySet())
         launch.intValue++
         advance(300)
         playFromTitle()

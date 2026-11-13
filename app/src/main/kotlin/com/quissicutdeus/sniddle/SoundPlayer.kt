@@ -29,7 +29,7 @@ import kotlin.concurrent.thread
  */
 class SoundPlayer(
     private val newTrack: (ShortArray) -> AudioTrack = ::staticTrack,
-) {
+) : SoundOutput {
     @Volatile private var tracks: Map<Sound, AudioTrack>? = null
 
     @Volatile private var music: AudioTrack? = null
@@ -71,7 +71,7 @@ class SoundPlayer(
     }
 
     /** Starts (from where it left off) or pauses the background music loop. */
-    fun music(on: Boolean) {
+    override fun music(on: Boolean) {
         synchronized(this) {
             musicWanted = on
             val m = music ?: return
@@ -83,7 +83,7 @@ class SoundPlayer(
     }
 
     /** Plays [sound] from its start, cutting off the same sound if it is still going. */
-    fun play(sound: Sound) {
+    override fun play(sound: Sound) {
         val t = tracks?.get(sound) ?: return
         audioSafely("play $sound") {
             // Restart from the beginning, even if it is still playing.

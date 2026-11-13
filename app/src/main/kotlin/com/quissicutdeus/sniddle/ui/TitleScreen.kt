@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quissicutdeus.sniddle.ComposeCanvas2D
 import com.quissicutdeus.sniddle.game.model.ArenaSeason
+import com.quissicutdeus.sniddle.game.model.Holiday
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.Unlock
 import com.quissicutdeus.sniddle.game.render.Camera
@@ -55,8 +56,9 @@ import kotlin.math.sin
 /** AI snails roaming the arena behind the menu, with a slowly drifting camera. */
 private class AttractMode(
     arena: ArenaSeason,
+    holidays: Set<Holiday>,
 ) {
-    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420, season = holidaysToday(), arena = arena))
+    val sim = GameSim(options = SimOptions(spawnPlayer = false, aiCount = 10, pelletCount = 420, season = holidays, arena = arena))
     val camera = Camera()
     val fx = Fx()
     val adapter = ComposeCanvas2D()
@@ -69,9 +71,10 @@ private class AttractMode(
 @Composable
 private fun ArenaBackground(
     arena: ArenaSeason,
+    holidays: Set<Holiday>,
     modifier: Modifier = Modifier,
 ) {
-    val attract = remember(arena) { AttractMode(arena) }
+    val attract = remember(arena) { AttractMode(arena, holidays) }
     var frame by remember { mutableIntStateOf(0) }
     LaunchedEffect(attract) {
         var last = 0L
@@ -103,16 +106,18 @@ fun TitleScreen(
     onHighScores: () -> Unit,
     settings: Settings,
     onSettingsChange: (Settings) -> Unit,
-    modifier: Modifier = Modifier,
     /** The arena behind the menu: grass, autumn leaves or snow, as at this time of year. */
-    arena: ArenaSeason = todaysOptions().arena,
+    arena: ArenaSeason,
+    /** Today's holidays, which the snails behind the menu dress up for. */
+    holidays: Set<Holiday>,
+    modifier: Modifier = Modifier,
     /** Starts a two-player game; null hides the button (no room for two halves). */
     onPlayTogether: (() -> Unit)? = null,
     /** Extra content shown under the snail, e.g. [AlreadyEarnedBanner]. */
     content: @Composable () -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
-        ArenaBackground(arena, Modifier.fillMaxSize())
+        ArenaBackground(arena, holidays, Modifier.fillMaxSize())
         SettingsButtons(
             settings,
             onSettingsChange,

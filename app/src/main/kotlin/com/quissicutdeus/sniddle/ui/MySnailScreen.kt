@@ -132,7 +132,7 @@ private fun SnailPreview(
     snailHeight: Dp,
     modifier: Modifier = Modifier,
 ) {
-    val rng = remember { Random(System.nanoTime()) }
+    val rng = remember { Random(Random.nextLong()) }
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         ShadowText("My Snail", MaterialTheme.typography.headlineLarge)
         WigglingSnail(style, Modifier.fillMaxWidth().height(snailHeight))

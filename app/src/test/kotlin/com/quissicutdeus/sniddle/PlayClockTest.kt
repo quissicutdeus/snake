@@ -13,7 +13,7 @@ class PlayClockTest {
     private var limit = 15
     private var date = LocalDate.of(2026, 11, 11)
 
-    private fun clock() = PlayClock({ limit }, { saved }, { saved = it }, { date })
+    private fun clock() = PlayClock({ limit }, { saved }, { saved = it }, { date.toDay() })
 
     /** [seconds] of frames at 60 a second. */
     private fun PlayClock.play(
