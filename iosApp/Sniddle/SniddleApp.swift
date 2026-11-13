@@ -17,15 +17,12 @@ import UIKit
 
 @main
 struct SniddleApp: App {
-    init() {
-        // Keep the screen awake while Sniddle is open, like Android's
-        // FLAG_KEEP_SCREEN_ON. iOS only applies it while the app is in front.
-        UIApplication.shared.isIdleTimerDisabled = true
-    }
-
     var body: some Scene {
         WindowGroup {
             GameScreen()
+                // Keep the screen awake while Sniddle is open, like Android's
+                // FLAG_KEEP_SCREEN_ON. iOS only applies it while the app is in front.
+                .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
                 // The arena draws edge to edge; the Compose UI keeps its
                 // buttons and score clear of the notch and the home indicator
                 // with WindowInsets.safeDrawing.
@@ -55,8 +52,20 @@ private struct GameScreen: UIViewControllerRepresentable {
 }
 
 #if !canImport(ComposeApp)
-    /// Shown only by a build without the Kotlin UI: proves the app installs and launches.
+    /// Shown only by a build without the Kotlin UI. It proves the app installs and
+    /// launches, and its launch count (kept in UserDefaults, where the game's
+    /// saves will live) proves saved data survives the weekly reinstall: the
+    /// number keeps going up instead of starting again at 1.
     private struct Placeholder: View {
+        @State private var launches = Placeholder.countLaunch()
+
+        private static func countLaunch() -> Int {
+            let key = "placeholderLaunches"
+            let count = UserDefaults.standard.integer(forKey: key) + 1
+            UserDefaults.standard.set(count, forKey: key)
+            return count
+        }
+
         var body: some View {
             ZStack {
                 Color("LaunchBackground")
@@ -65,6 +74,8 @@ private struct GameScreen: UIViewControllerRepresentable {
                         .font(.system(size: 48, weight: .heavy, design: .rounded))
                     Text("The snails are on their way to iPhone and iPad.")
                         .font(.system(.title3, design: .rounded))
+                    Text("Opened \(launches) \(launches == 1 ? "time" : "times")")
+                        .font(.title3.monospacedDigit())
                     Text(versionLine)
                         .font(.footnote.monospacedDigit())
                         .opacity(0.6)
