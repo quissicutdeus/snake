@@ -66,6 +66,21 @@ data class Unlock(
     /** The holiday this look belongs to, for a [GoalKind.HOLIDAY] goal. */
     private val holiday: Holiday? = if (kind == GoalKind.HOLIDAY) checkNotNull(Holiday.of(item)) { "$item isn't a holiday look" } else null
 
+    /**
+     * How this unlock is saved on the phone, e.g. "Hat.TOP_HAT". The type names are
+     * written out by hand because the release build renames classes, so a class's
+     * own name can change from one update to the next. It's worked out when the
+     * unlock is made, so a new kind of look missing from here fails as soon as the
+     * unlock list is built instead of saving a name that might not last.
+     */
+    val key: String =
+        when (item) {
+            is Hat -> "Hat"
+            is Eyes -> "Eyes"
+            is Pattern -> "Pattern"
+            else -> error("$item has no saved name: add its type to Unlock.key")
+        } + "." + item.name
+
     /** A holiday look, earned by the date rather than by playing a lot. */
     val isHoliday: Boolean get() = holiday != null
 

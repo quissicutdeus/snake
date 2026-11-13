@@ -2,6 +2,7 @@ package com.quissicutdeus.sniddle.game
 
 import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
+import com.quissicutdeus.sniddle.game.model.Holiday
 import com.quissicutdeus.sniddle.game.model.Pattern
 import com.quissicutdeus.sniddle.game.model.Stats
 import com.quissicutdeus.sniddle.game.model.Unlocks
@@ -75,6 +76,19 @@ class UnlocksTest {
             val s = Unlocks.randomStyle(rng, fresh)
             assertTrue(Unlocks.isUnlocked(s.hat, fresh) && Unlocks.isUnlocked(s.eyes, fresh) && Unlocks.isUnlocked(s.pattern, fresh), "$s")
         }
+    }
+
+    @Test fun everyUnlockHasItsOwnSavedName() {
+        // Building the unlock list already fails for a look type without a saved name.
+        val looks = (Hat.entries + Eyes.entries + Pattern.entries + Holiday.entries.flatMap { it.looks }).distinct()
+        val keys = looks.mapNotNull { Unlocks.ruleFor(it)?.key }
+        assertEquals(14, keys.size)
+        assertEquals(keys.size, keys.toSet().size, "$keys")
+        // These get saved on phones, so they must never change.
+        assertEquals("Hat.TOP_HAT", Unlocks.ruleFor(Hat.TOP_HAT)?.key)
+        assertEquals("Eyes.HEARTS", Unlocks.ruleFor(Eyes.HEARTS)?.key)
+        assertEquals("Pattern.STARS", Unlocks.ruleFor(Pattern.STARS)?.key)
+        assertEquals("Pattern.FLAG", Unlocks.ruleFor(Pattern.FLAG)?.key)
     }
 
     @Test fun statsSurviveSavingAndJunkIsIgnored() {

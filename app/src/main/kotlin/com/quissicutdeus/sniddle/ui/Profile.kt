@@ -72,7 +72,7 @@ class Profile(
     var players: List<PlayerCard> by mutableStateOf(loadPlayers())
         private set
 
-    private fun notYetCheered() = saved.loadAnnounced().let { told -> Unlocks.reachedBy(stats).filterNot { key(it) in told } }
+    private fun notYetCheered() = saved.loadAnnounced().let { told -> Unlocks.reachedBy(stats).filterNot { it.key in told } }
 
     private fun loadPlayers() =
         storage.loadPlayers().mapIndexed { i, id ->
@@ -142,7 +142,7 @@ class Profile(
         val after = before.after(result.score, result.snailsEaten, season ?: holidaysToday(kid.loadBirthday(), today()))
         kid.saveStats(after)
         val unlocked = Unlocks.newlyUnlocked(before, after)
-        if (unlocked.isNotEmpty()) kid.saveAnnounced(kid.loadAnnounced() + unlocked.map(::key))
+        if (unlocked.isNotEmpty()) kid.saveAnnounced(kid.loadAnnounced() + unlocked.map { it.key })
         return unlocked
     }
 
@@ -155,11 +155,8 @@ class Profile(
     }
 
     private fun announce(unlocks: List<Unlock>) {
-        if (unlocks.isNotEmpty()) saved.saveAnnounced(saved.loadAnnounced() + unlocks.map(::key))
+        if (unlocks.isNotEmpty()) saved.saveAnnounced(saved.loadAnnounced() + unlocks.map { it.key })
     }
-
-    /** How an unlock is saved in [SavedPlayer.loadAnnounced], e.g. "Hat.TOP_HAT". */
-    private fun key(unlock: Unlock) = "${unlock.item.declaringJavaClass.simpleName}.${unlock.item.name}"
 
     fun changeSettings(new: Settings) {
         settings = new
