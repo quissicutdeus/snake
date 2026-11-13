@@ -62,6 +62,9 @@ class GameSim(
     val world = World(options.width, options.height)
     internal val grid = SpatialGrid(options.width, options.height)
     private val heads = HeadGrid(options.width, options.height)
+
+    /** The AI's scratch space for thinking (see [AiScan]). */
+    internal val aiScan = AiScan()
     private val spawner = Spawner(options.aiCount)
     private val contacts = ArrayList<Contact>()
     private val headPairs = HashSet<Long>()

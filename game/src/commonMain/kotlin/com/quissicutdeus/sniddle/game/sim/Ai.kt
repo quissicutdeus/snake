@@ -43,17 +43,21 @@ class AiBrain(
     }
 }
 
+/**
+ * What an AI sees around it when it thinks. Each [GameSim] owns one and
+ * refills it for every snail that thinks, so thinking allocates nothing and
+ * two games never share it.
+ */
+internal class AiScan {
+    var fleeX = 0f
+    var fleeY = 0f
+    var threatened = false
+    var prey: Snail? = null
+    var preyDistance = Float.MAX_VALUE
+}
+
 /** Wander -> seek food -> chase smaller snails -> flee bigger ones. Same rules as the player. */
 object Ai {
-    /** What an AI sees around it when it thinks (reused: the game is single-threaded). */
-    private object Scan {
-        var fleeX = 0f
-        var fleeY = 0f
-        var threatened = false
-        var prey: Snail? = null
-        var preyDistance = Float.MAX_VALUE
-    }
-
     /** Returns the heading this AI snail wants this step. */
     fun desiredHeading(
         sim: GameSim,
@@ -88,11 +92,11 @@ object Ai {
         s: Snail,
         brain: AiBrain,
     ) {
-        scan(sim, s)
+        val scan = scan(sim, s)
         when {
-            Scan.threatened -> {
+            scan.threatened -> {
                 brain.mode = AiMode.FLEE
-                brain.fleeHeading = atan2(Scan.fleeY, Scan.fleeX)
+                brain.fleeHeading = atan2(scan.fleeY, scan.fleeX)
                 brain.chaseTime = 0f
             }
 
@@ -100,40 +104,43 @@ object Ai {
                 keepFleeing(sim, s, brain)
             }
 
-            !tryChase(sim, brain, Scan.prey) -> {
+            !tryChase(sim, brain, scan.prey) -> {
                 seekFoodOrWander(sim, s, brain)
             }
         }
     }
 
-    /** Fills [Scan] with the combined direction away from threats and the nearest prey. */
+    /** Fills the sim's [AiScan] with the combined direction away from threats and the nearest prey. */
     private fun scan(
         sim: GameSim,
         s: Snail,
-    ) {
-        Scan.fleeX = 0f
-        Scan.fleeY = 0f
-        Scan.threatened = false
-        Scan.prey = null
-        Scan.preyDistance = Float.MAX_VALUE
+    ): AiScan {
+        val scan = sim.aiScan
+        scan.fleeX = 0f
+        scan.fleeY = 0f
+        scan.threatened = false
+        scan.prey = null
+        scan.preyDistance = Float.MAX_VALUE
         for (o in sim.world.snails) {
             if (o === s || !o.alive) continue
             val d = dist(s.x, s.y, o.x, o.y).coerceAtLeast(1f)
             when (s.fightRelationTo(o)) {
                 SizeRelation.SMALLER -> {
-                    noteThreat(s, o, d)
+                    noteThreat(scan, s, o, d)
                 }
 
                 SizeRelation.BIGGER -> {
-                    notePrey(o, d, sim.difficulty.chaseRulesFor(o).radius)
+                    notePrey(scan, o, d, sim.difficulty.chaseRulesFor(o).radius)
                 }
 
                 SizeRelation.EQUAL -> {}
             }
         }
+        return scan
     }
 
     private fun noteThreat(
+        scan: AiScan,
         s: Snail,
         threat: Snail,
         d: Float,
@@ -142,21 +149,22 @@ object Ai {
         if (!noticed || s.invulnerable > 0f) return
         // Closer threats count more.
         val w = 1f / d
-        Scan.fleeX += (s.x - threat.x) / d * w
-        Scan.fleeY += (s.y - threat.y) / d * w
-        Scan.threatened = true
+        scan.fleeX += (s.x - threat.x) / d * w
+        scan.fleeY += (s.y - threat.y) / d * w
+        scan.threatened = true
     }
 
     private fun notePrey(
+        scan: AiScan,
         prey: Snail,
         d: Float,
         chaseRadius: Float,
     ) {
         // Blinking or armored snails can't be hurt, so they aren't worth chasing.
         val catchable = prey.invulnerable <= 0f && !prey.hasPower(PowerType.ARMOR)
-        if (d < chaseRadius && d < Scan.preyDistance && catchable) {
-            Scan.prey = prey
-            Scan.preyDistance = d
+        if (d < chaseRadius && d < scan.preyDistance && catchable) {
+            scan.prey = prey
+            scan.preyDistance = d
         }
     }
 
