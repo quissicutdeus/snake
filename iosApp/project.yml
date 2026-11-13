@@ -1,0 +1,96 @@
+# The iOS app's Xcode project, as text. Nobody on this project has a Mac, so the
+# .xcodeproj is never checked in: CI generates it with XcodeGen (pinned in
+# .github/workflows/ios.yml) and builds it straight away.
+#   https://github.com/yonaskolb/XcodeGen/blob/2.46.0/Docs/ProjectSpec.md
+#
+# On a Mac, if one ever turns up:  cd iosApp && xcodegen generate && open Sniddle.xcodeproj
+#
+# PHASE 2 ASSUMPTIONS (one place: the KOTLIN_UI_* settings below)
+#   The shared Compose Multiplatform module is :composeApp, and it declares
+#     binaries.framework { baseName = "ComposeApp"; isStatic = true }
+#   for iosArm64 and iosSimulatorArm64. A static framework is linked into the
+#   app binary, so nothing is embedded: one signature for the sideload tool to
+#   redo, not two. If the module or framework is named differently, change
+#   KOTLIN_UI_MODULE / KOTLIN_UI_FRAMEWORK here and the import in SniddleApp.swift.
+name: Sniddle
+
+options:
+  bundleIdPrefix: com.quissicutdeus
+  deploymentTarget:
+    iOS: "16.0"
+  # Matches the Xcode CI selects (Kotlin 2.4.20-2.4.21 lists Xcode 26.4).
+  xcodeVersion: "26.4"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    # CI overrides both on the xcodebuild command line.
+    MARKETING_VERSION: "0.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Sniddle:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sniddle
+    settings:
+      base:
+        PRODUCT_NAME: Sniddle
+        PRODUCT_BUNDLE_IDENTIFIER: com.quissicutdeus.sniddle
+        INFOPLIST_FILE: Sniddle/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        # iPhone and iPad. Not a Mac or Vision Pro app.
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Swift 5 language mode: Kotlin's Objective-C headers carry no
+        # Sendable annotations, which Swift 6 mode would reject.
+        SWIFT_VERSION: "5.0"
+        # CI builds unsigned (CODE_SIGNING_ALLOWED=NO); the sideload tool signs
+        # with the family's free Apple ID at install time. No team here.
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        # The Kotlin build below runs Gradle, which reads and writes outside
+        # the paths Xcode's script sandbox allows.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        KOTLIN_UI_MODULE: composeApp
+        KOTLIN_UI_FRAMEWORK: ComposeApp
+        FRAMEWORK_SEARCH_PATHS: $(SRCROOT)/../$(KOTLIN_UI_MODULE)/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+    preBuildScripts:
+      # Kotlin's documented direct integration: embedAndSignAppleFrameworkForXcode
+      # builds the framework for exactly the SDK, architecture and
+      # configuration Xcode is building. It must run before Compile Sources.
+      #   https://kotlinlang.org/docs/multiplatform/multiplatform-direct-integration.html
+      - name: Compile Kotlin framework
+        basedOnDependencyAnalysis: false
+        showEnvVars: false
+        script: |
+          set -eu
+          if [ "YES" = "${OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED:-}" ]; then
+              echo "Skipping Gradle: the IDE already built the Kotlin framework"
+              exit 0
+          fi
+          cd "$SRCROOT/.." || exit 1
+          if [ ! -d "$KOTLIN_UI_MODULE" ]; then
+              # Before phase 2 there is no Kotlin UI yet; SniddleApp.swift then
+              # builds a placeholder screen. Once the module exists, CI checks
+              # that the app really contains the Kotlin UI, so a placeholder
+              # can't slip out by mistake.
+              echo "warning: no $KOTLIN_UI_MODULE module yet, building the placeholder app without Kotlin"
+              exit 0
+          fi
+          ./gradlew ":$KOTLIN_UI_MODULE:embedAndSignAppleFrameworkForXcode" --console=plain
+
+# A shared scheme, so `xcodebuild -scheme Sniddle` works on a fresh checkout.
+schemes:
+  Sniddle:
+    build:
+      targets:
+        Sniddle: all
+    run:
+      config: Debug
+    archive:
+      config: Release
