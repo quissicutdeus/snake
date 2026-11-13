@@ -114,7 +114,7 @@ abstract class ScreenTest {
     /** The whole app; bumping the returned counter starts it afresh (like the next launch). */
     protected fun launchApp(): androidx.compose.runtime.MutableIntState {
         val launch = androidx.compose.runtime.mutableIntStateOf(0)
-        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, SystemCalendar, playSound = {}) } }
+        compose.setContent { androidx.compose.runtime.key(launch.intValue) { SniddleApp(storage, SystemCalendar, NoSound, NoBuzz) } }
         advance(800)
         return launch
     }
@@ -145,3 +145,13 @@ internal fun saveScreenshot(
     dir.mkdirs()
     File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
 }
+
+/** A phone that makes no sound, for tests that don't listen. */
+internal object NoSound : SoundOutput {
+    override fun play(sound: com.quissicutdeus.sniddle.game.audio.Sound) = Unit
+
+    override fun music(on: Boolean) = Unit
+}
+
+/** A phone that never buzzes. */
+internal val NoBuzz = Buzzer {}

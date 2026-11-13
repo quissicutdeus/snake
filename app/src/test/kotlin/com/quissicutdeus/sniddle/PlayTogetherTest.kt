@@ -142,7 +142,7 @@ class PlayTogetherTest : ScreenTest() {
         var back: OnBackPressedDispatcher? = null
         compose.setContent {
             back = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-            SniddleApp(storage, SystemCalendar, playSound = {})
+            SniddleApp(storage, SystemCalendar, NoSound, NoBuzz)
         }
         advance(800)
         compose.onNodeWithText("Play together").performClick()

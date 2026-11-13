@@ -26,7 +26,7 @@ import java.time.LocalDate
 class CalendarScreensTest : ScreenTest() {
     private fun launchOn(date: LocalDate) {
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, { date.toDay() }, playSound = {}) }
+        compose.setContent { SniddleApp(storage, { date.toDay() }, NoSound, NoBuzz) }
         advance(800)
     }
 
@@ -62,7 +62,7 @@ class CalendarScreensTest : ScreenTest() {
         storage.player(0).saveSnailName("Caleb")
         storage.player(0).saveBirthday(Birthday(9, 12))
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, { Day(2026, 9, 12) }, playSound = {}) }
+        compose.setContent { SniddleApp(storage, { Day(2026, 9, 12) }, NoSound, NoBuzz) }
         advance(300)
         compose.onNodeWithText("🎂 Happy birthday, Caleb! 🎉").assertExists()
         compose.onNodeWithText("Play a game to get your birthday cake hat!").assertExists()

@@ -157,8 +157,9 @@ private fun TogetherPlayRoute(
         onQuit = onHome,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
-        onSound = { if (me.settings.soundOn) speakers.playSound(it) },
-        onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+        onSound = { if (me.settings.soundOn) speakers.sound.play(it) },
+        onMusic = { speakers.sound.music(it && me.settings.soundOn && me.settings.musicOn) },
+        onBuzz = speakers.buzzer::buzz,
         options = remember(screen.round) { me.togetherOptions(screen.kids[1].id) },
         bedtime = home.bedtime.forTogether(record = { recordTogether(me, home.storage, it) }, onStopped = onHome),
     )

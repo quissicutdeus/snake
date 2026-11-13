@@ -102,7 +102,7 @@ class LittleKidModeTest : ScreenTest() {
         storage.saveCurrentPlayer(1)
         storage.player(1).saveLittleKid(true)
         val app = SavedAndRestored()
-        compose.setContent { Restorable(app) { SniddleApp(storage, SystemCalendar, playSound = {}) } }
+        compose.setContent { Restorable(app) { SniddleApp(storage, SystemCalendar, NoSound, NoBuzz) } }
         advance(100)
         compose.onNodeWithText("Play!").performClick()
         advance(1000)

@@ -48,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.quissicutdeus.sniddle.game.GameConfig
 import com.quissicutdeus.sniddle.game.audio.Sound
+import com.quissicutdeus.sniddle.game.render.Buzz
 import com.quissicutdeus.sniddle.game.render.HudInsets
 import com.quissicutdeus.sniddle.game.render.SceneRenderer
 import com.quissicutdeus.sniddle.game.render.TwoPlayerArt
@@ -84,6 +85,8 @@ fun TwoPlayerScreen(
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
     onMusic: (Boolean) -> Unit = {},
+    /** Buzzes the phone (when the buzz switch is on). */
+    onBuzz: (Buzz) -> Unit = {},
     /** Today's holidays and arena, and how gentle (see [Profile.togetherOptions]). */
     options: SimOptions = SimOptions(),
     /** The bedtime timer, if any: it counts the play and can stop the game at a calm moment. */
@@ -107,7 +110,7 @@ fun TwoPlayerScreen(
             paused,
             settings.buzzOn,
             nap,
-            GameLoopCallbacks(onSound, onMusic, onGameOver, { paused = it }) { secondsLeft = ceil(game.timeLeft).toInt() },
+            GameLoopCallbacks(onSound, onMusic, onBuzz, onGameOver, { paused = it }) { secondsLeft = ceil(game.timeLeft).toInt() },
         )
 
     Box(modifier.fillMaxSize()) {

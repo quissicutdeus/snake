@@ -119,6 +119,8 @@ fun GameScreen(
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
     onMusic: (Boolean) -> Unit = {},
+    /** Buzzes the phone (when the buzz switch is on). */
+    onBuzz: (Buzz) -> Unit = {},
     /** Show the first-game tips; [onTipsDone] runs once the kid has seen them all. */
     showTips: Boolean = false,
     onTipsDone: () -> Unit = {},
@@ -139,7 +141,7 @@ fun GameScreen(
             paused,
             settings.buzzOn,
             nap,
-            GameLoopCallbacks(onSound, onMusic, onGameOver, { paused = it }) { dt ->
+            GameLoopCallbacks(onSound, onMusic, onBuzz, onGameOver, { paused = it }) { dt ->
                 tips?.onFrame(game.sim, game.seat.stick, dt, paused, currentOnTipsDone)
             },
         )

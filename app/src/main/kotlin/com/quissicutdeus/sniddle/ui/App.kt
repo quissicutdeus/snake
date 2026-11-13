@@ -11,9 +11,10 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.quissicutdeus.sniddle.Buzzer
 import com.quissicutdeus.sniddle.PhoneCalendar
+import com.quissicutdeus.sniddle.SoundOutput
 import com.quissicutdeus.sniddle.Storage
-import com.quissicutdeus.sniddle.game.audio.Sound
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.Unlock
@@ -149,8 +150,8 @@ fun SniddleApp(
     storage: Storage,
     /** Today's date (a fixed one in tests). */
     calendar: PhoneCalendar,
-    playSound: (Sound) -> Unit,
-    playMusic: (Boolean) -> Unit = {},
+    sound: SoundOutput,
+    buzzer: Buzzer,
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage, calendar) }
@@ -180,7 +181,7 @@ fun SniddleApp(
             }
 
             is TogetherScreen -> {
-                TogetherRoute(s, Household(me, storage, notes, bedtime), Speakers(playSound, playMusic), { ++round }) { screen = it }
+                TogetherRoute(s, Household(me, storage, notes, bedtime), Speakers(sound, buzzer), { ++round }) { screen = it }
             }
 
             is Screen.Play -> {
@@ -188,7 +189,7 @@ fun SniddleApp(
                     s.round,
                     me,
                     bedtime,
-                    Speakers(playSound, playMusic),
+                    Speakers(sound, buzzer),
                     onGameOver = { screen = Screen.GameOver(it, me.recordGame(it)) },
                     onHome = { screen = Screen.Title },
                 )
@@ -224,10 +225,10 @@ fun SniddleApp(
     }
 }
 
-/** Where the game's sound effects and music go. */
+/** Where the game's sound effects, music and buzz go. */
 internal class Speakers(
-    val playSound: (Sound) -> Unit,
-    val playMusic: (Boolean) -> Unit,
+    val sound: SoundOutput,
+    val buzzer: Buzzer,
 )
 
 /** A one-player game for the kid playing, in their look and mode, with their tips and the bedtime timer. */
@@ -249,8 +250,9 @@ private fun PlayRoute(
         onQuit = onHome,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
-        onSound = { if (me.settings.soundOn) speakers.playSound(it) },
-        onMusic = { speakers.playMusic(it && me.settings.soundOn && me.settings.musicOn) },
+        onSound = { if (me.settings.soundOn) speakers.sound.play(it) },
+        onMusic = { speakers.sound.music(it && me.settings.soundOn && me.settings.musicOn) },
+        onBuzz = speakers.buzzer::buzz,
         showTips = remember(round) { tipsDue(me.stats) },
         bedtime = bedtime.forGame(onHome),
         options = remember(round) { me.todaysOptions() },
