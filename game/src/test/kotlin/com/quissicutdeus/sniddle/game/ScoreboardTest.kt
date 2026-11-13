@@ -67,6 +67,64 @@ class ScoreboardTest {
         assertEquals("AB", Scoreboard.cleanName("A\tB"))
     }
 
+    @Test fun plainNamesAreCutByLetters() {
+        assertEquals("Caleb", Scoreboard.fitName("Caleb"))
+        assertEquals("Supercalifra", Scoreboard.fitName("Supercalifragilistic"))
+        assertEquals("ab", Scoreboard.fitName("abc", 2))
+        assertEquals("", Scoreboard.fitName("abc", 0))
+    }
+
+    @Test fun anEmojiAtTheLimitIsKeptWholeOrLeftOut() {
+        // 11 letters and a snail: 13 code units, but 12 things a kid can see.
+        val name = "Abcdefghijk$SNAIL"
+        assertEquals(name, Scoreboard.cleanName(name))
+        assertEquals(name, Scoreboard.cleanName("${name}z"))
+        assertEquals("ab", Scoreboard.fitName("ab$SNAIL", 2))
+    }
+
+    @Test fun aFamilyEmojiIsOneCharacter() {
+        assertEquals("ab", Scoreboard.fitName("ab$FAMILY", 2))
+        assertEquals("ab$FAMILY", Scoreboard.fitName("ab${FAMILY}c", 3))
+    }
+
+    @Test fun aSkinToneStaysWithItsEmoji() {
+        assertEquals("a$THUMBS_UP", Scoreboard.fitName("a${THUMBS_UP}b", 2))
+        assertEquals("a", Scoreboard.fitName("a$THUMBS_UP", 1))
+    }
+
+    @Test fun flagsAndKeycapsAreNotSplit() {
+        assertEquals(FLAG_GB, Scoreboard.fitName("$FLAG_GB$FLAG_FR", 1))
+        assertEquals("$FLAG_GB$FLAG_FR", Scoreboard.fitName("$FLAG_GB$FLAG_FR", 2))
+        assertEquals("x$KEYCAP_ONE", Scoreboard.fitName("x${KEYCAP_ONE}y", 2))
+    }
+
+    @Test fun aCutNameIsAlwaysWholeUtf16() {
+        val name = "Mo $FAMILY$THUMBS_UP$FLAG_GB$FLAG_FR$KEYCAP_ONE${SNAIL}\u00E9!"
+        for (limit in 0..name.length) {
+            val cut = Scoreboard.fitName(name, limit)
+            assertTrue(name.startsWith(cut))
+            assertTrue(cut.isWholeUtf16(), "limit $limit left a lone surrogate")
+            assertFalse(cut.endsWith(ZWJ), "limit $limit left a dangling joiner")
+        }
+    }
+
+    @Test fun oneLetterPiledWithMarksCannotFillTheScreen() {
+        val tower = "a" + "\u0301".repeat(Scoreboard.MAX_NAME_CHARS)
+        assertEquals("Mo ", Scoreboard.fitName("Mo $tower"))
+        assertEquals("Mo", Scoreboard.cleanName("Mo $tower"))
+        assertTrue(Scoreboard.fitName(FAMILY.repeat(Scoreboard.MAX_NAME_LENGTH)).length <= Scoreboard.MAX_NAME_CHARS)
+    }
+
+    @Test fun typingPastTheLimitDoesNotScrambleTheName() {
+        val full = "Abcdefghijkl"
+        assertEquals(full, Scoreboard.editName(full, "${full}m"), "typing at the end of a full name does nothing")
+        assertEquals(full, Scoreboard.editName(full, "Abcdef${SNAIL}ghijkl"), "nor does typing in the middle")
+        assertEquals("Abcdefghijk$SNAIL", Scoreboard.editName("Abcdefghijk", "Abcdefghijk$SNAIL"))
+        assertEquals("Abcdefghijkl", Scoreboard.editName("", "Abcdefghijklmnop"), "a pasted long name is cut")
+        assertEquals("Abcdeghijkl", Scoreboard.editName(full, "Abcdeghijkl"), "deleting always works")
+        assertEquals("Ab Cd", Scoreboard.editName("Ab", "Ab Cd"))
+    }
+
     @Test fun rememberedNamesPutTheLatestFirstWithoutDuplicates() {
         var names = emptyList<String>()
         names = Scoreboard.rememberName(names, "Caleb")
@@ -98,5 +156,25 @@ class ScoreboardTest {
         assertEquals(style, SnailStyle.decode(style.encode()))
         assertEquals(SnailStyle.DEFAULT, SnailStyle.decode("garbage"))
         assertEquals(SnailStyle.DEFAULT.copy(color1 = 2), SnailStyle.decode("2,99,NOPE"))
+    }
+
+    /** Every surrogate is half of a pair. */
+    private fun String.isWholeUtf16() =
+        indices.all { i ->
+            when {
+                this[i].isHighSurrogate() -> getOrNull(i + 1)?.isLowSurrogate() == true
+                this[i].isLowSurrogate() -> getOrNull(i - 1)?.isHighSurrogate() == true
+                else -> true
+            }
+        }
+
+    private companion object {
+        const val SNAIL = "\uD83D\uDC0C"
+        const val ZWJ = "\u200D"
+        const val FAMILY = "\uD83D\uDC68$ZWJ\uD83D\uDC69$ZWJ\uD83D\uDC67$ZWJ\uD83D\uDC66"
+        const val THUMBS_UP = "\uD83D\uDC4D\uD83C\uDFFD"
+        const val FLAG_GB = "\uD83C\uDDEC\uD83C\uDDE7"
+        const val FLAG_FR = "\uD83C\uDDEB\uD83C\uDDF7"
+        const val KEYCAP_ONE = "1\uFE0F\u20E3"
     }
 }

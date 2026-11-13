@@ -2,6 +2,7 @@ package com.quissicutdeus.sniddle.game.sim
 
 import com.quissicutdeus.sniddle.game.model.ScoreEntry
 import com.quissicutdeus.sniddle.game.model.SnailStyle
+import java.text.BreakIterator
 
 /**
  * The offline, on-device high-score list: ranking, inserting, trimming,
@@ -9,7 +10,15 @@ import com.quissicutdeus.sniddle.game.model.SnailStyle
  */
 object Scoreboard {
     const val MAX_ENTRIES = 10
+
+    /** Letters or emoji in a name, as a kid counts them (see [fitName]). */
     const val MAX_NAME_LENGTH = 12
+
+    /**
+     * UTF-16 code units in a name, so a few letters stacked with accent marks can't fill the
+     * screen. Twelve flags or skin-toned emoji fit; twelve family emoji don't.
+     */
+    const val MAX_NAME_CHARS = 64
     const val MAX_REMEMBERED_NAMES = 8
     const val DEFAULT_NAME = "Player"
 
@@ -52,11 +61,59 @@ object Scoreboard {
     /** The name the player's snail goes by in a game: what they typed, tidied, or "You". */
     fun snailName(typed: String): String = if (typed.isBlank()) "You" else cleanName(typed)
 
-    /** Tidies a typed name: no control characters, single spaces, at most [MAX_NAME_LENGTH] characters. */
+    /**
+     * Tidies a typed name: no control characters, single spaces, cut by [fitName] to at most
+     * [MAX_NAME_LENGTH] letters or emoji.
+     */
     fun cleanName(raw: String): String {
         val cleaned = raw.filter { !it.isISOControl() }.trim().replace(Regex("\\s+"), " ")
-        val cut = if (cleaned.length > MAX_NAME_LENGTH) cleaned.take(MAX_NAME_LENGTH).trimEnd() else cleaned
-        return cut.ifEmpty { DEFAULT_NAME }
+        return fitName(cleaned).trimEnd().ifEmpty { DEFAULT_NAME }
+    }
+
+    /**
+     * The longest start of [text] that has at most [maxLength] user-perceived characters (grapheme
+     * clusters: a letter with its accents, or a whole emoji such as a family, a flag or a thumbs-up
+     * with a skin tone) and at most [MAX_NAME_CHARS] UTF-16 code units. It never cuts inside a
+     * cluster, so it never leaves half an emoji or a lone surrogate. [text] comes back unchanged
+     * when it already fits.
+     *
+     * Kids count what they see, so [maxLength] counts clusters. The code-unit bound only matters for
+     * a single cluster piled high with combining marks, which would otherwise be one "letter" as
+     * tall or wide as the screen; such a cluster is left out whole.
+     *
+     * Clusters come from [BreakIterator.getCharacterInstance], which follows the Unicode extended
+     * grapheme rules (emoji ZWJ sequences included) on JDK 20 and later and on Android, where it is
+     * backed by ICU.
+     */
+    fun fitName(
+        text: String,
+        maxLength: Int = MAX_NAME_LENGTH,
+    ): String {
+        val clusters = BreakIterator.getCharacterInstance()
+        clusters.setText(text)
+        var end = 0
+        var count = 0
+        while (count < maxLength) {
+            val next = clusters.next()
+            if (next == BreakIterator.DONE || next > MAX_NAME_CHARS) break
+            end = next
+            count++
+        }
+        return if (end == text.length) text else text.substring(0, end)
+    }
+
+    /**
+     * What a name box shows after an edit from [old] to [new]. An edit that fits is kept. One that
+     * only adds to the end (typing, or pasting into an empty box) is cut by [fitName]. Any other
+     * edit that would go over the limit is ignored, so typing into the middle of a full name
+     * doesn't push letters off the end.
+     */
+    fun editName(
+        old: String,
+        new: String,
+    ): String {
+        val fit = fitName(new)
+        return if (fit == new || new.startsWith(old)) fit else old
     }
 
     /** Names for the "Who played?" picker: [name] moves to the front, no duplicates (ignoring case). */

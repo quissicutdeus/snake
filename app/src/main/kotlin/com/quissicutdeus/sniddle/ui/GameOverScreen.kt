@@ -266,7 +266,7 @@ private fun WhoPlayedPanel(
             ) {
                 OutlinedTextField(
                     value = typed,
-                    onValueChange = { typed = it.take(Scoreboard.MAX_NAME_LENGTH) },
+                    onValueChange = { typed = Scoreboard.editName(typed, it) },
                     label = { Text(if (names.isEmpty()) "Your name" else "Someone new") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),

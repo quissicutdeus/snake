@@ -210,7 +210,7 @@ private fun NamePicker(naming: Naming) {
     }
     OutlinedTextField(
         value = naming.name,
-        onValueChange = { naming.onChange(it.take(Scoreboard.MAX_NAME_LENGTH)) },
+        onValueChange = { naming.onChange(Scoreboard.editName(naming.name, it)) },
         label = { Text("Type a name") },
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
