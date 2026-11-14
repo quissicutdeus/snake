@@ -222,6 +222,16 @@ Samsung Galaxy Note 10 or Note 20.
 
 Or with a cable and `adb`: `adb install -r sniddle.apk`.
 
+## Install it on an iPhone or iPad
+
+Needs **iOS 16 or newer**. Every release also has **`sniddle.ipa`**
+([`releases/latest/download/sniddle.ipa`](../../releases/latest/download/sniddle.ipa)).
+There's no App Store and no paid developer account: a Linux computer installs
+it over a cable with [Impactor](https://github.com/khcrysalis/PlumeImpactor),
+signed with a free Apple ID, and it has to be installed again **every week** or
+it stops opening (the saved scores stay). [Sniddle on iPhone and iPad](docs/ios.md)
+has the step-by-step.
+
 Sniddle is still a **beta** (0.x): every push to `main` that passes
 [CI](.github/workflows/build.yml) and changes the app publishes a new
 [release](../../releases). A push that only touches the README, docs, lint

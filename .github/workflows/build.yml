@@ -1,11 +1,16 @@
 name: Build
 
-# Every push and pull request: lint, test and build. On main, if all of that
-# passes and the app itself changed (see "Check whether the app changed"), a
-# GitHub release "v<MAJOR.MINOR>.<patch>" is published with
-# sniddle.apk attached, so the newest APK is always at
+# Every push and pull request: lint, test and build, for Android and iOS. On
+# main, if all of that passes and the app itself changed (see "Check whether
+# the app changed"), a GitHub release "v<MAJOR.MINOR>.<patch>" is published
+# with sniddle.apk and sniddle.ipa attached, so the newest of each is always at
 #   releases/latest/download/sniddle.apk
+#   releases/latest/download/sniddle.ipa
 # "Run workflow" in the Actions tab publishes one from any branch.
+#
+# The iOS jobs run on macOS runners (free while the repository is public; see
+# docs/ios.md, "macOS minutes"). They take longer than the Linux ones and can
+# queue for a while, so a release waits for them.
 on:
   push:
     branches: ['**']
@@ -27,6 +32,34 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # The release version, picked once so the APK and the IPA carry the same one.
+  # Semver: appVersion (MAJOR.MINOR) plus the next unused patch among that
+  # series' tags on GitHub.
+  version:
+    name: Pick the release version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      name: ${{ steps.version.outputs.name }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Pick the release version (appVersion + next unused patch)
+        id: version
+        run: |
+          base=$(sed -n 's/^appVersion=//p' gradle.properties)
+          if ! printf '%s\n' "$base" | grep -Eqx '[0-9]+\.[0-9]+'; then
+            echo "::error file=gradle.properties::appVersion must be MAJOR.MINOR, found '$base'"
+            exit 1
+          fi
+          base_re=$(printf '%s' "$base" | sed 's/\./\\./g')
+          # Tags on GitHub, not in this shallow checkout. Fails the step if GitHub can't be reached.
+          tags=$(git ls-remote --tags --refs origin)
+          last=$(printf '%s\n' "$tags" | sed -n "s#.*refs/tags/v$base_re\.\([0-9][0-9]*\)\$#\1#p" | sort -n | tail -n 1)
+          version="$base.$(( ${last:--1} + 1 ))"
+          echo "Version $version (last v$base.* tag: ${last:-none})"
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+
   # Lint and build run side by side on separate runners (lint alone takes
   # about as long as testing and building), so a push waits for the slower
   # of the two, not both. Both reuse the same Gradle cache.
@@ -67,10 +100,11 @@ jobs:
 
   build:
     name: Test and build
+    needs: version
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      version: ${{ steps.version.outputs.name }}
+    env:
+      VERSION_NAME: ${{ needs.version.outputs.name }}
     steps:
       - uses: actions/checkout@v7
 
@@ -105,29 +139,12 @@ jobs:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
 
-      - name: Pick the release version (appVersion + next unused patch)
-        id: version
-        run: |
-          base=$(sed -n 's/^appVersion=//p' gradle.properties)
-          if ! printf '%s\n' "$base" | grep -Eqx '[0-9]+\.[0-9]+'; then
-            echo "::error file=gradle.properties::appVersion must be MAJOR.MINOR, found '$base'"
-            exit 1
-          fi
-          base_re=$(printf '%s' "$base" | sed 's/\./\\./g')
-          # Tags on GitHub, not in this shallow checkout. Fails the step if GitHub can't be reached.
-          tags=$(git ls-remote --tags --refs origin)
-          last=$(printf '%s\n' "$tags" | sed -n "s#.*refs/tags/v$base_re\.\([0-9][0-9]*\)\$#\1#p" | sort -n | tail -n 1)
-          version="$base.$(( ${last:--1} + 1 ))"
-          echo "Version $version (last v$base.* tag: ${last:-none})"
-          echo "name=$version" >> "$GITHUB_OUTPUT"
-          echo "VERSION_NAME=$version" >> "$GITHUB_ENV"
-
       # One Gradle run, so the game tests, the Robolectric screenshot tests and
       # the release build (R8) can overlap. Only the release APK is built: it's
       # the one that gets installed. The game's iOS code and tests, and the
       # shared UI's iOS code, are compiled too (Linux can compile them but not
-      # link or run them), so a change that breaks the iPhone build fails here
-      # rather than in the by-hand iOS run.
+      # link or run them), so a change that breaks the iPhone build fails here,
+      # minutes before the macOS jobs below would.
       - name: Tests and release APK (version ${{ env.VERSION_NAME }})
         run: >-
           ./gradlew :game:test :composeApp:testAndroidHostTest :app:testDebugUnitTest :app:assembleRelease
@@ -158,6 +175,155 @@ jobs:
           name: screenshots
           path: app/build/screenshots
 
+  # The game's rules compiled with Kotlin/Native and run on an iOS simulator,
+  # which catches what the JVM tests can't (number formatting, missing JVM
+  # APIs, the memory model). Pinned to an OS version, not macos-latest, so the
+  # image (and its Xcode versions) only change when this file does. Apple
+  # Silicon: the simulator target is iosSimulatorArm64.
+  ios-tests:
+    name: Game tests on an iOS simulator
+    runs-on: macos-26
+    timeout-minutes: 45
+    # Xcode 26.4.1 on the macos-26 image. Kotlin 2.4.20-2.4.21 is listed as
+    # compatible with Xcode 26.4 (kotlinlang.org multiplatform compatibility
+    # guide). Raise it with Kotlin. The image keeps only the newest patch of
+    # each Xcode minor version, so this path moves when 26.4.x does; then the
+    # job fails at "Xcode version" rather than building with something else.
+    #   https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+      XCODE_VERSION: 26.4.1
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - &xcode
+        name: Xcode version
+        run: |
+          xcodebuild -version
+          xcodebuild -version | grep -qx "Xcode $XCODE_VERSION"
+
+      - &java
+        uses: actions/setup-java@v6.2.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Same Gradle cache terms as the jobs above.
+      - &gradle
+        uses: gradle/actions/setup-gradle@v6.4.1
+
+      # Kotlin/Native's compiler and Apple toolchain bits (~1 GB), downloaded
+      # by the first build into ~/.konan. Caching them is most of the time
+      # (and macOS minutes) saved. The Kotlin version lives in libs.versions.toml.
+      - &konan
+        name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      # Kotlin picks the simulator Xcode lists as its default test device, so
+      # no device name is hard-coded here. linkDebugTestIosArm64 also links the
+      # tests for a real (arm64) device, which the simulator run doesn't prove.
+      - name: Game tests (iosSimulatorArm64) and device test link (iosArm64)
+        run: ./gradlew :game:iosSimulatorArm64Test :game:linkDebugTestIosArm64 --console=plain
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ios-test-reports
+          path: game/build/reports
+
+  # The iPhone and iPad app, unsigned: a free Apple ID has no certificate CI
+  # could hold, so the family's sideload tool signs it when it installs it
+  # (docs/ios.md). Same version as the APK; the build number is the run number.
+  ipa:
+    name: Unsigned IPA
+    needs: version
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      # The same Xcode as ios-tests (see there).
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+      XCODE_VERSION: 26.4.1
+      VERSION_NAME: ${{ needs.version.outputs.name }}
+      VERSION_CODE: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - *xcode
+      - *java
+      - *gradle
+      - *konan
+
+      # XcodeGen turns iosApp/project.yml into the Xcode project. From its
+      # GitHub release, checked against the release's published sha256, not
+      # Homebrew (which can't pin a version).
+      - name: Install XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          echo "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806  $RUNNER_TEMP/xcodegen.zip" |
+            shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Generate the Xcode project
+        working-directory: iosApp
+        run: |
+          xcodegen --version
+          xcodegen generate --spec project.yml
+
+      # A device build (iphoneos, arm64) with signing switched off: the sideload
+      # tool re-signs everything anyway, and a free Apple ID can't sign here.
+      # The "Compile Kotlin framework" phase in project.yml runs Gradle.
+      - name: Build Sniddle.app (unsigned, version ${{ env.VERSION_NAME }})
+        run: >-
+          xcodebuild build
+          -project iosApp/Sniddle.xcodeproj
+          -scheme Sniddle
+          -configuration Release
+          -sdk iphoneos
+          -destination generic/platform=iOS
+          -derivedDataPath "$RUNNER_TEMP/DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=
+          MARKETING_VERSION="$VERSION_NAME"
+          CURRENT_PROJECT_VERSION="$VERSION_CODE"
+
+      # An .ipa is a zip with the app under Payload/. Each check fails the job
+      # rather than shipping something broken or incomplete. The Kotlin UI
+      # must be in the app binary: without it Xcode would build SniddleApp.swift's
+      # placeholder screen, and that must never be released.
+      - name: Package and check sniddle.ipa
+        run: |
+          app="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/Sniddle.app"
+          test -d "$app"
+          lipo -info "$app/Sniddle"
+          lipo -archs "$app/Sniddle" | grep -qx arm64
+          test "$(plutil -extract CFBundleIdentifier raw "$app/Info.plist")" = com.quissicutdeus.sniddle
+          test "$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")" = "$VERSION_NAME"
+          test "$(plutil -extract CFBundleVersion raw "$app/Info.plist")" = "$VERSION_CODE"
+          test -f "$app/Assets.car"
+          if ! grep -aq MainViewController "$app/Sniddle"; then
+            echo "::error::The app has no Kotlin UI in it (no MainViewController symbol): it would be the placeholder"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$app" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/sniddle.ipa" Payload)
+          unzip -l sniddle.ipa | grep -q 'Payload/Sniddle.app/Sniddle$'
+          ls -l sniddle.ipa
+
+      - name: Upload sniddle.ipa (unsigned, the sideload tool signs it)
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sniddle-ipa
+          path: sniddle.ipa
+          if-no-files-found: error
+
   # Everything that isn't Kotlin, in pinned Docker images (the same versions
   # can be run locally: actionlint, scripts/lint-shell.sh, markdownlint-cli2).
   lint-repo:
@@ -183,23 +349,24 @@ jobs:
 
   release:
     name: Publish GitHub release
-    needs: [lint, build, lint-repo]
+    needs: [version, lint, build, ios-tests, ipa, lint-repo]
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write # create the tag and the release
     env:
-      VERSION_NAME: ${{ needs.build.outputs.version }}
+      VERSION_NAME: ${{ needs.version.outputs.name }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # every tag, to compare with the last release
 
       # A push that only changes the README, docs, lint rules or CI builds the
-      # same app, so it isn't released: phones would get an update with nothing
-      # new. Anything not on this list counts as an app change, so a new kind
-      # of file releases rather than being skipped. "Run workflow" always releases.
+      # same apps, so it isn't released: phones would get an update with nothing
+      # new. iosApp/ is the iPhone app, so it counts. Anything not on this list
+      # counts as an app change, so a new kind of file releases rather than
+      # being skipped. "Run workflow" always releases.
       - name: Check whether the app changed
         id: changed
         run: |
@@ -209,7 +376,7 @@ jobs:
             exit 0
           fi
           app_files=$(git diff --name-only "$last" HEAD |
-            grep -Ev '^(README\.md|PLAN\.md|docs/|iosApp/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
+            grep -Ev '^(README\.md|PLAN\.md|docs/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
           if [ -n "$app_files" ]; then
             echo "app=true" >> "$GITHUB_OUTPUT"
           else
@@ -222,6 +389,11 @@ jobs:
         with:
           name: sniddle-apk
 
+      - uses: actions/download-artifact@v8
+        if: steps.changed.outputs.app == 'true'
+        with:
+          name: sniddle-ipa
+
       - name: Create release v${{ env.VERSION_NAME }}
         if: steps.changed.outputs.app == 'true'
         env:
@@ -232,16 +404,22 @@ jobs:
           label=""
           case $VERSION_NAME in 0.*) label=" (beta)" ;; esac
           cat > notes.md <<NOTES
-          Sniddle $VERSION_NAME$label for Android 11 and newer.
+          Sniddle $VERSION_NAME$label for Android 11 and newer, and iPhone and iPad on iOS 16 and newer.
 
-          **Install:** open this page on the phone, tap **sniddle.apk**, then open
+          **Android:** open this page on the phone, tap **sniddle.apk**, then open
           the download and allow installing apps from that source when Android asks.
           It installs over any earlier version and keeps the high scores.
           (Versions before 0.2 are a separate app: uninstall that one by hand.)
 
+          **iPhone and iPad:** download **sniddle.ipa** on the computer and install it
+          over USB with Impactor, signed with the family's Apple ID: see
+          [Sniddle on iPhone and iPad]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/ios.md).
+          It installs over the earlier version and keeps the high scores. Install it
+          again every week, or Sniddle stops opening.
+
           Built from $GITHUB_SHA.
           NOTES
-          gh release create "v$VERSION_NAME" sniddle.apk \
+          gh release create "v$VERSION_NAME" sniddle.apk sniddle.ipa \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Sniddle $VERSION_NAME$label" \

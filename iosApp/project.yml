@@ -1,6 +1,6 @@
 # The iOS app's Xcode project, as text. Nobody on this project has a Mac, so the
-# .xcodeproj is never checked in: CI generates it with XcodeGen (pinned in
-# .github/workflows/ios.yml) and builds it straight away.
+# .xcodeproj is never checked in: CI generates it with XcodeGen (pinned in the
+# ipa job of .github/workflows/build.yml) and builds it straight away.
 #   https://github.com/yonaskolb/XcodeGen/blob/2.46.0/Docs/ProjectSpec.md
 #
 # On a Mac, if one ever turns up:  cd iosApp && xcodegen generate && open Sniddle.xcodeproj

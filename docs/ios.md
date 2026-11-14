@@ -139,9 +139,9 @@ Retry it once the family is comfortable with the basic path. "SideStore + Sniddl
 ### Once per iPhone or iPad
 
 1. Give the device a passcode if it has none, and connect it to Wi-Fi.
-2. Download `sniddle.ipa` on the computer. Until iOS ships, it comes from the **Artifacts** of a run of the
-   [iOS workflow](../.github/workflows/ios.yml). After that, it comes from the
-   [latest release](../../../releases/latest).
+2. Download `sniddle.ipa` on the computer from the [latest release](../../../releases/latest)
+   (direct link: [`releases/latest/download/sniddle.ipa`](../../../releases/latest/download/sniddle.ipa)).
+   Every push to a branch also builds one, under that run's **Artifacts**.
 3. Plug the device in with a cable and unlock it. Tap **Trust** on the device and enter its passcode.
 4. *Then* open Impactor. On Linux, `usbmuxd` can stop while no device is connected, so plug in first; if the
    device isn't listed, quit and reopen Impactor (its README's Linux note). Sign in with the sideloading
@@ -196,8 +196,9 @@ plumesign sign --package sniddle.ipa --apple-id --register-and-install
 
 ## How CI builds the iPhone app
 
-[`.github/workflows/ios.yml`](../.github/workflows/ios.yml) holds the design. It runs only from **Run
-workflow** until phases 1 and 2 land, so it can't block a push or ship anything.
+The iOS jobs are in [`.github/workflows/build.yml`](../.github/workflows/build.yml), beside the Android
+ones: every push runs them, and a release from `main` waits for them and carries `sniddle.ipa` next to
+`sniddle.apk` (phase 3, below).
 
 ### No Mac: the Xcode project is generated
 
@@ -268,26 +269,21 @@ off, and the tool signs the whole bundle at install time.
 into the app's own binary and nothing is embedded under `Frameworks/`, so the sideload tool has one
 signature to redo, not two.
 
-**Before phase 2 there is no Kotlin UI to link,** so the build phase skips Gradle with an Xcode warning, and
-[`SniddleApp.swift`](../iosApp/Sniddle/SniddleApp.swift) shows a placeholder screen with the version. That
-placeholder is useful now: it lets the owner try the whole install path on a real device before the port is
-done. Once a `composeApp/` directory exists, the job fails if the app binary doesn't contain the Kotlin UI,
-so a placeholder can't be released by mistake.
+**Without the Kotlin UI,** [`SniddleApp.swift`](../iosApp/Sniddle/SniddleApp.swift) builds a placeholder
+screen with the version (it was used to try the install path before phase 2). The `ipa` job fails if the app
+binary doesn't contain the Kotlin UI, so a placeholder can't be released by mistake.
 
 ### Shipping it with the APK (phase 3)
 
-When the port is ready, move both jobs into `build.yml`:
+Done: both jobs moved from the old stand-alone `ios.yml` into `build.yml`.
 
-- Run `ipa` beside `build`, and have the `release` job `need` it.
-- Attach `sniddle.ipa` to the **same release** as `sniddle.apk`, so `releases/latest/download/sniddle.ipa`
-  always works and both platforms share one version number.
-- Move the version step into its own small job that `build` and `ipa` both `need`, so neither waits for the
-  other.
-- Count `iosApp/` as an app change in "Check whether the app changed".
-
-**Until then, `build.yml` should list `iosApp/` among the paths that don't release.** That is not done
-yet, and `build.yml` is outside this change. Without it, merging this scaffold publishes an Android release
-with nothing new in it.
+- `ios-tests` and `ipa` run beside `build` on every push, and the `release` job needs both.
+- `sniddle.ipa` is attached to the **same release** as `sniddle.apk`, so
+  `releases/latest/download/sniddle.ipa` always works and both platforms share one version number. The
+  release notes say how to install each.
+- The version is picked by its own small `version` job that `build` and `ipa` both need, so neither waits
+  for the other.
+- `iosApp/` counts as an app change in "Check whether the app changed".
 
 ### macOS minutes
 
@@ -344,7 +340,8 @@ and macOS is included. Rough estimates, to be replaced with real timings after t
 
 ## Phase 2: iOS platform services
 
-**Status (2026-11-14):** built on the `ios-phase2` branch, not yet tried on a device.
+**Status (2026-11-14):** on `main`, and released with the APK from the first release after phase 3. Not yet
+tried on a device.
 
 - The shared UI is the `composeApp` module (Compose Multiplatform 1.12.2, material3 1.9.0). Android
   keeps the same androidx libraries and pixels; its own services stay in `app/`.
@@ -356,8 +353,8 @@ and macOS is included. Rough estimates, to be replaced with real timings after t
   Silent switch silences the game).
 - iPads, which have no Taptic Engine, get no buzz switch.
 - Every screen already has a visible way back, so iOS's `SystemBack` does nothing.
-- The macOS workflow builds the IPA with the Kotlin UI linked in. Next: install it on a device, then
-  phase 3 (release it with the APK).
+- CI builds the IPA with the Kotlin UI linked in, and releases it with the APK (phase 3). Next: install it
+  on a device and check what only a device can show (see the sections below).
 
 Everything the shared Compose Multiplatform UI needs from iOS that `app/` gets from Android today. Each of
 these can be a small `expect`/`actual` in Kotlin: Kotlin/Native calls UIKit and AVFAudio directly, so none

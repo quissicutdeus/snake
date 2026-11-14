@@ -21,7 +21,7 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<!-- Set by CI from the same version as the APK (see .github/workflows/ios.yml). -->
+	<!-- Set by CI from the same version as the APK (the ipa job in .github/workflows/build.yml). -->
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
