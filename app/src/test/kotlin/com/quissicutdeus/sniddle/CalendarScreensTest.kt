@@ -1,8 +1,5 @@
 package com.quissicutdeus.sniddle
 
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -39,12 +36,12 @@ class CalendarScreensTest : ScreenTest() {
         compose.onNodeWithText("🎂 Add my birthday").performClick()
         advance(500)
         compose.onNodeWithText("When's your birthday?").assertExists()
-        saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), "birthday_months")
+        snapDialog("birthday_months")
         compose.onNodeWithText("February").performClick()
         advance(300)
         compose.onNodeWithText("29").assertExists() // the leap day is there to pick
         compose.onNodeWithText("30").assertDoesNotExist()
-        saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), "birthday_days")
+        snapDialog("birthday_days")
         compose.onNodeWithText("29").performClick()
         advance(500)
         assertEquals(Birthday(2, 29), storage.player(0).loadBirthday())
@@ -58,6 +55,11 @@ class CalendarScreensTest : ScreenTest() {
         assertNull(storage.player(0).loadBirthday())
         compose.onNodeWithText("🎂 Add my birthday").assertExists()
     }
+
+    /** The month and day pickers, then the birthday in My Snails. */
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun birthdayPickerNight() = aKidSetsTheirBirthdayInMySnail()
 
     @Test fun onTheirBirthdayTheTitleCheersAndConfettiFlies() {
         storage.player(0).saveSnailName("Caleb")
