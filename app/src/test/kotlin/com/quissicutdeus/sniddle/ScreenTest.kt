@@ -61,10 +61,10 @@ import java.io.File
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Screen shapes: a phone held upright, a tablet, and a Galaxy Note 20 sized phone. */
+/** Screen shapes: a phone held upright, a tablet, and a long, narrow phone held sideways. */
 internal const val PORTRAIT = "w360dp-h780dp-port-xxhdpi"
 internal const val TABLET = "w1280dp-h800dp-land-xhdpi"
-internal const val NOTE_20 = "w915dp-h412dp-land-xxhdpi"
+internal const val WIDE_PHONE = "w915dp-h412dp-land-xxhdpi"
 
 /**
  * What every screenshot test shares: Robolectric's native graphics, a phone in

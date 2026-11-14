@@ -209,10 +209,9 @@ question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
 - Turning the phone's clock back doesn't give more time. (Setting it ahead to
   the next day would; that needs the phone's settings, which you can lock.)
 
-## Install it on a Pixel
+## Install it on Android
 
-Needs **Android 11 or newer**: any recent Pixel, and older phones such as a
-Samsung Galaxy Note 10 or Note 20.
+Needs **Android 11 or newer**, on a phone or a tablet.
 
 1. On the phone, open the **[latest release](../../releases/latest)** and tap
    **`sniddle.apk`** (or use the direct link:
@@ -387,7 +386,7 @@ build-logic/  the sniddle.quality plugin every module applies: compiler checks,
 ```
 
 The simulation runs at a fixed 60 steps per second; drawing blends between
-the last two steps so motion stays smooth on 90/120 Hz Pixel screens. The game
+the last two steps so motion stays smooth on 90 and 120 Hz screens. The game
 logic and art don't depend on Android, and the screens are Compose
 Multiplatform, so the iPhone and iPad app runs the same code; only sound, the
 buzz, the date, saved data and drawing text differ (see [docs/ios.md](docs/ios.md)).

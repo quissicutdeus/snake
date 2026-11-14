@@ -368,7 +368,7 @@ class ScreenshotTest : ScreenTest() {
     @Test
     fun highScoresPortrait() = highScoresScene("high_scores_portrait")
 
-    // ---- Tablet (Pixel Tablet size), landscape ----
+    // ---- Tablet (10-inch), landscape ----
 
     @Config(qualifiers = TABLET)
     @Test
@@ -382,13 +382,13 @@ class ScreenshotTest : ScreenTest() {
     @Test
     fun mySnailTablet() = mySnailScene("my_snail_tablet")
 
-    // ---- Oldest supported Android (minSdk), Galaxy Note 20 size ----
+    // ---- Oldest supported Android (minSdk), on a long, narrow phone ----
 
-    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Config(sdk = [30], qualifiers = WIDE_PHONE)
     @Test
     fun titleOldestAndroid() = titleScene("title_android11")
 
-    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Config(sdk = [30], qualifiers = WIDE_PHONE)
     @Test
     fun playingOldestAndroid() = playScene("game_android11")
 }

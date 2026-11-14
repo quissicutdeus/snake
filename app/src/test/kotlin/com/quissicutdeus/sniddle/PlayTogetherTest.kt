@@ -72,13 +72,13 @@ class PlayTogetherTest : ScreenTest() {
         snap("together_title_tablet")
     }
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
     fun titleOffersPlayTogetherOnABigPhoneSideways() {
         seedKids()
         launchApp()
         compose.onNodeWithText("Play together").assertExists()
-        snap("together_title_note20")
+        snap("together_title_wide_phone")
     }
 
     @Config(qualifiers = "w800dp-h360dp-land-xxhdpi")
@@ -219,9 +219,9 @@ class PlayTogetherTest : ScreenTest() {
 
     @Test fun bothHalvesSteerTablet() = bothHalvesSteer("together_playing_tablet")
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
-    fun bothHalvesSteerNote20() = bothHalvesSteer("together_playing_note20")
+    fun bothHalvesSteerWidePhone() = bothHalvesSteer("together_playing_wide_phone")
 
     /** A big snail gobbles Mya: "Oops!" in her half, and three seconds later she's back, small and blinking. */
     @Test fun aGobbledKidComesBack() {
@@ -375,7 +375,7 @@ class PlayTogetherTest : ScreenTest() {
 
     @Test fun endScreenTablet() = endScreen("together_over_tablet")
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
-    fun endScreenNote20() = endScreen("together_over_note20")
+    fun endScreenWidePhone() = endScreen("together_over_wide_phone")
 }

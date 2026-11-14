@@ -1,8 +1,8 @@
 [versions]
 # Android SDK levels, shared by the app and the shared-UI module.
 # compileSdk is the newest stable platform: Android 17, minor release 2.
-# minSdk 30 is Android 11: all recent Pixels and older Samsungs such as the
-# Galaxy Note 10 / Note 20. (Below 30 the CONFIRM/REJECT haptics don't exist.)
+# minSdk 30 is Android 11, the oldest that has the CONFIRM/REJECT haptics the
+# game buzzes with.
 androidCompileSdk = "37"
 androidCompileSdkMinor = "2"
 androidTargetSdk = "37"
