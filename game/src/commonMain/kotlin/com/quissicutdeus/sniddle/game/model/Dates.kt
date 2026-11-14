@@ -1,6 +1,38 @@
 package com.quissicutdeus.sniddle.game.model
 
 /**
+ * A day of the year as month * 100 + day (1225 is 25 December), so a stretch
+ * of the year is just a range of those: no time zones, no calendars. Used by
+ * the holidays, the festive floors and the saved birthdays.
+ */
+@Suppress("MagicNumber") // calendar rules are made of the calendar's own numbers
+object MonthDay {
+    /** One month in month * 100 + day. */
+    const val MONTH = 100
+
+    /** [day] of [month] (1-12). */
+    fun of(
+        month: Int,
+        day: Int,
+    ): Int = month * MONTH + day
+
+    fun monthOf(monthDay: Int): Int = monthDay / MONTH
+
+    fun dayOf(monthDay: Int): Int = monthDay % MONTH
+
+    /** All of [month] (1-12). */
+    fun wholeMonth(month: Int): IntRange = of(month, 1)..of(month, Dates.daysIn(month))
+
+    /** From [fromDay] of [fromMonth] to [toDay] of [toMonth], both included, within one year. */
+    fun between(
+        fromMonth: Int,
+        fromDay: Int,
+        toMonth: Int,
+        toDay: Int,
+    ): IntRange = of(fromMonth, fromDay)..of(toMonth, toDay)
+}
+
+/**
  * Date sums the game needs, worked out by hand so nothing depends on a
  * platform's calendar or time zone: the app reads today's date and hands
  * these the plain numbers.
@@ -96,18 +128,17 @@ data class Birthday(
         return if (leapDay && !Dates.isLeapYear(year)) month == 2 && day == 28 else month == this.month && day == this.day
     }
 
-    /** Saved as month * 100 + day (1225 for 25 December). */
-    fun encode(): Int = month * MONTH + day
+    /** Saved as month * 100 + day (1225 for 25 December), see [MonthDay]. */
+    fun encode(): Int = MonthDay.of(month, day)
 
     companion object {
         private const val MONTHS = 12
-        private const val MONTH = 100
 
         /** Reads [encode] output; null for nothing saved or a day that doesn't exist. */
         fun decode(value: Int?): Birthday? {
             if (value == null) return null
-            val month = value / MONTH
-            val day = value % MONTH
+            val month = MonthDay.monthOf(value)
+            val day = MonthDay.dayOf(value)
             return if (month in 1..MONTHS && day in 1..Dates.daysIn(month)) Birthday(month, day) else null
         }
     }
