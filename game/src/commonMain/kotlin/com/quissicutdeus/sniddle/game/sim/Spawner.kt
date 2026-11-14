@@ -5,14 +5,19 @@ import com.quissicutdeus.sniddle.game.model.Holiday
 import com.quissicutdeus.sniddle.game.model.Snail
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.dist
-import kotlin.math.atan2
+import com.quissicutdeus.sniddle.game.model.dist2
 import kotlin.math.max
+import kotlin.math.sqrt
 
 /**
  * Keeps a mix of AI snails around the player's size (~60% smaller, ~40%
  * bigger; little kid mode keeps more smaller, see [com.quissicutdeus.sniddle.game.Difficulty]),
- * always spawning them off-screen, and quietly removes far-away
- * ones that no longer fit the mix.
+ * always spawning them coiled up off-screen, and quietly removes ones that
+ * no longer fit the mix once they're out of sight.
+ *
+ * A new snail arrives coiled, not laid out straight: a straight body as long
+ * as a big snail's would reach right across a kid's screen, or out through the
+ * fence, from a head that is itself off-screen.
  *
  * With two kids, "off-screen" and "far away" go for both halves of the
  * screen, and the mix is made around the smaller kid, so the arena stays
@@ -64,19 +69,25 @@ class Spawner(
                 GameConfig.BIGGER_MIN_RATIO + rng.nextFloat() * (GameConfig.BIGGER_MAX_RATIO - GameConfig.BIGGER_MIN_RATIO)
             }
         val length = max(GameConfig.MIN_LENGTH, ref * ratio)
-        val (x, y) = findSpot(sim) ?: return null
-        // Point roughly away from the middle so the straight starting body lies inside the arena.
-        val outward = atan2(y - sim.world.height / 2f, x - sim.world.width / 2f)
-        val heading = outward + (rng.nextFloat() - 0.5f) * 1.2f
-        return sim.addSnail(
-            name = pickAiName(sim),
-            style = Holiday.dressUp(SnailStyle.random(rng), rng, sim.options.season),
-            isPlayer = false,
-            x = x,
-            y = y,
-            heading = heading,
-            length = length,
-        )
+        val radius = GameConfig.radiusFor(length)
+        // Coiled around (0, 0), then moved to the spot found for it. The head is the coil's outer end, so it is the furthest point.
+        val coil = Coil.around(0f, 0f, radius, length + GameConfig.TRAIL_SPACING * 2)
+        val reach = sqrt(coil.xs[0] * coil.xs[0] + coil.ys[0] * coil.ys[0]) + radius
+        val (x, y) = findSpot(sim, reach) ?: return null
+        val s =
+            sim.addSnail(
+                name = pickAiName(sim),
+                style = Holiday.dressUp(SnailStyle.random(rng), rng, sim.options.season),
+                isPlayer = false,
+                x = x + coil.xs[0],
+                y = y + coil.ys[0],
+                heading = coil.heading,
+                length = length,
+            )
+        val xs = FloatArray(coil.count) { x + coil.xs[it] }
+        val ys = FloatArray(coil.count) { y + coil.ys[it] }
+        s.setPose(xs, ys, coil.count, coil.heading)
+        return s
     }
 
     /** A name for a new computer snail: one no live snail has, if any is left. */
@@ -90,16 +101,24 @@ class Spawner(
         return if (free.isNotEmpty()) free[sim.rng.nextInt(free.size)] else AI_NAMES[sim.rng.nextInt(AI_NAMES.size)]
     }
 
-    /** A random spot well off-screen and not on top of another snail's head. */
-    private fun findSpot(sim: GameSim): Pair<Float, Float>? {
+    /**
+     * A random centre for a coil reaching [reach] from it: the whole coil off
+     * every kid's screen and inside the fence, and not on top of another
+     * snail's head. Null if there is no such spot right now.
+     */
+    private fun findSpot(
+        sim: GameSim,
+        reach: Float,
+    ): Pair<Float, Float>? {
         val w = sim.world
-        val margin = GameConfig.SPAWN_WALL_MARGIN
+        val margin = max(GameConfig.SPAWN_WALL_MARGIN, reach)
+        if (2 * margin >= w.width || 2 * margin >= w.height) return null
         val watchers = watchers(sim)
 
         fun unseen(
             x: Float,
             y: Float,
-        ) = watchers.all { dist(x, y, it.x, it.y) >= offscreen(it) }
+        ) = watchers.all { dist(x, y, it.x, it.y) >= offscreen(it) + reach }
         var bestX = 0f
         var bestY = 0f
         var bestScore = -1f
@@ -107,10 +126,10 @@ class Spawner(
             val x = margin + sim.rng.nextFloat() * (w.width - 2 * margin)
             val y = margin + sim.rng.nextFloat() * (w.height - 2 * margin)
             val crowd = w.snails.filter { it.alive }.minOfOrNull { dist(x, y, it.x, it.y) } ?: Float.MAX_VALUE
-            val clearance = GameConfig.SPAWN_CLEARANCE
+            val clearance = GameConfig.SPAWN_CLEARANCE + reach
             if (unseen(x, y) && crowd > clearance) return x to y
-            // How far out of sight (1 = just off the nearest kid's screen).
-            val hidden = watchers.minOfOrNull { dist(x, y, it.x, it.y) / max(offscreen(it), 1f) } ?: Float.MAX_VALUE
+            // How far out of sight (1 = the coil just off the nearest kid's screen).
+            val hidden = watchers.minOfOrNull { dist(x, y, it.x, it.y) / max(offscreen(it) + reach, 1f) } ?: Float.MAX_VALUE
             val score = minOf(hidden, crowd / clearance)
             if (score > bestScore) {
                 bestScore = score
@@ -126,12 +145,21 @@ class Spawner(
         val watchers = watchers(sim)
         if (watchers.isEmpty()) return
         val ref = referenceLength(sim)
+        val cap = sim.aiMaxLength()
 
-        fun isFar(s: Snail) = watchers.all { dist(s.x, s.y, it.x, it.y) > offscreen(it) + GameConfig.DESPAWN_EXTRA_DISTANCE }
+        // Far: the head a good way off every kid's screen, and none of the body on it, so nobody sees a snail vanish.
+        fun isFar(s: Snail) =
+            watchers.all { w ->
+                val d = offscreen(w)
+                dist(s.x, s.y, w.x, w.y) > d + GameConfig.DESPAWN_EXTRA_DISTANCE &&
+                    (0 until s.segCount).all { i -> dist2(s.segX[i], s.segY[i], w.x, w.y) >= d * d }
+            }
         val ais = sim.world.snails.filter { it.alive && !it.isPlayer }
         for (s in ais) {
             val ratio = s.length / ref
-            if ((ratio > GameConfig.DESPAWN_MAX_RATIO || ratio < GameConfig.DESPAWN_MIN_RATIO) && isFar(s)) s.alive = false
+            // Over the size cap happens when the kid shrinks (their tail bitten off): the giants it left go once out of sight.
+            val misfit = ratio > GameConfig.DESPAWN_MAX_RATIO || ratio < GameConfig.DESPAWN_MIN_RATIO || s.length > cap
+            if (misfit && isFar(s)) s.alive = false
         }
         // Keep the mix around the player: if the player shrank (or AIs grew) and
         // too many are now bigger, quietly retire the biggest far-away one.

@@ -117,6 +117,13 @@ object GameConfig {
     /** Bigger snails closer than this, heading the player's way, get a warning arrow when off-screen. */
     const val DANGER_RANGE = 1800f
 
+    /**
+     * Bigger snails closer than this to the player's body, heading for it, get
+     * an arrow too: a bite there cuts the tail off. Shorter than [DANGER_RANGE],
+     * since a long body gives a snail far more to be heading at.
+     */
+    const val DANGER_BODY_RANGE = 900f
+
     /** "Heading the player's way": within about 50 degrees of pointing straight at them. */
     const val DANGER_HEADING_COS = 0.64f
 

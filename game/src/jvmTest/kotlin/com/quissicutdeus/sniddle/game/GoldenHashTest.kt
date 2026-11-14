@@ -174,8 +174,8 @@ class GoldenHashTest {
          */
         val CHECKPOINTS = listOf(600, 1800, 3600, 7200, 11400)
 
-        val ONE_PLAYER = listOf("537e53722741c54d", "3e6b43f2e9def17f", "6b572d5181842942", "3e0dc9f3b10ccd0e", "6927a1496dec999e")
-        val TWO_PLAYERS = listOf("16159525bd29c933", "83e4efbccd1320ea", "a010502dbd42d62a", "97537854c63c6c43", "7a440cfdddc663db")
-        val AI_ONLY = listOf("7139597a67fe5326", "0886dbaadf20c2d5", "7b0ee1c2a6d1b353", "9b4d8ed3f98780cc", "3aed38a9476292b0")
+        val ONE_PLAYER = listOf("e93982dd7b664fb3", "ed8c0803c3affa3a", "85c4fa5719f39249", "80784f72cddc45f5", "f9f9ce90178e2a79")
+        val TWO_PLAYERS = listOf("0f7d8ab273da4745", "c0d51a9641cdd6c2", "3937368b367733d5", "95a7f81c38b57355", "34d9984ee9915aa2")
+        val AI_ONLY = listOf("2bfc44a33674e9f7", "664b0c853ef0ba4e", "398f0e1e0fa6c0cd", "7f2e4b04a60d7daf", "4a62cd9188e3db8b")
     }
 }

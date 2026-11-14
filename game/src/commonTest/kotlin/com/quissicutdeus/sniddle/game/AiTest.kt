@@ -41,6 +41,27 @@ class AiTest {
         assertTrue(chased)
     }
 
+    /** A snail over the size cap (the kid shrank since it grew) doesn't hunt the kid; one under it does. */
+    @Test fun aGiantOverTheSizeCapLeavesTheKidAlone() {
+        // Whether to chase is a dice roll, so the snail under the cap gets a few games to show it would.
+        for ((over, name) in listOf(true to "Giant", false to "Big")) {
+            val chased =
+                (1L..5L).count { seed ->
+                    val sim = emptySim(aiEnabled = true, seed = seed)
+                    sim.player(2000f, 2000f, SOUTH, 150f)
+                    val hunter = sim.ai(2300f, 2000f, NORTH, sim.aiMaxLength() * (if (over) 1.2f else 0.9f), name = name)
+                    var chased = false
+                    repeat(180) {
+                        sim.step()
+                        if (sim.brains[hunter]?.mode == AiMode.CHASE) chased = true
+                    }
+                    chased
+                }
+            if (over) assertEquals(0, chased, "$name, over the cap, chased the kid in $chased of 5 games")
+            if (!over) assertTrue(chased > 0, "$name, under the cap, never chased the kid")
+        }
+    }
+
     @Test fun aiStaysInsideTheArena() {
         val sim = emptySim(aiEnabled = true)
         val s = sim.ai(3950f, 3950f, EAST, 300f)

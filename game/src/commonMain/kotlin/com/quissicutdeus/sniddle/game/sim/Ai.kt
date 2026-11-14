@@ -61,6 +61,16 @@ internal fun GameSim.forgetBrainsOfTheGone() {
     for (i in world.snails.indices) world.snails[i].let { if (!it.alive && !it.isPlayer) brains.remove(it) }
 }
 
+/**
+ * Whether [hunter] may go after [prey]. A snail over the size cap (the kid
+ * shrank since it grew, see [GameSim.aiMaxLength]) leaves the kids alone: it
+ * wanders off, and the spawner retires it once it is out of sight.
+ */
+internal fun GameSim.mayHunt(
+    hunter: Snail,
+    prey: Snail,
+): Boolean = !prey.isPlayer || hunter.length <= aiMaxLength()
+
 /** Wander -> seek food -> chase smaller snails -> flee bigger ones. Same rules as the player. */
 object Ai {
     /** Returns the heading this AI snail wants this step. */
@@ -135,7 +145,7 @@ object Ai {
                 }
 
                 SizeRelation.BIGGER -> {
-                    notePrey(scan, o, d, sim.difficulty.chaseRulesFor(o).radius)
+                    if (sim.mayHunt(s, o)) notePrey(scan, o, d, sim.difficulty.chaseRulesFor(o).radius)
                 }
 
                 SizeRelation.EQUAL -> {}
@@ -261,9 +271,10 @@ object Ai {
         brain: AiBrain,
         dt: Float,
     ): Float {
-        val prey = sim.world.snailById(brain.targetSnailId)
-        val rules = prey?.let { sim.difficulty.chaseRulesFor(it) } ?: Difficulty.NORMAL.chaseYou
+        val target = sim.world.snailById(brain.targetSnailId)
+        val rules = target?.let { sim.difficulty.chaseRulesFor(it) } ?: Difficulty.NORMAL.chaseYou
         brain.chaseTime += dt
+        val prey = target?.takeIf { sim.mayHunt(s, it) }
         if (prey == null || brain.chaseTime > rules.seconds || s.fightRelationTo(prey) != SizeRelation.BIGGER) {
             // Give up and rest for a bit: kids get a chance to escape.
             brain.chaseRest = rules.restSeconds
