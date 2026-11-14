@@ -23,7 +23,7 @@ spotless {
     fun sources(vararg patterns: String) =
         fileTree(rootDir) {
             include(*patterns)
-            exclude("**/build/**", ".gradle/**", ".idea/**", ".kotlin/**", "local.properties", ".claude/worktrees/**")
+            exclude("**/build/**", "**/.gradle/**", ".idea/**", "**/.kotlin/**", "local.properties", ".claude/worktrees/**")
         }
 
     kotlin {

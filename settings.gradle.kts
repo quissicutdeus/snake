@@ -1,4 +1,6 @@
 pluginManagement {
+    // Convention plugins (sniddle.quality): the checks every module gets.
+    includeBuild("build-logic")
     repositories {
         google {
             content {

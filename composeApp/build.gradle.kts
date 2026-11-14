@@ -3,16 +3,35 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.android.lint)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.detekt)
+    id("sniddle.quality") // compiler checks, detekt, lint, JDK 21 (build-logic)
 }
 
 kotlin {
-    jvmToolchain(21)
-
     android {
         namespace = "com.quissicutdeus.sniddle.shared"
-        compileSdk = 37
-        minSdk = 30
+        // SDK levels: gradle/libs.versions.toml, the same as the app's.
+        compileSdk {
+            version =
+                release(
+                    libs.versions.androidCompileSdk
+                        .get()
+                        .toInt(),
+                ) {
+                    minorApiLevel =
+                        libs.versions.androidCompileSdkMinor
+                            .get()
+                            .toInt()
+                }
+        }
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
+        // Lint for the Android source sets (the module's `lint {}` below is
+        // the JVM-side run): the app's settings, with the same Compose checks.
+        lint {
+            lintConfig = rootProject.file("app/lint.xml")
+        }
         // The shared code's own tests run on the JVM: ./gradlew :composeApp:testAndroidHostTest
         withHostTestBuilder {}
     }
@@ -22,11 +41,6 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
-    }
-
-    compilerOptions {
-        allWarningsAsErrors.set(true)
-        extraWarnings.set(true)
     }
 
     sourceSets {
@@ -47,29 +61,9 @@ kotlin {
     }
 }
 
-// Linking the framework or running iOS tests needs a Mac (Xcode does it there,
-// through embedAndSignAppleFrameworkForXcode). Here, compileKotlinIosArm64 checks the iOS code compiles.
-val iosOnlyOnMac = Regex("""(^|:)(ios\w*Test|ios\w*Binaries|link\w*Ios\w*|embedAndSign\w*)$""")
-val askedForIos = gradle.startParameter.taskNames.filter { iosOnlyOnMac.containsMatchIn(it) }
-if (askedForIos.isNotEmpty() && !System.getProperty("os.name").startsWith("Mac")) {
-    throw GradleException(
-        "$askedForIos link or run iOS code, which needs a Mac. " +
-            "Here, :composeApp:compileKotlinIosArm64 checks that the iOS code compiles.",
-    )
-}
-
-detekt {
-    buildUponDefaultConfig = true
-    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    source.setFrom("src")
-}
-
-// The shared UI's Android lint, set up like the app's (app/lint.xml), with the same Compose checks.
+// Lint for the JVM-side run (commonMain as plain Kotlin); the Android source
+// sets have their own, in kotlin { android { lint } } above. Same settings.
 lint {
-    warningsAsErrors = true
-    abortOnError = true
-    checkAllWarnings = true
-    checkTestSources = true
     lintConfig = rootProject.file("app/lint.xml")
 }
 
