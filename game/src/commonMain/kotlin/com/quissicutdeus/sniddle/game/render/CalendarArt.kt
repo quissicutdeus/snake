@@ -1,38 +1,20 @@
 package com.quissicutdeus.sniddle.game.render
 
-import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.Snail
 import kotlin.math.max
 import kotlin.math.sqrt
 
 /**
  * Looks for days on the calendar: the shamrock hat (St Patrick's), bunny
- * ears (Easter), the birthday cake and the Valentine's hearts pattern. Like
- * [HatArt], each hat is centred on its brim at (x, y) and sized by the head
- * radius u.
+ * ears (Easter), the birthday cake (drawn for [HatArt.drawHat]) and the
+ * Valentine's hearts pattern. Like [HatArt]'s own, each hat is centred on its
+ * brim at (x, y) and sized by the head radius u.
  */
 internal object CalendarArt {
     private val path = Path2D()
 
-    /** [Hat.SHAMROCK], [Hat.BUNNY] or [Hat.BIRTHDAY_CAKE] at (x, y) for a head of radius [u]. */
-    @Suppress("LongParameterList") // position, size and look of the hat
-    fun drawHat(
-        c: Canvas2D,
-        x: Float,
-        y: Float,
-        u: Float,
-        hat: Hat,
-        wash: Float,
-    ) {
-        when (hat) {
-            Hat.SHAMROCK -> drawShamrock(c, x, y, u, wash)
-            Hat.BUNNY -> drawBunny(c, x, y, u, wash)
-            else -> drawBirthdayCake(c, x, y, u, wash)
-        }
-    }
-
     /** A green leprechaun hat with a gold buckle, and a shamrock tucked in the band. */
-    private fun drawShamrock(
+    fun drawShamrock(
         c: Canvas2D,
         x: Float,
         y: Float,
@@ -65,7 +47,7 @@ internal object CalendarArt {
     }
 
     /** Two tall bunny ears, pink inside, leaning out a little. */
-    private fun drawBunny(
+    fun drawBunny(
         c: Canvas2D,
         x: Float,
         y: Float,
@@ -88,7 +70,7 @@ internal object CalendarArt {
     }
 
     /** A little pink-iced cake with three lit candles: the hat for a kid's own birthday. */
-    private fun drawBirthdayCake(
+    fun drawBirthdayCake(
         c: Canvas2D,
         x: Float,
         y: Float,

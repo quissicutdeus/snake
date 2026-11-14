@@ -1,6 +1,5 @@
 package com.quissicutdeus.sniddle.game.render
 
-import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.PI_F
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import kotlin.math.abs
@@ -9,48 +8,16 @@ import kotlin.math.max
 import kotlin.math.sin
 
 /**
- * Dressing-up hats: cowboy hat, flower crown, propeller cap and pirate hat.
- * Like [HatArt], each is centred on its brim at (x, y) and sized by the head
- * radius u.
+ * Dressing-up hats: cowboy hat, flower crown, propeller cap and pirate hat,
+ * drawn for [HatArt.drawHat]. Like [HatArt]'s own, each is centred on its brim
+ * at (x, y) and sized by the head radius u.
  */
 internal object CostumeHatArt {
     private val path = Path2D()
 
-    /** [Hat.COWBOY], [Hat.FLOWERS], [Hat.PROPELLER] or [Hat.PIRATE] at (x, y) for a head of radius [u]. */
-    @Suppress("LongParameterList") // position, size and look of the hat
-    fun drawHat(
-        c: Canvas2D,
-        x: Float,
-        y: Float,
-        u: Float,
-        hat: Hat,
-        style: SnailStyle,
-        wash: Float,
-    ) {
-        when (hat) {
-            Hat.COWBOY -> {
-                drawCowboy(c, x, y, u, style, wash)
-            }
-
-            Hat.FLOWERS -> {
-                drawFlowers(c, x, y, u, wash)
-            }
-
-            Hat.PROPELLER -> {
-                drawPropeller(c, x, y, u, wash)
-            }
-
-            Hat.PIRATE -> {
-                drawPirate(c, x, y, u, wash)
-            }
-
-            else -> {}
-        }
-    }
-
     /** A brown hat with a dented top, a brim curling up at both ends and a band in the snail's pattern colour. */
     @Suppress("LongParameterList") // position, size and look of the hat
-    private fun drawCowboy(
+    fun drawCowboy(
         c: Canvas2D,
         x: Float,
         y: Float,
@@ -84,7 +51,7 @@ internal object CostumeHatArt {
     }
 
     /** Five bright flowers in a row around the top of the head, on a leafy green band. */
-    private fun drawFlowers(
+    fun drawFlowers(
         c: Canvas2D,
         x: Float,
         y: Float,
@@ -135,7 +102,7 @@ internal object CostumeHatArt {
     }
 
     /** A round cap in red, yellow and blue panels with a little peak, and a propeller on top. */
-    private fun drawPropeller(
+    fun drawPropeller(
         c: Canvas2D,
         x: Float,
         y: Float,
@@ -185,7 +152,7 @@ internal object CostumeHatArt {
     }
 
     /** A black pirate hat curving up at both ends, with a gold edge and a white skull and crossbones. */
-    private fun drawPirate(
+    fun drawPirate(
         c: Canvas2D,
         x: Float,
         y: Float,

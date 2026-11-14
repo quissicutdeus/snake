@@ -8,12 +8,17 @@ import kotlin.math.max
 /**
  * Hats drawn on top of a snail's head: crown, party hat, bow, top hat, wizard
  * hat or Viking horns, and the [CostumeHatArt], [HolidayHatArt] and [CalendarArt] ones.
+ * [drawHat] names every hat once, so a new hat doesn't build until it's drawn.
  */
 object HatArt {
     private val path = Path2D()
 
-    /** A hat whose brim is centred at (x, y), sized for a head of radius [hr]. */
-    @Suppress("LongParameterList") // position, size and look of the hat
+    /**
+     * A hat whose brim is centred at (x, y), sized for a head of radius [hr].
+     * One line per hat: naming every hat in one `when` is how the compiler
+     * makes sure each new hat gets drawn, so its length is the number of hats.
+     */
+    @Suppress("LongParameterList", "CyclomaticComplexMethod") // position, size and look of the hat; see above
     fun drawHat(
         c: Canvas2D,
         x: Float,
@@ -50,8 +55,20 @@ object HatArt {
                 drawHorns(c, x, y, hr, wash)
             }
 
-            Hat.COWBOY, Hat.FLOWERS, Hat.PROPELLER, Hat.PIRATE -> {
-                CostumeHatArt.drawHat(c, x, y, hr, hat, style, wash)
+            Hat.COWBOY -> {
+                CostumeHatArt.drawCowboy(c, x, y, hr, style, wash)
+            }
+
+            Hat.FLOWERS -> {
+                CostumeHatArt.drawFlowers(c, x, y, hr, wash)
+            }
+
+            Hat.PROPELLER -> {
+                CostumeHatArt.drawPropeller(c, x, y, hr, wash)
+            }
+
+            Hat.PIRATE -> {
+                CostumeHatArt.drawPirate(c, x, y, hr, wash)
             }
 
             Hat.SANTA -> {
@@ -70,8 +87,16 @@ object HatArt {
                 HolidayHatArt.drawStarHat(c, x, y, hr, wash)
             }
 
-            Hat.SHAMROCK, Hat.BUNNY, Hat.BIRTHDAY_CAKE -> {
-                CalendarArt.drawHat(c, x, y, hr, hat, wash)
+            Hat.SHAMROCK -> {
+                CalendarArt.drawShamrock(c, x, y, hr, wash)
+            }
+
+            Hat.BUNNY -> {
+                CalendarArt.drawBunny(c, x, y, hr, wash)
+            }
+
+            Hat.BIRTHDAY_CAKE -> {
+                CalendarArt.drawBirthdayCake(c, x, y, hr, wash)
             }
         }
     }
