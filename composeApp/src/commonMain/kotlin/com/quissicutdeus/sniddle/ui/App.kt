@@ -258,6 +258,7 @@ private fun PlayRoute(
         showTips = remember(round) { tipsDue(me.stats) },
         bedtime = bedtime.forGame(onHome),
         options = remember(round) { me.todaysOptions() },
+        newGameArena = remember(round) { me.gameArena() },
     )
 }
 

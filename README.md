@@ -25,6 +25,17 @@ December to February.
 
 ![The arena in summer, autumn and winter](docs/screenshots/seasons.png)
 
+The title screen always shows the season's arena. A game is played there
+about half the time; otherwise it's in a garden bed (brown soil with pebbles,
+little sprouts and the odd worm saying hello) or out in space (a starry sky
+with planets and a comet), a quarter of the time each. Two kids playing
+together get one pick for their game. A paused game that comes back after the
+phone closed the app comes back on the same floor.
+
+For Christmas week, 18 to 26 December, the title screen and every game are on
+wrapping paper instead: green stripes printed with presents, holly and candy
+canes, tied up with a big red ribbon and a bow.
+
 A kid's first game shows a few tips along the bottom:
 
 ![First-game tip: drag anywhere to steer](docs/screenshots/first_game_tip.png)
@@ -277,7 +288,7 @@ Handy extras that need no phone:
 ./gradlew :game:balanceReport    # bot-played games: survival time, score, size mix
 ./gradlew :game:soundPreviews    # every effect + the music loop as WAVs -> game/build/sounds/
 ./gradlew :game:benchmark        # time per sim step and per frame, plus a checksum of the final world
-                                 #   (--args=AUTUMN or --args=SNOW draws that season's arena)
+                                 #   (--args=AUTUMN, SNOW, DIRT, SPACE or WRAPPING_PAPER draws that floor)
 ```
 
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
@@ -337,7 +348,8 @@ game/   shared Kotlin for Android and iOS: all rules, AI and drawing code
   render/  Canvas2D (tiny drawing interface), SnailArt (a whole snail: its slime trail, then
            SnailBodyArt, the snail at the front) / FaceArt / HatArt /
            FoodArt / PowerUpArt, HolidayHatArt / CalendarArt (holiday looks),
-           SceneRenderer + ArenaArt (the floor, per season) + HudRenderer, Camera,
+           SceneRenderer + ArenaArt (the floor: seasons, DirtArt, SpaceArt,
+           WrappingPaperArt) + HudRenderer, Camera,
            Fx (particles, comic words, shake), Haptics (which buzz when),
            PosedSnail
   audio/   Synth (makes every sound effect from scratch), Music (the game
