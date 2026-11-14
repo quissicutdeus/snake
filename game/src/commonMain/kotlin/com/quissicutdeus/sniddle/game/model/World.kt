@@ -10,8 +10,5 @@ class World(
     val tailPieces = ArrayList<TailPiece>()
     val powerUps = ArrayList<PowerUp>()
 
-    /** Seconds of simulated time. */
-    var time = 0f
-
     fun snailById(id: Int): Snail? = snails.firstOrNull { it.id == id && it.alive }
 }
