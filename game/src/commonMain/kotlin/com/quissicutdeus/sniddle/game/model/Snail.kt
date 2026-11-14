@@ -78,7 +78,7 @@ class Snail(
     var age = 0f
         internal set
 
-    /** Whether any of this snail has been on a kid's screen. Such a snail is never quietly removed (see Spawner). */
+    /** Whether any of this snail has been on a kid's screen. Such a snail is never quietly removed (see Sightings). */
     var seenByKid = false
         internal set
 
