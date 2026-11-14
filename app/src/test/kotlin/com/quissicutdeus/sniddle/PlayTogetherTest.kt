@@ -21,6 +21,7 @@ import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.Stats
 import com.quissicutdeus.sniddle.game.model.Unlocks
 import com.quissicutdeus.sniddle.game.sim.GameSim
+import com.quissicutdeus.sniddle.game.sim.SimOptions
 import com.quissicutdeus.sniddle.ui.GUEST_ID
 import com.quissicutdeus.sniddle.ui.KidResult
 import com.quissicutdeus.sniddle.ui.PlayerCard
@@ -221,10 +222,11 @@ class PlayTogetherTest : ScreenTest() {
                 kids = listOf(caleb, myaCard),
                 onGameOver = {},
                 onQuit = {},
+                // One heart each, so the first bite gobbles her.
+                options = SimOptions(difficulty = Difficulty.NORMAL.copy(hearts = 1)),
                 prepare = { s ->
                     sim = s
                     val kid = s.players[1]
-                    kid.hearts = 1
                     // Only Noodle nearby, so it is Noodle who does it.
                     s.world.snails.removeAll { !it.isPlayer }
                     // Nose to nose with her: the first step is the bite.
