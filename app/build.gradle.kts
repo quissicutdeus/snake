@@ -3,25 +3,36 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.detekt)
+    id("sniddle.quality") // compiler checks, detekt, lint, JDK 21 (build-logic)
 }
 
 android {
     namespace = "com.quissicutdeus.sniddle"
-    // Newest stable platform (Android 17, minor release 2).
+    // SDK levels: gradle/libs.versions.toml.
     compileSdk {
         version =
-            release(37) {
-                minorApiLevel = 2
+            release(
+                libs.versions.androidCompileSdk
+                    .get()
+                    .toInt(),
+            ) {
+                minorApiLevel =
+                    libs.versions.androidCompileSdkMinor
+                        .get()
+                        .toInt()
             }
     }
 
     defaultConfig {
         applicationId = "com.quissicutdeus.sniddle"
-        // Android 11+: all recent Pixels and older Samsungs such as the Galaxy
-        // Note 10 / Note 20. (Below 30 the CONFIRM/REJECT haptics don't exist.)
-        minSdk = 30
-        targetSdk = 37
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.androidTargetSdk
+                .get()
+                .toInt()
         // CI passes the build number as versionCode (always goes up, so every
         // release installs over the previous one) and the semver release number
         // as versionName. Local builds are 1 / "<appVersion>-dev".
@@ -70,12 +81,9 @@ android {
         compose = true
     }
 
-    // Android Lint (+ Slack's Compose rules): every check on, warnings fail the build.
+    // Android Lint (+ Slack's Compose rules): sniddle.quality switches every
+    // check on and fails on warnings; lint.xml says what's off and why.
     lint {
-        warningsAsErrors = true
-        abortOnError = true
-        checkAllWarnings = true
-        checkTestSources = true
         checkDependencies = true
         lintConfig = file("lint.xml")
     }
@@ -86,20 +94,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-}
-
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        // Every compiler warning (plus the extra K2 checks) fails the build.
-        allWarningsAsErrors.set(true)
-        extraWarnings.set(true)
-    }
-}
-
-detekt {
-    buildUponDefaultConfig = true
-    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
 }
 
 dependencies {

@@ -1,4 +1,12 @@
 [versions]
+# Android SDK levels, shared by the app and the shared-UI module.
+# compileSdk is the newest stable platform: Android 17, minor release 2.
+# minSdk 30 is Android 11: all recent Pixels and older Samsungs such as the
+# Galaxy Note 10 / Note 20. (Below 30 the CONFIRM/REJECT haptics don't exist.)
+androidCompileSdk = "37"
+androidCompileSdkMinor = "2"
+androidTargetSdk = "37"
+androidMinSdk = "30"
 agp = "9.5.1"
 kotlin = "2.4.21"
 composeBom = "2026.09.00"
@@ -33,6 +41,11 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 compose-lint-checks = { group = "com.slack.lint.compose", name = "compose-lint-checks", version.ref = "composeLintChecks" }
+
+# For build-logic (the convention plugin), not for the app.
+android-gradle-api = { group = "com.android.tools.build", name = "gradle-api", version.ref = "agp" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+detekt-gradle-plugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 
 cmp-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
 cmp-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }

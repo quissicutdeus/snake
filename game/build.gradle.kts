@@ -1,6 +1,6 @@
 // Kotlin Multiplatform game logic: no Android or UI dependencies, so it can be
 // unit tested on any machine and shared by the Android app (the jvm target) and
-// an iOS port (the ios targets).
+// the iPhone and iPad app (the ios targets).
 //   src/commonMain   the game itself: everything but the code below
 //   src/jvmMain      what each platform does its own way (see the expect
 //   src/iosMain        declarations in commonMain)
@@ -12,13 +12,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.lint) // Android Lint for a plain Kotlin module
-    alias(libs.plugins.detekt)
+    id("sniddle.quality") // compiler checks, detekt, lint, JDK 21 (build-logic)
 }
 
 kotlin {
     // Built with JDK 21, but emits Java 17 bytecode like the Android app, so the
     // app can use (and inline) game code.
-    jvmToolchain(21)
     jvm {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -29,13 +28,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    compilerOptions {
-        // Compiler checks: every warning (plus the extra K2 checks, e.g. unused
-        // variables and redundant code) fails the build, on every target.
-        allWarningsAsErrors.set(true)
-        extraWarnings.set(true)
-    }
-
     sourceSets {
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -43,19 +35,7 @@ kotlin {
     }
 }
 
-detekt {
-    buildUponDefaultConfig = true
-    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    // detekt's defaults are src/main and src/test, which don't exist here:
-    // without this it would check nothing and pass. Every source set instead.
-    source.setFrom("src")
-}
-
 lint {
-    warningsAsErrors = true
-    abortOnError = true
-    checkAllWarnings = true
-    checkTestSources = true
     // Online "newer version available" checks: see app/lint.xml.
     disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
 }
@@ -74,19 +54,6 @@ tasks.register("test") {
     group = "verification"
     description = "Runs the game tests on the JVM (jvmTest)."
     dependsOn("jvmTest")
-}
-
-// Kotlin/Native can compile the iOS code anywhere, but only a Mac can link it
-// and run its tests; elsewhere those tasks are skipped and the build still
-// passes. Asking for them by name off a Mac is a mistake (a CI job on the wrong
-// runner), so it fails instead of passing with nothing tested.
-val iosOnlyOnMac = Regex("""(^|:)(ios\w*Test|ios\w*Binaries|link\w*Ios\w*)$""")
-val askedForIos = gradle.startParameter.taskNames.filter { iosOnlyOnMac.containsMatchIn(it) }
-if (askedForIos.isNotEmpty() && !System.getProperty("os.name").startsWith("Mac")) {
-    throw GradleException(
-        "$askedForIos link or run iOS code, which needs a Mac. " +
-            "Here, :game:compileTestKotlinIosArm64 checks that the iOS code compiles.",
-    )
 }
 
 // The previews, balance report and benchmark below run from the JVM test code,

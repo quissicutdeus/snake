@@ -258,6 +258,7 @@ You need JDK 21 and the Android SDK with **platform 37.2** (Android 17).
 ```sh
 ./gradlew lintAll                    # every linter (see below)
 ./gradlew :game:test                 # game rules unit tests (incl. 10 000-step soak tests)
+./gradlew :composeApp:testAndroidHostTest  # the shared screens' own tests
 ./gradlew :app:testDebugUnitTest     # renders every screen (phone portrait + landscape, tablet)
                                      #   to app/build/screenshots/
 ./gradlew :app:assembleRelease       # -> app/build/outputs/apk/release/app-release.apk
@@ -290,8 +291,8 @@ app ID / namespace is `com.quissicutdeus.sniddle`.
 | --- | --- | --- |
 | **ktlint** (via Spotless) | formatting and Kotlin style; `./gradlew spotlessApply` fixes most of it | [`.editorconfig`](.editorconfig) |
 | **detekt** | code smells: complexity, long functions, magic numbers in game logic, unused private code, likely bugs | [`config/detekt/detekt.yml`](config/detekt/detekt.yml) |
-| **Android Lint** | every check switched on, for the app *and* the pure-Kotlin game module, plus Slack's Compose rules | [`app/lint.xml`](app/lint.xml) |
-| **Kotlin compiler** | all warnings are errors, with the extra K2 checks on (unused variables, redundant code…) | [`app/build.gradle.kts`](app/build.gradle.kts), [`game/build.gradle.kts`](game/build.gradle.kts) |
+| **Android Lint** | every check switched on, for the app, the shared screens *and* the pure-Kotlin game module, plus Slack's Compose rules | [`app/lint.xml`](app/lint.xml) |
+| **Kotlin compiler** | all warnings are errors, with the extra K2 checks on (unused variables, redundant code…) | [`build-logic`](build-logic) |
 | **Dead code** (`./gradlew deadCode`) | R8 shrinks a special build without optimizing; anything it can drop is code the app never uses | [`config/deadcode-allowlist.txt`](config/deadcode-allowlist.txt) |
 
 Every rule that is switched off or loosened is explained next to the setting.
@@ -340,37 +341,54 @@ game/   shared Kotlin for Android and iOS: all rules, AI and drawing code
   audio/   Synth (makes every sound effect from scratch), Music (the game
            tune, same way), SoundCues (which sound when)
   test/    unit + soak tests; Java2D Canvas2D for PNG previews
-app/    Android app (Jetpack Compose)
-  ComposeCanvas2D   draws the game art on the Compose canvas
-  ui/               Title, GameLoop (the frame loop every game runs on, and
-                    a Seat per kid: camera, effects, thumbstick, sounds),
-                    Game (one seat + pause),
-                    Game over ("Who played?"), High scores, My Snail,
-                    WhoIsPlaying (pick a kid), Profile (the kid playing,
-                    and today's holidays, birthday and arena season: the
-                    only place the date is read), BirthdaySetting (the
-                    picker), BirthdayCheer (title-screen cheer + confetti),
-                    TwoPlayerScreen / TwoPlayerGame (split screen: two
-                    seats, one per half), TogetherScreen (picking the second kid,
-                    recording both), TogetherOverScreen
-  Storage           shared: top-10 scores, names, settings, who's playing;
-                    SavedPlayer: each kid's look, name, birthday, unlock totals
-                    (SharedPreferences; the first kid keeps the keys from
-                    before players existed, so updates lose nothing);
-                    also the newest news seen, per phone
-  ui/FirstGameTips  the first-game tips; ui/News the "New!" lines (add
-                    one per release with the next number)
-  PlayClock         the bedtime timer's count (pure Kotlin, unit-tested);
-                    ui/Bedtime, ui/GrownUps (gear, question, settings),
-                    ui/RestScreen
+composeApp/  the app's screens, shared by Android and iOS (Compose Multiplatform)
+  commonMain/
+    ComposeCanvas2D   draws the game art on the Compose canvas
+    ui/               Title, GameLoop (the frame loop every game runs on, and
+                      a Seat per kid: camera, effects, thumbstick, sounds),
+                      Game (one seat + pause),
+                      Game over ("Who played?"), High scores, My Snail,
+                      WhoIsPlaying (pick a kid), Profile (the kid playing,
+                      and today's holidays, birthday and arena season: the
+                      only place the date is read), BirthdaySetting (the
+                      picker), BirthdayCheer (title-screen cheer + confetti),
+                      TwoPlayerScreen / TwoPlayerGame (split screen: two
+                      seats, one per half), TogetherScreen (picking the second kid,
+                      recording both), TogetherOverScreen
+    Storage           shared: top-10 scores, names, settings, who's playing;
+                      SavedPlayer: each kid's look, name, birthday, unlock totals
+                      (in a KeyValueStore; on Android the first kid keeps the
+                      keys from before players existed, so updates lose nothing);
+                      also the newest news seen, per phone
+    ui/FirstGameTips  the first-game tips; ui/News the "New!" lines (add
+                      one per release with the next number)
+    PlayClock         the bedtime timer's count (pure Kotlin, unit-tested);
+                      ui/Bedtime, ui/GrownUps (gear, question, settings),
+                      ui/RestScreen
+    SavedUiState      a paused game's screen state as text, for iOS to keep
+    SoundOutput,      what each platform provides: sound, the buzz, today's
+    PhoneCalendar,    date, saved data
+    KeyValueStore
+  androidMain/        AndroidCanvas2D, the back gesture
+  iosMain/            MainViewController (the whole app for iOS), SkiaCanvas2D,
+                      IosSound, IosBuzzer, IosCalendar, UserDefaultsStore,
+                      PersistedUiState (brings a game back after iOS closes the app)
+app/    the Android app around it
+  MainActivity, SharedPreferencesStore, SystemCalendar, ViewBuzzer,
   SoundPlayer       plays the effects (one preloaded AudioTrack each) and
                     loops the music
+  test/             Robolectric screenshot and screen tests
+iosApp/ the iPhone and iPad app around it: SniddleApp.swift, the icon, and
+        project.yml (XcodeGen; CI generates and builds the Xcode project)
+build-logic/  the sniddle.quality plugin every module applies: compiler checks,
+              detekt, Android Lint, JDK 21
 ```
 
 The simulation runs at a fixed 60 steps per second; drawing blends between
-the last two steps so motion stays smooth on 90/120 Hz Pixel screens. Because
-the game logic and art don't depend on Android, an iOS version could reuse them
-one day.
+the last two steps so motion stays smooth on 90/120 Hz Pixel screens. The game
+logic and art don't depend on Android, and the screens are Compose
+Multiplatform, so the iPhone and iPad app runs the same code; only sound, the
+buzz, the date, saved data and drawing text differ (see [docs/ios.md](docs/ios.md)).
 
 A two-player game is one `GameSim` with two player snails, so the kids can
 meet and gobble each other. The screen is two Compose canvases side by side,
@@ -390,4 +408,4 @@ ahead of time at install (profileinstaller does this for sideloaded APKs too),
 so the first rounds after an update don't stutter.
 
 The original design notes are in [`PLAN.md`](PLAN.md). Ideas for later: levels,
-iOS, Play Store.
+Play Store.
