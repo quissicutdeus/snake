@@ -32,8 +32,9 @@ actual fun ComposeCanvas2D(): ComposeCanvas2D = SkiaCanvas2D()
  *
  * Text goes through Skia's shaper ([TextLine]), not a bare [Font], so emoji in
  * a kid's name fall back to Apple's emoji font the way Android's Paint falls
- * back by itself. Shaped lines are kept for the next frames, since the same
- * few strings (names, the score) are drawn every frame.
+ * back by itself. Each string is shaped once, at one reference size, and drawn
+ * scaled to the size asked for: name tags change size smoothly as the camera
+ * zooms, so shaping per size would reshape them every frame.
  */
 private class SkiaCanvas2D : ComposeCanvas2D {
     private var canvas: Canvas? = null
@@ -205,9 +206,8 @@ private class SkiaCanvas2D : ComposeCanvas2D {
         align: TextAlign,
         bold: Boolean,
     ) {
-        val line = Lines.of(text, size, bold)
         textPaint.color = color
-        c.drawTextLine(line, x - offset(line.width, align), y, textPaint)
+        drawLine(Lines.of(text, bold), x, y, size, align, textPaint)
     }
 
     override fun strokeText(
@@ -219,18 +219,34 @@ private class SkiaCanvas2D : ComposeCanvas2D {
         color: Int,
         align: TextAlign,
     ) {
-        // Android strokes outlines in the bold face.
-        val line = Lines.of(text, size, bold = true)
-        textStroke.strokeWidth = width
+        // Android strokes outlines in the bold face. The line is drawn scaled, so the width is too.
+        textStroke.strokeWidth = width * Lines.REFERENCE_SIZE / size
         textStroke.color = color
-        c.drawTextLine(line, x - offset(line.width, align), y, textStroke)
+        drawLine(Lines.of(text, bold = true), x, y, size, align, textStroke)
     }
 
     override fun measureText(
         text: String,
         size: Float,
         bold: Boolean,
-    ): Float = Lines.of(text, size, bold).width
+    ): Float = Lines.of(text, bold).width * size / Lines.REFERENCE_SIZE
+
+    /** Draws [line] (shaped at the reference size) at [size], its baseline at [y]. */
+    private fun drawLine(
+        line: TextLine,
+        x: Float,
+        y: Float,
+        size: Float,
+        align: TextAlign,
+        paint: Paint,
+    ) {
+        val k = size / Lines.REFERENCE_SIZE
+        c.save()
+        c.translate(x - offset(line.width * k, align), y)
+        c.scale(k, k)
+        c.drawTextLine(line, 0f, 0f, paint)
+        c.restore()
+    }
 
     /** How far left of x the text starts, as Android's Paint.Align does it. */
     private fun offset(
@@ -244,36 +260,31 @@ private class SkiaCanvas2D : ComposeCanvas2D {
 }
 
 /**
- * Shaped text lines, kept between frames. Every frame draws the same handful of
- * strings, so after the first frame drawing text shapes nothing. The cache is
- * emptied when it fills up (a changing score adds a line now and then).
+ * Text lines shaped at [REFERENCE_SIZE], kept between frames. Every frame draws
+ * the same handful of strings, so after the first frame drawing text shapes
+ * nothing. The cache is emptied when it fills up (a changing score adds a line
+ * now and then). Two fonts, made once.
  */
 private object Lines {
+    /** Large enough that scaled glyph outlines stay crisp at every size the game draws. */
+    const val REFERENCE_SIZE = 64f
+
     private const val MAX = 256
 
-    private val regular: Typeface = typeface(FontStyle.NORMAL)
-    private val boldFace: Typeface = typeface(FontStyle.BOLD)
-    private val fonts = HashMap<Float, Pair<Font, Font>>()
-    private val lines = HashMap<Key, TextLine>()
-
-    private data class Key(
-        val text: String,
-        val size: Float,
-        val bold: Boolean,
-    )
+    private val plain = Font(typeface(FontStyle.NORMAL), REFERENCE_SIZE)
+    private val heavy = Font(typeface(FontStyle.BOLD), REFERENCE_SIZE)
+    private val lines = HashMap<Pair<String, Boolean>, TextLine>()
 
     fun of(
         text: String,
-        size: Float,
         bold: Boolean,
     ): TextLine {
-        val key = Key(text, size, bold)
+        val key = text to bold
         lines[key]?.let { return it }
         if (lines.size >= MAX) {
             lines.values.forEach { it.close() }
             lines.clear()
         }
-        val (plain, heavy) = fonts.getOrPut(size) { Font(regular, size) to Font(boldFace, size) }
         return TextLine.make(text, if (bold) heavy else plain).also { lines[key] = it }
     }
 

@@ -1,6 +1,7 @@
 package com.quissicutdeus.sniddle
 
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import platform.Foundation.NSBundle
 import platform.Foundation.NSDate
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
@@ -21,7 +22,9 @@ import platform.UIKit.UIApplicationWillTerminateNotification
  * iOS can't tell a kid swiping the app away from the system closing it, so a
  * save is only used if the app was left less than [FRESH_FOR_SECONDS] ago:
  * back after lunch, the game is there; the next day, Sniddle starts at the
- * title screen.
+ * title screen. A save from another build is ignored too (the weekly reinstall
+ * often brings a new one): a screen that changed what it saves must not be
+ * handed the old build's values.
  */
 internal class PersistedUiState(
     private val defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults,
@@ -38,13 +41,18 @@ internal class PersistedUiState(
     private fun restored(): Map<String, List<Any?>>? {
         val text = defaults.stringForKey(KEY_STATE) ?: return null
         val age = now() - defaults.doubleForKey(KEY_SAVED_AT)
-        return if (age in 0.0..FRESH_FOR_SECONDS) SavedUiState.decode(text) else null
+        val sameBuild = defaults.stringForKey(KEY_BUILD) == build()
+        return if (sameBuild && age in 0.0..FRESH_FOR_SECONDS) SavedUiState.decode(text) else null
     }
 
     private fun save() {
         defaults.setObject(SavedUiState.encode(registry.performSave()), forKey = KEY_STATE)
         defaults.setDouble(now(), forKey = KEY_SAVED_AT)
+        defaults.setObject(build(), forKey = KEY_BUILD)
     }
+
+    /** This build's number (CFBundleVersion: CI's run number, so every build differs). */
+    private fun build(): String = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String ?: ""
 
     private fun now() = NSDate().timeIntervalSince1970
 
@@ -52,6 +60,7 @@ internal class PersistedUiState(
         // Separate from the game's own saved data (Storage), which never expires.
         const val KEY_STATE = "ios.uiState"
         const val KEY_SAVED_AT = "ios.uiStateSavedAt"
+        const val KEY_BUILD = "ios.uiStateBuild"
 
         /** Twelve hours. */
         const val FRESH_FOR_SECONDS = 12.0 * 60 * 60
