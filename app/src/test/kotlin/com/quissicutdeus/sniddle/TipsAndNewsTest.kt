@@ -89,6 +89,11 @@ class TipsAndNewsTest : ScreenTest() {
     @Test
     fun whatsNewPortrait() = whatsNewScene("whats_new_portrait")
 
+    /** The "New!" card, then the earned looks after it. */
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun whatsNewNight() = whatsNewScene("whats_new_landscape")
+
     @Test fun whatsNewGoesAwayOnPlay() {
         seedOldScores(newsSeen = false)
         val launch = launchApp()
@@ -175,6 +180,10 @@ class TipsAndNewsTest : ScreenTest() {
     @Config(qualifiers = PORTRAIT)
     @Test
     fun firstGameTipsPortrait() = tipsScene("tips_portrait")
+
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun firstGameTipsNight() = tipsScene("tips_landscape")
 
     /** A finger landing on the tip card still steers: the card lets touches through. */
     @Test fun theTipCardDoesNotBlockSteering() {

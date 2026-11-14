@@ -67,6 +67,10 @@ class LittleKidModeTest : ScreenTest() {
     @Test
     fun switchPortrait() = switchScene("little_kid_switch_portrait")
 
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun switchNight() = switchScene("little_kid_switch_landscape")
+
     @Test fun eachKidHasTheirOwnSwitchAndANewKidStartsWithItOff() {
         seedTwoKids()
         storage.player(1).saveLittleKid(true)

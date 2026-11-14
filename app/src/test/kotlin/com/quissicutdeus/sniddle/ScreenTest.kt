@@ -2,6 +2,7 @@ package com.quissicutdeus.sniddle
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +68,13 @@ internal const val TABLET = "w1280dp-h800dp-land-xhdpi"
 internal const val WIDE_PHONE = "w915dp-h412dp-land-xxhdpi"
 
 /**
+ * The phone set to dark, added to a test's screen shape: the menus' night look.
+ * Each menu screen has one night test, named ...Night (so `--tests '*Night'`
+ * runs them all), in its class's usual screen shape.
+ */
+internal const val NIGHT = "+night"
+
+/**
  * What every screenshot test shares: Robolectric's native graphics, a phone in
  * landscape by default, the app's storage, and helpers to show screens, run
  * the clock frame by frame and save PNGs to app/build/screenshots.
@@ -95,7 +103,22 @@ abstract class ScreenTest {
         repeat((ms / 16).toInt()) { compose.mainClock.advanceTimeByFrame() }
     }
 
-    protected fun snap(name: String) = saveScreenshot(compose.onRoot().captureToImage().asAndroidBitmap(), name)
+    /**
+     * Saves the whole screen as <name>.png, or <name>_night.png when the test
+     * runs with the phone set to dark. A night picture is the day scene again
+     * under `@Config(qualifiers = NIGHT)`: the app follows the phone, so the
+     * scene needs no changes and the name can't disagree with what was drawn.
+     */
+    protected fun snap(name: String) = saveScreenshot(compose.onRoot().captureToImage().asAndroidBitmap(), shotName(name))
+
+    /** Like [snap], for the dialog on screen (it has a window of its own). */
+    protected fun snapDialog(name: String) = saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), shotName(name))
+
+    private fun shotName(name: String): String {
+        val phone = RuntimeEnvironment.getApplication().resources.configuration
+        val night = phone.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        return if (night) "${name}_night" else name
+    }
 
     /** Today's holidays and arena, as the app picks them for a game (so the screenshots follow the time of year). */
     protected val today get() = todaysOptions(null, SystemCalendar.today())
