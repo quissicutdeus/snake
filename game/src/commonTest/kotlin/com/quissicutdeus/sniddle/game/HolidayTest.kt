@@ -24,7 +24,7 @@ class HolidayTest {
         assertEquals(setOf(Holiday.CHRISTMAS), Holiday.on(2026, 12, 25))
         assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 7, 4))
         assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 5, 26)) // Memorial Day
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 2, 16)) // Presidents' Day
+        assertEquals(setOf(Holiday.FLAG_DAYS, Holiday.VALENTINE), Holiday.on(2026, 2, 16)) // Presidents' Day, in February
         assertEquals(setOf(Holiday.ST_PATRICK), Holiday.on(2026, 3, 15))
         assertEquals(emptySet(), Holiday.on(2026, 9, 30))
     }

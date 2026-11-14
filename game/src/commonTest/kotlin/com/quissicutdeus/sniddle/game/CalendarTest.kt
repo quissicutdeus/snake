@@ -38,34 +38,30 @@ class CalendarTest {
         for ((year, day) in known) assertEquals(day, Dates.easterSunday(year), "Easter $year")
     }
 
-    @Test fun easterRunsFromTheSundayBeforeToEasterMonday() {
-        // 2026: Easter Sunday is 5 April, so 29 March through 6 April.
+    @Test fun easterIsAllAprilAndEasterWeekWhenItComesInMarch() {
+        // All of April, every year.
+        assertTrue((2020..2040).all { y -> (1..30).all { d -> Holiday.EASTER in Holiday.on(y, 4, d) } })
+        // 2024: Easter Sunday was 31 March, so its week, from 24 March, is on too.
+        assertFalse(Holiday.EASTER in Holiday.on(2024, 3, 23))
+        assertTrue(Holiday.EASTER in Holiday.on(2024, 3, 24))
+        assertTrue(Holiday.EASTER in Holiday.on(2024, 3, 31))
+        // 2026: Easter Sunday is 5 April; its week starts 29 March.
         assertFalse(Holiday.EASTER in Holiday.on(2026, 3, 28))
         assertTrue(Holiday.EASTER in Holiday.on(2026, 3, 29))
-        assertTrue(Holiday.EASTER in Holiday.on(2026, 3, 31))
-        assertTrue(Holiday.EASTER in Holiday.on(2026, 4, 1)) // across the end of March
-        assertTrue(Holiday.EASTER in Holiday.on(2026, 4, 6))
-        assertFalse(Holiday.EASTER in Holiday.on(2026, 4, 7))
-        // 2024: Easter Sunday was 31 March, so 24 March through 1 April.
-        assertTrue(Holiday.EASTER in Holiday.on(2024, 3, 24))
-        assertTrue(Holiday.EASTER in Holiday.on(2024, 4, 1))
-        assertFalse(Holiday.EASTER in Holiday.on(2024, 4, 2))
-        // The same day can be Easter one year and not the next.
-        assertTrue(Holiday.EASTER in Holiday.on(2025, 4, 20))
-        assertFalse(Holiday.EASTER in Holiday.on(2026, 4, 20))
         // Never outside March and April, whatever the year.
         assertFalse((1900..2200).any { Holiday.EASTER in Holiday.on(it, 5, 1) || Holiday.EASTER in Holiday.on(it, 2, 28) })
     }
 
-    @Test fun theSpringHolidaysHaveTheirDays() {
-        assertEquals(setOf(Holiday.VALENTINE), Holiday.on(2026, 2, 7))
+    @Test fun theSpringHolidaysLastTheirWholeMonth() {
+        assertEquals(setOf(Holiday.VALENTINE), Holiday.on(2026, 2, 1))
         assertEquals(setOf(Holiday.VALENTINE, Holiday.FLAG_DAYS), Holiday.on(2026, 2, 14)) // with Presidents' Day
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 2, 15))
-        assertEquals(emptySet(), Holiday.on(2026, 2, 6))
+        assertEquals(setOf(Holiday.VALENTINE), Holiday.on(2026, 2, 28))
+        assertEquals(setOf(Holiday.VALENTINE), Holiday.on(2028, 2, 29)) // a leap year
+        assertEquals(emptySet(), Holiday.on(2026, 1, 31))
+        assertEquals(setOf(Holiday.ST_PATRICK), Holiday.on(2026, 3, 1))
         assertEquals(setOf(Holiday.ST_PATRICK), Holiday.on(2026, 3, 17))
-        assertEquals(emptySet(), Holiday.on(2026, 3, 9))
-        assertEquals(emptySet(), Holiday.on(2026, 3, 18))
-        // An early Easter can run into St Patrick's week: 2008's started on 16 March.
+        assertEquals(emptySet(), Holiday.on(2026, 5, 1))
+        // An early Easter runs into St Patrick's month: 2008's week started on 16 March.
         assertEquals(setOf(Holiday.ST_PATRICK, Holiday.EASTER), Holiday.on(2008, 3, 17))
     }
 

@@ -5,8 +5,8 @@ import kotlin.random.Random
 
 /**
  * What the arena floor looks like. The three seasons follow the month; dirt
- * and space turn up in some games all year; wrapping paper is for Christmas
- * week. [key] is how a saved game remembers its floor: never change one.
+ * and space turn up in some games all year; wrapping paper is for all of
+ * December. [key] is how a saved game remembers its floor: never change one.
  */
 enum class ArenaSeason(
     val key: String,
@@ -26,7 +26,7 @@ enum class ArenaSeason(
     /** A dark sky full of stars, with planets and a comet: some games, all year. */
     SPACE("space"),
 
-    /** Christmas wrapping paper with ribbons: every game and the title screen, 18 to 26 December. */
+    /** Christmas wrapping paper with ribbons: every game and the title screen, all of December. */
     WRAPPING_PAPER("wrapping"),
     ;
 
@@ -44,7 +44,7 @@ enum class ArenaSeason(
         fun festive(
             month: Int,
             day: Int,
-        ): ArenaSeason? = WRAPPING_PAPER.takeIf { month * MONTH + day in CHRISTMAS_WEEK }
+        ): ArenaSeason? = WRAPPING_PAPER.takeIf { month * MONTH + day in CHRISTMAS }
 
         /** The title screen's floor on [day] of [month]: the festive one, else the season's. */
         fun forTitle(
@@ -75,7 +75,7 @@ enum class ArenaSeason(
 
         private const val MONTH = 100
 
-        /** 18 to 26 December, as month * 100 + day (like [Holiday]'s dates). */
-        private val CHRISTMAS_WEEK = 1218..1226
+        /** All of December, as month * 100 + day (like [Holiday]'s dates). */
+        private val CHRISTMAS = 1201..1231
     }
 }

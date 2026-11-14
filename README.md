@@ -20,8 +20,8 @@ ones. Steer with your thumb, anywhere on the screen.
 ![Every pattern](docs/screenshots/patterns.png)
 
 The arena changes with the seasons: grass and flowers in spring and summer,
-golden grass with fallen leaves in October and November, and snow from
-December to February.
+golden grass with fallen leaves in October and November, and snow in
+January and February (December is wrapping paper, below).
 
 ![The arena in summer, autumn and winter](docs/screenshots/seasons.png)
 
@@ -32,8 +32,8 @@ with planets and a comet), a quarter of the time each. Two kids playing
 together get one pick for their game. A paused game that comes back after the
 phone closed the app comes back on the same floor.
 
-For Christmas week, 18 to 26 December, the title screen and every game are on
-wrapping paper instead: green stripes printed with presents, holly and candy
+All through December, the title screen and every game are on wrapping paper
+instead: green stripes printed with presents, holly and candy
 canes, tied up with a big red ribbon and a bow.
 
 A kid's first game shows a few tips along the bottom:
@@ -193,9 +193,9 @@ is on, lots of the computer snails dress up for it too:
 | Turkey hat | November |
 | Santa hat | December |
 | Red, white & blue pattern and Star hat | Presidents' Day (12–22 Feb), Memorial Day to the 4th of July (20 May–10 Jul), Veterans Day (8–14 Nov) |
-| Hearts pattern | Valentine's Day (7–14 Feb) |
-| Shamrock hat | St Patrick's Day (10–17 Mar) |
-| Bunny ears | Easter: the Sunday before Easter through Easter Monday (worked out for each year) |
+| Hearts pattern | February, for Valentine's Day |
+| Shamrock hat | March, for St Patrick's Day |
+| Bunny ears | April, for Easter (and Easter week itself in the years it comes in March) |
 | Birthday cake hat | The kid's own birthday, if they've set it in My Snails |
 
 **Birthdays.** On a kid's birthday, picking them on the title screen sets

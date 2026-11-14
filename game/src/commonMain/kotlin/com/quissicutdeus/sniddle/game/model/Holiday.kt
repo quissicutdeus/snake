@@ -35,14 +35,18 @@ enum class Holiday(
         listOf(212..222, 520..710, 1108..1114),
     ),
 
-    /** The week up to Valentine's Day. Overlaps Presidents' Day on 12-14 February, and both are on then. */
-    VALENTINE("Play near Valentine's Day", "Comes back for Valentine's Day!", listOf(Pattern.HEARTS), listOf(207..214)),
+    /** All of February, for Valentine's Day. Overlaps Presidents' Day, and both are on then. */
+    VALENTINE("Play in February", "Comes back in February!", listOf(Pattern.HEARTS), listOf(201..229)),
 
-    /** The week up to St Patrick's Day. */
-    ST_PATRICK("Play near St Patrick's Day", "Comes back in March!", listOf(Hat.SHAMROCK), listOf(310..317)),
+    /** All of March, for St Patrick's Day. */
+    ST_PATRICK("Play in March", "Comes back in March!", listOf(Hat.SHAMROCK), listOf(301..331)),
 
-    /** The week before Easter Sunday through Easter Monday (see [isOn]); may overlap St Patrick's when Easter is early. */
-    EASTER("Play at Easter", "Hops back at Easter!", listOf(Hat.BUNNY), emptyList()),
+    /**
+     * All of April, and Easter week (the week before Easter Sunday through
+     * Easter Monday, see [isOn]) when Easter comes in March. Then it overlaps
+     * St Patrick's, and both are on.
+     */
+    EASTER("Play in April", "Hops back in April!", listOf(Hat.BUNNY), listOf(401..430)),
 
     /** A kid's own birthday: never on by the date alone, only when [on] is given their [Birthday]. Party hats all round. */
     BIRTHDAY("On your birthday!", "Play on your birthday to get it!", listOf(Hat.BIRTHDAY_CAKE), emptyList(), listOf(Hat.PARTY)),
@@ -57,7 +61,7 @@ enum class Holiday(
         monthDay: Int,
     ): Boolean =
         when (this) {
-            EASTER -> Dates.isEasterWeek(year, monthDay / MONTH, monthDay % MONTH)
+            EASTER -> seasons.any { monthDay in it } || Dates.isEasterWeek(year, monthDay / MONTH, monthDay % MONTH)
             else -> seasons.any { monthDay in it }
         }
 

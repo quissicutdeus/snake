@@ -25,7 +25,7 @@ object GameConfig {
     const val WALL_BOUNCE_SECONDS = 0.2f
 
     /**
-     * How a new game picks its floor outside Christmas week (see
+     * How a new game picks its floor outside December (see
      * ArenaSeason.forGame): the season's floor, dirt or space, in these
      * shares. 2:1:1 is the season half the time, dirt and space a quarter each.
      */
