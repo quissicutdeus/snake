@@ -416,11 +416,11 @@ class ScreenshotTest : ScreenTest() {
 
     // ---- Oldest supported Android (minSdk), on a long, narrow phone ----
 
-    @Config(sdk = [30], qualifiers = WIDE_PHONE)
+    @Config(sdk = [26], qualifiers = WIDE_PHONE)
     @Test
-    fun titleOldestAndroid() = titleScene("title_android11")
+    fun titleOldestAndroid() = titleScene("title_oldest_android")
 
-    @Config(sdk = [30], qualifiers = WIDE_PHONE)
+    @Config(sdk = [26], qualifiers = WIDE_PHONE)
     @Test
-    fun playingOldestAndroid() = playScene("game_android11")
+    fun playingOldestAndroid() = playScene("game_oldest_android")
 }

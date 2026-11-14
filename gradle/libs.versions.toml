@@ -1,12 +1,12 @@
 [versions]
 # Android SDK levels, shared by the app and the shared-UI module.
 # compileSdk is the newest stable platform: Android 17, minor release 2.
-# minSdk 30 is Android 11, the oldest that has the CONFIRM/REJECT haptics the
-# game buzzes with.
+# minSdk 26 is Android 8, about 99% of Android devices in use (Oct 2026).
+# Below it the launcher icon (an adaptive icon) would need old-style PNGs.
 androidCompileSdk = "37"
 androidCompileSdkMinor = "2"
 androidTargetSdk = "37"
-androidMinSdk = "30"
+androidMinSdk = "26"
 agp = "9.5.1"
 kotlin = "2.4.21"
 composeBom = "2026.09.00"

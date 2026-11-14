@@ -215,7 +215,7 @@ question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
 
 ## Install it on Android
 
-Needs **Android 11 or newer**, on a phone or a tablet.
+Needs **Android 8 or newer**, on a phone or a tablet.
 
 1. On the phone, open the **[latest release](../../releases/latest)** and tap
    **`sniddle.apk`** (or use the direct link:
@@ -284,7 +284,7 @@ Handy extras that need no phone:
 ```
 
 Toolchain: Gradle 9.9, Android Gradle Plugin 9.5 (built-in Kotlin), Kotlin 2.4,
-Jetpack Compose (BOM 2026.09), compileSdk 37.2 / targetSdk 37 / minSdk 30.
+Jetpack Compose (BOM 2026.09), compileSdk 37.2 / targetSdk 37 / minSdk 26.
 Versions live in [`gradle/libs.versions.toml`](gradle/libs.versions.toml). The
 app ID / namespace is `com.quissicutdeus.sniddle`.
 
