@@ -22,6 +22,17 @@ class DangerTest {
         assertEquals("Coming", coming.name)
     }
 
+    /** A bigger snail heading for the kid's tail (not their head) gets an arrow too: a bite there cuts it off. */
+    @Test fun aBiggerSnailHeadingForYourBodyIsADanger() {
+        val sim = emptySim()
+        // A long kid heading east: the body lies to the west, out to about x = 500.
+        sim.player(2000f, 2000f, EAST, 1500f)
+        // Both are well off the head's line: about 60 degrees off pointing at it.
+        sim.ai(800f, 2700f, NORTH, 6000f, name = "At the tail")
+        sim.ai(800f, 1300f, NORTH, 6000f, name = "Away from the tail")
+        assertEquals(listOf("At the tail"), sim.dangers().map { it.name })
+    }
+
     @Test fun noPlayerNoDangers() {
         val sim = emptySim()
         sim.ai(1000f, 2000f, EAST, 800f)

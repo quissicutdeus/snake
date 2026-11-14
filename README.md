@@ -53,7 +53,8 @@ shrunk for the README. Swap in fresh ones when a screen changes.
 - **Run into a bigger snail's slime trail** → you just bounce off. Only a bigger
   snail's mouth can hurt you, so you always see who's after you.
 - **A red arrow with an angry face** at the edge of the screen means a bigger
-  snail is coming your way from off-screen. Get moving!
+  snail is coming your way from off-screen, at your head or at your slime
+  trail. Get moving!
 - **A bigger snail bites your slime trail** → the end falls off. Go back and eat it!
 - **Become the biggest snail** in the arena and you get a fanfare, confetti
   and a crown next to your length for as long as you stay on top.
