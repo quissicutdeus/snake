@@ -1,0 +1,36 @@
+#!/bin/sh
+# Sniddle's pre-push: the quick, non-Kotlin-compiling checks CI would fail on,
+# run before the push instead of minutes after it. The global hooks
+# (core.hooksPath) dispatch here; see the house CLAUDE.md.
+#
+#   formatting   ./gradlew spotlessCheck (ktlint and whitespace; spotlessApply fixes it)
+#   shell        scripts/lint-shell.sh (shellcheck + shfmt)
+#   workflows    actionlint
+#   Markdown     markdownlint-cli2
+#
+# A missing tool fails the push rather than skipping its check: a check that
+# silently doesn't run reads as a pass. Deliberate bypass: git push --no-verify
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+
+missing=""
+for tool in shellcheck shfmt actionlint markdownlint-cli2; do
+    command -v "$tool" >/dev/null 2>&1 || missing="$missing $tool"
+done
+if [ -n "$missing" ]; then
+    echo "pre-push: not installed:$missing" >&2
+    echo "  Install them (paru -S shellcheck shfmt actionlint markdownlint-cli2)," >&2
+    echo "  or bypass on purpose with: git push --no-verify" >&2
+    exit 1
+fi
+
+echo "pre-push: formatting"
+./gradlew spotlessCheck --quiet --console=plain
+echo "pre-push: shell scripts"
+scripts/lint-shell.sh >/dev/null
+echo "pre-push: workflows"
+actionlint
+echo "pre-push: Markdown"
+markdownlint-cli2 >/dev/null
+echo "pre-push: all clean"
