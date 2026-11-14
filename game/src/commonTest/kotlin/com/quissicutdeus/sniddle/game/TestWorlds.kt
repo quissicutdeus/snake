@@ -10,8 +10,9 @@ import kotlin.math.PI
 fun emptySim(
     aiEnabled: Boolean = false,
     pellets: Int = 0,
+    seed: Long = 42,
 ) = GameSim(
-    seed = 42,
+    seed = seed,
     options = SimOptions(pelletCount = pellets, aiCount = 0, spawnPlayer = false, aiEnabled = aiEnabled, powerUps = false),
 )
 

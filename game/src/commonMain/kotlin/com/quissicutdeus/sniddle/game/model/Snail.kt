@@ -186,8 +186,8 @@ class Snail(
     }
 
     /**
-     * Places the snail along given points (head first) — used for menu
-     * previews and pictures, not during play.
+     * Places the snail along given points (head first): menu previews and
+     * pictures, and in play a coiled body (a resumed game, a new computer snail).
      */
     fun setPose(
         xs: FloatArray,
