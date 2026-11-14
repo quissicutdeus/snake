@@ -15,6 +15,8 @@ ones. Steer with your thumb, anywhere on the screen.
 | **Dress up your snail** | **Game over** |
 | ![My Snails: colours, patterns, eyes and hats](docs/screenshots/my_snail.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
 
+![High scores: each kid's best games, with their snail and how many snails they ate](docs/screenshots/high_scores.png)
+
 ![Every hat, including the holiday ones, with every pair of eyes](docs/screenshots/hats.png)
 
 ![Every pattern](docs/screenshots/patterns.png)

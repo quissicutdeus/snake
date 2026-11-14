@@ -319,7 +319,7 @@ class ScreenshotTest : ScreenTest() {
 
     private fun highScoresScene(name: String) {
         val styles = listOf(style) + (1..3).map { SnailStyle.random(kotlin.random.Random(it)) }
-        listOf("Caleb" to 212, "Mya" to 180, "Dad" to 150, "Caleb" to 99, "Mya" to 64).forEachIndexed { i, (n, s) ->
+        listOf("Caleb" to 212, "Mya" to 180, "Lily" to 165, "Dad" to 150, "Silly" to 120, "Caleb" to 99, "Mya" to 64).forEachIndexed { i, (n, s) ->
             storage.addScore(ScoreEntry(n, s, i, styles[i % styles.size], 1000L + i))
         }
         show { HighScoresScreen(storage, highlight = 1001L, onPlay = {}, onBack = {}) }
