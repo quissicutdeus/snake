@@ -26,7 +26,7 @@ enum class ArenaSeason(
     /** A dark sky full of stars, with planets and a comet: some games, all year. */
     SPACE("space"),
 
-    /** Christmas wrapping paper with ribbons: every game and the title screen, all of December. */
+    /** Christmas wrapping paper with ribbons: every game and the title screen, while it's [Holiday.CHRISTMAS]. */
     WRAPPING_PAPER("wrapping"),
     ;
 
@@ -44,7 +44,7 @@ enum class ArenaSeason(
         fun festive(
             month: Int,
             day: Int,
-        ): ArenaSeason? = WRAPPING_PAPER.takeIf { month * MONTH + day in CHRISTMAS }
+        ): ArenaSeason? = WRAPPING_PAPER.takeIf { Holiday.CHRISTMAS.inSeason(MonthDay.of(month, day)) }
 
         /** The title screen's floor on [day] of [month]: the festive one, else the season's. */
         fun forTitle(
@@ -72,10 +72,5 @@ enum class ArenaSeason(
 
         /** The floor saved as [key]; null for one this version doesn't know. */
         fun byKey(key: String): ArenaSeason? = entries.firstOrNull { it.key == key }
-
-        private const val MONTH = 100
-
-        /** All of December, as month * 100 + day (like [Holiday]'s dates). */
-        private val CHRISTMAS = 1201..1231
     }
 }

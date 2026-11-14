@@ -79,6 +79,11 @@ class BedtimeTest : ScreenTest() {
         compose.onNodeWithText("Play!").assertExists()
     }
 
+    /** The grown-ups question, then the bedtime panel. */
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun grownUpsNight() = aGrownUpSetsTheTimer()
+
     @Config(qualifiers = PORTRAIT)
     @Test
     fun theGrownUpPanelPortrait() {
@@ -147,6 +152,10 @@ class BedtimeTest : ScreenTest() {
     @Config(qualifiers = TABLET)
     @Test
     fun restTablet() = restScene("bedtime_rest_tablet")
+
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun restNight() = restScene("bedtime_rest_landscape")
 
     @Test fun timeUpStaysUpAfterARestartAndAGrownUpCanGiveMore() {
         seedBedtime(15, 16 * 60_000L)

@@ -119,6 +119,10 @@ class PlayTogetherTest : ScreenTest() {
         compose.onNodeWithContentDescription("Time left", substring = true).assertExists()
     }
 
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun pickingTheSecondKidNight() = pickingTheSecondKid()
+
     /** With only one kid on the phone: a "Player 2" with a random look, or add a new kid and come back here. */
     @Test fun withOneKidPlayer2OrAddAKid() {
         storage.newsSeen = WhatsNew.last().number
@@ -380,4 +384,8 @@ class PlayTogetherTest : ScreenTest() {
     @Config(qualifiers = WIDE_PHONE)
     @Test
     fun endScreenWidePhone() = endScreen("together_over_wide_phone")
+
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun endScreenNight() = endScreen("together_over_tablet")
 }

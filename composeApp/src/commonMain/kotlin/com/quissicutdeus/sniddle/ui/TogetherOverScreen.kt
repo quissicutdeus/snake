@@ -128,7 +128,8 @@ private fun KidPanel(
                 Text(
                     extra.joinToString("\n"),
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xCC2B2B3A),
+                    // Softer than the lines above it: by day the same 80% Ink as before.
+                    color = onCard.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 6.dp),
                 )

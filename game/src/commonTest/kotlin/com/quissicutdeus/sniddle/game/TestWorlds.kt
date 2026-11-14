@@ -1,8 +1,10 @@
 package com.quissicutdeus.sniddle.game
 
+import com.quissicutdeus.sniddle.game.model.PowerType
 import com.quissicutdeus.sniddle.game.model.Snail
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.sim.GameSim
+import com.quissicutdeus.sniddle.game.sim.SavedRun
 import com.quissicutdeus.sniddle.game.sim.SimOptions
 import kotlin.math.PI
 
@@ -15,6 +17,12 @@ fun emptySim(
     seed = seed,
     options = SimOptions(pelletCount = pellets, aiCount = 0, spawnPlayer = false, aiEnabled = aiEnabled, powerUps = false),
 )
+
+/** A whole game whose kid starts [length] long (as if carried on from a saved game), with the arena filled around them. */
+fun gameWithKid(
+    length: Float,
+    seed: Long,
+) = GameSim(seed = seed, resume = SavedRun("Kid", SnailStyle.DEFAULT, length, length, 3, 0, List(PowerType.entries.size) { 0f }))
 
 fun GameSim.player(
     x: Float,

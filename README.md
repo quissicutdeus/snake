@@ -355,7 +355,9 @@ game/   shared Kotlin for Android and iOS: all rules, AI and drawing code
            Holiday (which are on for a date, and dressing computer snails
            up), Dates (leap years, Easter, Birthday), ArenaSeason
   sim/     GameSim (fixed 60 Hz steps), Movement, Collisions (spatial grid),
-           Rules, PowerUps, Ai, Spawner, Danger (warning arrows), Biggest
+           Rules, PowerUps, Ai, Spawner (with Sight: what a kid's screen
+           shows, and Sightings: which snails a kid has seen), Danger
+           (warning arrows), Biggest
            (who's on top), Scoreboard, SavedRun (a game to carry on after
            Android closes the app), TwoPlayer (a second kid in the same
            world: comebacks, the shared clock, each kid's crown)

@@ -271,6 +271,12 @@ class ScreenshotTest : ScreenTest() {
         compose.onNodeWithText("Eat 2 more snails!").assertDoesNotExist()
         compose.onNodeWithText("Eat 10 snails").assertExists()
         assertEquals(emptyList<SnailStyle>(), picked)
+
+        // A little further down, the eye colours under the eyes.
+        compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, centerY), Offset(width * 0.75f, top + 20f), 300) }
+        advance(1500)
+        compose.onNodeWithContentDescription("Eyes: Classic").assertExists()
+        snap("my_snail_eye_colors")
     }
 
     /** A game in November earns the turkey hat for good; Santa waits for December, with no progress bar. */
@@ -371,35 +377,26 @@ class ScreenshotTest : ScreenTest() {
 
     // ---- Night: the phone set to dark, so the menus use their night look ----
 
-    @Config(qualifiers = "+night")
+    @Config(qualifiers = NIGHT)
     @Test
-    fun mySnailNight() = mySnailScene("my_snail_night")
+    fun mySnailNight() = mySnailScene("my_snail_landscape")
 
-    @Config(qualifiers = "+night")
+    /** A locked look's hint, with the eye colours next to it. */
+    @Config(qualifiers = NIGHT)
     @Test
-    fun highScoresNight() = highScoresScene("high_scores_night")
+    fun lockedLookNight() = tappingALockedLookSaysWhatsLeft()
 
-    @Config(qualifiers = "+night")
+    @Config(qualifiers = NIGHT)
     @Test
-    fun gameOverNight() = gameOverScene("game_over_night")
+    fun pausedNight() = pausedScene("paused_landscape")
 
-    /** The title with the kids' tiles, then the grown-ups question over it. */
-    @Config(qualifiers = "+night")
+    @Config(qualifiers = NIGHT)
     @Test
-    fun titleAndGrownUpsNight() {
-        storage.newsSeen = WhatsNew.last().number
-        storage.player(0).apply {
-            saveStyle(style)
-            saveSnailName("Caleb")
-        }
-        storage.addPlayer(sirNoodles)
-        storage.player(1).saveSnailName("Mya")
-        launchApp()
-        snap("title_night")
-        compose.onNodeWithContentDescription("Grown-ups: bedtime timer").performClick()
-        advance(300)
-        snap("grown_ups_night")
-    }
+    fun highScoresNight() = highScoresScene("high_scores_landscape")
+
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun gameOverNight() = gameOverScene("game_over_landscape")
 
     // ---- Tablet (10-inch), landscape ----
 

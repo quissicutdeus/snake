@@ -7,8 +7,8 @@ import kotlin.random.Random
  * its looks for good; until then they're locked and say when to come back.
  * While it's on, computer snails dress up for it too.
  *
- * Dates are month * 100 + day (1225 is 25 December), so a season is just a
- * range of those and nothing depends on time zones or calendars. Easter moves
+ * Dates are [MonthDay]s, so a season is just a range of those and nothing
+ * depends on time zones or calendars. Easter moves
  * every year, so it's worked out from the year ([Dates.easterSunday]), and a
  * kid's birthday is [BIRTHDAY], on whenever their [Birthday] is.
  */
@@ -23,30 +23,30 @@ enum class Holiday(
     /** What computer snails wear while it's on: its own hats, unless it says otherwise. */
     crowd: List<Enum<*>>? = null,
 ) {
-    HALLOWEEN("Play in October", "Comes out in October!", listOf(Hat.GHOST), listOf(1001..1031)),
-    THANKSGIVING("Play in November", "Gobble gobble in November!", listOf(Hat.TURKEY), listOf(1101..1130)),
-    CHRISTMAS("Play in December", "Ho ho ho! Back in December!", listOf(Hat.SANTA), listOf(1201..1231)),
+    HALLOWEEN("Play in October", "Comes out in October!", listOf(Hat.GHOST), listOf(MonthDay.wholeMonth(10))),
+    THANKSGIVING("Play in November", "Gobble gobble in November!", listOf(Hat.TURKEY), listOf(MonthDay.wholeMonth(11))),
+    CHRISTMAS("Play in December", "Ho ho ho! Back in December!", listOf(Hat.SANTA), listOf(MonthDay.wholeMonth(12))),
 
     /** Presidents' Day, Memorial Day through Flag Day and the 4th of July, and Veterans Day. */
     FLAG_DAYS(
         "Play near July 4th",
         "Comes back for July 4th!",
         listOf(Pattern.FLAG, Hat.STAR_HAT),
-        listOf(212..222, 520..710, 1108..1114),
+        listOf(MonthDay.between(2, 12, 2, 22), MonthDay.between(5, 20, 7, 10), MonthDay.between(11, 8, 11, 14)),
     ),
 
     /** All of February, for Valentine's Day. Overlaps Presidents' Day, and both are on then. */
-    VALENTINE("Play in February", "Comes back in February!", listOf(Pattern.HEARTS), listOf(201..229)),
+    VALENTINE("Play in February", "Comes back in February!", listOf(Pattern.HEARTS), listOf(MonthDay.wholeMonth(2))),
 
     /** All of March, for St Patrick's Day. */
-    ST_PATRICK("Play in March", "Comes back in March!", listOf(Hat.SHAMROCK), listOf(301..331)),
+    ST_PATRICK("Play in March", "Comes back in March!", listOf(Hat.SHAMROCK), listOf(MonthDay.wholeMonth(3))),
 
     /**
      * All of April, and Easter week (the week before Easter Sunday through
      * Easter Monday, see [isOn]) when Easter comes in March. Then it overlaps
      * St Patrick's, and both are on.
      */
-    EASTER("Play in April", "Hops back in April!", listOf(Hat.BUNNY), listOf(401..430)),
+    EASTER("Play in April", "Hops back in April!", listOf(Hat.BUNNY), listOf(MonthDay.wholeMonth(4))),
 
     /** A kid's own birthday: never on by the date alone, only when [on] is given their [Birthday]. Party hats all round. */
     BIRTHDAY("On your birthday!", "Play on your birthday to get it!", listOf(Hat.BIRTHDAY_CAKE), emptyList(), listOf(Hat.PARTY)),
@@ -55,15 +55,18 @@ enum class Holiday(
     /** What computer snails wear while it's on. */
     private val crowd: List<Enum<*>> = crowd ?: looks.filterIsInstance<Hat>()
 
-    /** On for [monthDay] (month * 100 + day) of [year]. [BIRTHDAY] never is: it depends on whose birthday. */
+    /** On for [monthDay] (a [MonthDay]) of [year]. [BIRTHDAY] never is: it depends on whose birthday. */
     fun isOn(
         year: Int,
         monthDay: Int,
     ): Boolean =
         when (this) {
-            EASTER -> seasons.any { monthDay in it } || Dates.isEasterWeek(year, monthDay / MONTH, monthDay % MONTH)
-            else -> seasons.any { monthDay in it }
+            EASTER -> inSeason(monthDay) || Dates.isEasterWeek(year, MonthDay.monthOf(monthDay), MonthDay.dayOf(monthDay))
+            else -> inSeason(monthDay)
         }
+
+    /** [monthDay] is in one of its fixed seasons (every year the same: not Easter week or a birthday). */
+    fun inSeason(monthDay: Int): Boolean = seasons.any { monthDay in it }
 
     companion object {
         /**
@@ -76,7 +79,7 @@ enum class Holiday(
             day: Int,
             birthday: Birthday? = null,
         ): Set<Holiday> {
-            val on = entries.filterTo(LinkedHashSet()) { it.isOn(year, month * MONTH + day) }
+            val on = entries.filterTo(LinkedHashSet()) { it.isOn(year, MonthDay.of(month, day)) }
             if (birthday != null && birthday.isOn(year, month, day)) on += BIRTHDAY
             return on
         }
@@ -86,8 +89,6 @@ enum class Holiday(
 
         /** How often a computer snail wears the hat (or pattern) of a holiday that's on. */
         private const val DRESS_UP_CHANCE = 0.4f
-
-        private const val MONTH = 100
 
         /**
          * A computer snail's look for [season]: holiday looks from other times

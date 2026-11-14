@@ -7,15 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -140,6 +137,10 @@ class PlayersTest : ScreenTest() {
     @Test
     fun playersTablet() = playersScene("players_tablet")
 
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun playersNight() = playersScene("players_landscape")
+
     /** The fullest a short phone screen gets: four kids, and a cheer for looks already earned. */
     @Test fun fourPlayersAndACheerLandscape() {
         seedOldScores()
@@ -231,7 +232,7 @@ class PlayersTest : ScreenTest() {
         compose.onNodeWithText("Remove player").performClick()
         advance(500)
         compose.onNodeWithText("Remove Mya's snail?").assertExists()
-        saveScreenshot(compose.onNode(isDialog()).captureToImage().asAndroidBitmap(), "players_remove_ask")
+        snapDialog("players_remove_ask")
         compose.onNodeWithText("Keep").performClick()
         advance(500)
         compose.onNodeWithText("Remove Mya's snail?").assertDoesNotExist()
@@ -248,6 +249,10 @@ class PlayersTest : ScreenTest() {
         assertEquals(0, storage.loadCurrentPlayer())
         snap("players_removed")
     }
+
+    @Config(qualifiers = NIGHT)
+    @Test
+    fun removingAPlayerNight() = removingThePlayerWhoIsPlaying()
 
     /**
      * The first kid (the old unprefixed keys) leaves: the others keep their own

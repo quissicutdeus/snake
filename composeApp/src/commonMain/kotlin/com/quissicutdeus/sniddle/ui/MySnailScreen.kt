@@ -262,6 +262,7 @@ private fun EyeColorSwatches(
                         .size(44.dp)
                         .clip(CircleShape)
                         .background(Color.White)
+                        // The swatch is a white eye, day and night, so its ring stays dark.
                         .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Ink else Color(0x552B2B3A), CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -281,7 +282,7 @@ private fun EyeColorSwatches(
                             .background(KidColors.Ink),
                     )
                 }
-                Text(eyeColor.label, style = MaterialTheme.typography.labelMedium, color = KidColors.Ink)
+                Text(eyeColor.label, style = MaterialTheme.typography.labelMedium, color = KidColors.Text)
             }
         }
     }
