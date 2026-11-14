@@ -183,21 +183,32 @@ class Profile(
     /** It's this kid's birthday today. */
     val isBirthday: Boolean get() = Holiday.BIRTHDAY in holidaysToday(birthday, calendar.today())
 
-    /** A game for this kid today: the holidays that are on (and their birthday), on this season's arena. */
+    /**
+     * A game for this kid today: the holidays that are on (and their
+     * birthday), on the title screen's floor (the season's, or Christmas
+     * wrapping paper). A new game swaps in [gameArena].
+     */
     fun todaysOptions(): SimOptions = todaysOptions(birthday, calendar.today())
+
+    /** A new game's floor today: Christmas wrapping paper, else the season's, dirt or space, picked with [rng]. */
+    fun gameArena(rng: Random = Random): ArenaSeason = calendar.today().let { ArenaSeason.forGame(it.month, it.dayOfMonth, rng) }
 
     /**
      * A two-player game for this kid and kid [partnerId] ([GUEST_ID] for a
      * "Player 2" who isn't on the phone) today: everyone's holidays, with
-     * either kid's birthday, on this season's arena. Gentle (little kid mode)
-     * only when both kids have it on; a guest counts as not little.
+     * either kid's birthday, on a floor picked like a one-player game's (see
+     * [gameArena], with [rng]). Gentle (little kid mode) only when both kids
+     * have it on; a guest counts as not little.
      */
-    fun togetherOptions(partnerId: Int): SimOptions {
+    fun togetherOptions(
+        partnerId: Int,
+        rng: Random = Random,
+    ): SimOptions {
         val partner = storage.player(partnerId).takeIf { players.any { it.id == partnerId } }
         val mine = todaysOptions()
         val theirs = holidaysToday(partner?.loadBirthday(), calendar.today())
         val bothLittle = littleKid && partner?.loadLittleKid() == true
-        return mine.copy(season = mine.season + theirs, difficulty = difficultyFor(bothLittle))
+        return mine.copy(season = mine.season + theirs, difficulty = difficultyFor(bothLittle), arena = gameArena(rng))
     }
 
     fun changeSnailName(new: String) {
@@ -213,8 +224,11 @@ fun holidaysToday(
     today: Day,
 ): Set<Holiday> = Holiday.on(today.year, today.month, today.dayOfMonth, birthday)
 
-/** A game [today]: its holidays (with [birthday], if it's then) for the computer snails, and the season's arena. */
+/**
+ * A game [today]: its holidays (with [birthday], if it's then) for the
+ * computer snails, and the title screen's floor (see [ArenaSeason.forTitle]).
+ */
 fun todaysOptions(
     birthday: Birthday?,
     today: Day,
-): SimOptions = SimOptions(season = holidaysToday(birthday, today), arena = ArenaSeason.forMonth(today.month))
+): SimOptions = SimOptions(season = holidaysToday(birthday, today), arena = ArenaSeason.forTitle(today.month, today.dayOfMonth))

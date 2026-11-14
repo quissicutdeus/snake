@@ -8,15 +8,22 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * A snail's body coiled up in a spiral around a point, head on the outside
- * pointing onward along the curve. Even a very long snail fits in a small
- * space this way, where a straight body could poke through the fence.
+ * A snail's body coiled up in a spiral around a point. Even a very long snail
+ * fits in a small space this way, where a straight body could poke through the
+ * fence.
+ *
+ * The head is either on the outside, pointing onward along the curve, or in
+ * the middle with the tail end wrapped round it. A new computer snail gets
+ * the head in the middle: the rings a kid bumps into first are then the tail
+ * end, so a bite snips off a little, not the whole snail behind its head.
  */
 class Coil private constructor(
     val xs: FloatArray,
     val ys: FloatArray,
     val count: Int,
     val heading: Float,
+    /** How far the coil reaches from its centre (to the middle of the outer ring). */
+    val reach: Float,
 ) {
     companion object {
         /** Gap between rings of the coil, in body radii (so the rings don't touch). */
@@ -25,12 +32,13 @@ class Coil private constructor(
         /** The innermost ring, in body radii from the centre. */
         private const val INNER_RADII = 2f
 
-        /** A spiral of total length at least [length] around ([cx], [cy]), head first. */
+        /** A spiral of total length at least [length] around ([cx], [cy]), head first, the head inside if [headInside]. */
         fun around(
             cx: Float,
             cy: Float,
             radius: Float,
             length: Float,
+            headInside: Boolean = false,
         ): Coil {
             val b = RING_GAP_RADII * radius / (2f * PI.toFloat()) // ring gap per radian
             var r = INNER_RADII * radius
@@ -48,11 +56,13 @@ class Coil private constructor(
                 ys += cy + r * sin(angle)
                 walked += GameConfig.TRAIL_SPACING
             }
-            // Built from the centre out; the head is the outer end.
-            xs.reverse()
-            ys.reverse()
+            // Built from the centre out: the outer end is the head unless it stays inside.
+            if (!headInside) {
+                xs.reverse()
+                ys.reverse()
+            }
             val heading = atan2(ys[0] - ys[1], xs[0] - xs[1])
-            return Coil(xs.toFloatArray(), ys.toFloatArray(), xs.size, heading)
+            return Coil(xs.toFloatArray(), ys.toFloatArray(), xs.size, heading, r)
         }
     }
 }

@@ -24,6 +24,15 @@ object GameConfig {
     /** After hitting a wall, steering is ignored this long so you slide off it gently. */
     const val WALL_BOUNCE_SECONDS = 0.2f
 
+    /**
+     * How a new game picks its floor outside December (see
+     * ArenaSeason.forGame): the season's floor, dirt or space, in these
+     * shares. 2:1:1 is the season half the time, dirt and space a quarter each.
+     */
+    const val ARENA_SEASON_WEIGHT = 2
+    const val ARENA_DIRT_WEIGHT = 1
+    const val ARENA_SPACE_WEIGHT = 1
+
     // ---- Size --------------------------------------------------------------
 
     /** No snail is ever shorter than this. */
@@ -219,6 +228,9 @@ object GameConfig {
 
     // ---- Spawner -----------------------------------------------------------
     const val AI_TARGET_COUNT = 14
+
+    /** Never more computer snails than this, counting the small ones that no longer count toward [AI_TARGET_COUNT]. */
+    const val AI_MAX_COUNT = 20
     const val SPAWN_INTERVAL = 0.7f
 
     /** Share of AI snails that should be smaller than the player. */
@@ -232,15 +244,22 @@ object GameConfig {
     const val SPAWN_WALL_MARGIN = 160f
     const val SPAWN_CLEARANCE = 200f
 
-    /** If the share of smaller snails drops this far below [SMALLER_FRACTION], a far-away bigger one is retired. */
+    /** If the share of smaller snails drops this far below [SMALLER_FRACTION], smaller ones are added beyond the target. */
     const val MIX_TOLERANCE = 0.15f
 
-    /** Snails are only removed when at least this much further away than the edge of the screen. */
-    const val DESPAWN_EXTRA_DISTANCE = 200f
+    /** A computer snail shorter than this share of the kid hardly matters, so it stops counting toward [AI_TARGET_COUNT]. */
+    const val RELEVANT_MIN_RATIO = 0.15f
 
-    /** Off-screen AI snails whose size ratio to the player leaves this range are removed. */
+    /** A snail no kid has seen is retired when its size ratio to the kid leaves this range. */
     const val DESPAWN_MIN_RATIO = 0.15f
     const val DESPAWN_MAX_RATIO = 4f
+
+    /**
+     * New snails start at least this far outside a kid's screen (world units):
+     * two of the fattest bodies, plus the way the camera can move before the
+     * next spawn looks again.
+     */
+    const val SPAWN_VIEW_MARGIN = 250f
 
     // ---- Camera ------------------------------------------------------------
 

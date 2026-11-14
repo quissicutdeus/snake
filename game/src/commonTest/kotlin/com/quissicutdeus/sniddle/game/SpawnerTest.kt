@@ -6,7 +6,9 @@ import com.quissicutdeus.sniddle.game.model.dist
 import com.quissicutdeus.sniddle.game.sim.GameSim
 import com.quissicutdeus.sniddle.game.sim.SavedRun
 import com.quissicutdeus.sniddle.game.sim.SizeRelation
+import com.quissicutdeus.sniddle.game.sim.Spawner
 import com.quissicutdeus.sniddle.game.sim.compareSize
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -43,8 +45,6 @@ class SpawnerTest {
                 assertTrue(dist(it.x, it.y, p.x, p.y) >= minD, "new snail ${it.name} spawned on-screen")
             }
         }
-        // (The count itself moves around: the spawner also retires far-away snails that
-        // no longer fit the size mix, e.g. after the player loses its tail.)
         assertTrue(refilled, "the arena filled back up to ${GameConfig.AI_TARGET_COUNT} snails")
     }
 
@@ -83,23 +83,68 @@ class SpawnerTest {
     }
 
     /**
-     * When the kid shrinks (their tail bitten off), snails can be left over the
-     * size cap. Once out of sight they go, even if not quite big enough to be
-     * a misfit in the size mix.
+     * A snail a kid has had on screen only leaves by being eaten: a giant left
+     * over the size cap when the kid shrinks, or one that has become tiny next
+     * to a big kid, stays even far out of sight. One no kid has ever seen can
+     * still be retired to keep the mix right.
      */
-    @Test fun giantsLeftOverTheSizeCapAreRetiredOnceOutOfSight() {
+    @Test fun aSnailTheKidHasSeenIsNeverQuietlyRemoved() {
         val sim = emptySim()
-        sim.player(500f, 500f, EAST, 150f)
-        val cap = sim.aiMaxLength()
-        val giant = sim.ai(3400f, 3400f, NORTH, cap * 1.15f, name = "Giant")
-        val big = sim.ai(3400f, 1200f, NORTH, cap * 0.9f, name = "Big")
-        val nearGiant = sim.ai(500f, 800f, EAST, cap * 1.15f, name = "Near")
-        // Enough smaller snails that the size mix is fine, so only the cap can retire anyone.
-        repeat(4) { sim.ai(3600f, 600f + it * 700f, NORTH, 100f, name = "Small $it") }
-        sim.steps(60)
-        assertTrue(!giant.alive, "a giant over the cap, out of sight, is retired")
-        assertTrue(big.alive, "a big snail under the cap stays")
-        assertTrue(nearGiant.alive, "a giant the kid can see doesn't vanish in front of them")
+        sim.player(500f, 500f, SOUTH, 1500f)
+        // Laid out so nobody meets anybody in the 5 seconds below.
+        val giant = sim.ai(3400f, 300f, SOUTH, sim.aiMaxLength() * 1.15f, name = "Giant")
+        val tiny = sim.ai(600f, 3600f, WEST, 100f, name = "Tiny")
+        val unseenGiant = sim.ai(2400f, 300f, SOUTH, sim.aiMaxLength() * 1.15f, name = "Unseen giant")
+        giant.seenByKid = true
+        tiny.seenByKid = true
+        // Far longer than the spawner takes to retire a misfit (it looks every 0.7 s).
+        sim.steps(60 * 5)
+        assertTrue(giant.alive, "a giant over the cap the kid has seen stays")
+        assertTrue(tiny.alive, "a snail the kid has seen stays, however tiny next to the kid")
+        assertTrue(!unseenGiant.alive, "a giant no kid has seen is retired")
+    }
+
+    /**
+     * A big kid in the very middle of the arena sees most of it. Measured
+     * against the widest screen any phone could have, nowhere is out of sight
+     * and the arena would slowly empty; against the kid's real screen (a
+     * landscape phone here) there is still room above and below it.
+     */
+    @Test fun aBigKidInTheMiddleStillLeavesRoomForNewSnails() {
+        for (length in listOf(1500f, 2500f, 4000f)) {
+            val sim = emptySim()
+            val p = sim.player(sim.world.width / 2f, sim.world.height / 2f, EAST, length)
+            val halfH = GameConfig.viewSpanFor(p.radius) / 2f
+            sim.setView(p, p.x, p.y, halfH * 2.2f, halfH)
+            val spawner = Spawner()
+            val made = (1..10).mapNotNull { spawner.spawnOne(sim) }
+            assertTrue(made.size >= 8, "a kid $length long in the middle left room for only ${made.size} of 10 snails")
+            for (s in made) {
+                for (i in 0 until s.segCount) {
+                    val onScreen = abs(s.segX[i] - p.x) < halfH * 2.2f && abs(s.segY[i] - p.y) < halfH
+                    assertTrue(!onScreen, "${s.name} appeared on the kid's screen")
+                }
+            }
+        }
+    }
+
+    /**
+     * A new snail's head is in the middle of its coil, so the outside rings a
+     * kid bumps into first are its tail end: a bite there snips off a little,
+     * not most of the snail.
+     */
+    @Test fun aNewSnailsHeadIsInTheMiddleOfItsCoil() {
+        val run = SavedRun("Kid", SnailStyle.DEFAULT, 1500f, 1500f, 3, 0, List(PowerType.entries.size) { 0f })
+        val sim = GameSim(seed = 9, resume = run)
+        val s =
+            sim.world.snails
+                .filter { !it.isPlayer }
+                .maxBy { it.length }
+        val cx = (0 until s.segCount).map { s.segX[it] }.average().toFloat()
+        val cy = (0 until s.segCount).map { s.segY[it] }.average().toFloat()
+        val outermost = (0 until s.segCount).maxBy { dist(s.segX[it], s.segY[it], cx, cy) }
+        assertTrue(dist(s.x, s.y, cx, cy) < s.radius * 4, "the head is near the middle")
+        assertTrue(outermost > s.segCount * 3 / 4, "the outer ring is the tail end (outermost circle $outermost of ${s.segCount})")
     }
 
     @Test fun aiNamesAreSillyAndUnique() {

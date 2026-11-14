@@ -42,10 +42,14 @@ val WhatsNew: List<News> =
     listOf(
         News(1, "🎅", "Holiday hats to win!"),
         News(2, "🧒", "Every kid gets their own snail!"),
-        News(3, "🐣", "Little kid mode in My Snail!"),
+        News(3, "🐣", "Little kid mode in My Snails!"),
         News(4, "🎂", "Birthday hats and bunny ears!"),
         News(5, "👫", "Play together on one screen!"),
         News(6, "🐌", "The snakes are snails now, with slime trails!"),
+        News(7, "🤠", "New hats and eyes, and eyes in your snail's colors!"),
+        News(8, "🪐", "New places to play: garden dirt, outer space, and wrapping paper at Christmas!"),
+        News(9, "🌙", "A night look when your phone is in dark mode!"),
+        News(10, "🐰", "Holiday hats now last the whole month!"),
     )
 
 /**

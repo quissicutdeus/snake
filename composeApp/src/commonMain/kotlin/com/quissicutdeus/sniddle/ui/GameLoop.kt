@@ -88,8 +88,13 @@ internal class Seat(
         }
     }
 
-    /** The camera follows [kid], and jumps straight to them when they come back after being gobbled. */
+    /**
+     * The camera follows [kid], and jumps straight to them when they come back
+     * after being gobbled. Then [sim] is told what this seat's screen shows,
+     * so new snails appear just out of sight of it.
+     */
     fun follow(
+        sim: GameSim,
         kid: Snail,
         renderAlpha: Float,
         dt: Float,
@@ -101,6 +106,7 @@ internal class Seat(
             camera.followSnail(kid, renderAlpha, width, height, dt)
         }
         wasAlive = kid.alive
+        sim.setView(kid, camera.x, camera.y, width / 2f / camera.scale, height / 2f / camera.scale)
     }
 }
 
@@ -166,7 +172,7 @@ internal class GameLoop<R : Any>(
             for (k in sounds.indices) onSound(sounds[k])
             if (sim.gameOver) overTimer += dt
         }
-        for (i in 0 until seated) seats[i].follow(kids[i], sim.renderAlpha, if (paused) 0f else dt)
+        for (i in 0 until seated) seats[i].follow(sim, kids[i], sim.renderAlpha, if (paused) 0f else dt)
         return buzz
     }
 

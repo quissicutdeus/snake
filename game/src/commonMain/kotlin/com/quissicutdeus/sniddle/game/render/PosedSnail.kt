@@ -10,7 +10,7 @@ import kotlin.math.sin
 
 /**
  * A snail that isn't in a game: laid along a wave that travels with time, so
- * it slithers in place. Used by the My Snail preview, the title screen and
+ * it slithers in place. Used by the My Snails preview, the title screen and
  * the little pictures on the high-score list.
  */
 class PosedSnail(

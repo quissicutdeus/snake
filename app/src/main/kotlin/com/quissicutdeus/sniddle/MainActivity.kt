@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             // The app's own view buzzes, as the game screens' did before.
             val view = LocalView.current
-            SniddleApp(storage, SystemCalendar, sounds, remember(view) { ViewBuzzer(view) })
+            SniddleApp(storage, SystemCalendar, sounds, remember(view) { ViewBuzzer(view) }, BuildConfig.VERSION_NAME)
         }
     }
 

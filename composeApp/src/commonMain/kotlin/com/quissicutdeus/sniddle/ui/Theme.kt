@@ -1,7 +1,9 @@
 package com.quissicutdeus.sniddle.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -11,15 +13,30 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-private val colors =
+private val lightColors =
     lightColorScheme(
         primary = KidColors.Play,
         onPrimary = Color.White,
         secondary = KidColors.Sky,
         onSecondary = Color.White,
-        background = KidColors.Grass,
+        background = KidPalette.Light.menuBackground,
         surface = Color.White,
-        onSurface = KidColors.Ink,
+        onSurface = KidPalette.Light.text,
+    )
+
+// The text fields, switches and dialogs Material draws itself, matched to KidPalette.Night.
+private val nightColors =
+    darkColorScheme(
+        primary = KidColors.Play,
+        onPrimary = Color.White,
+        secondary = KidColors.Sky,
+        onSecondary = Color.White,
+        background = KidPalette.Night.menuBackground,
+        surface = KidPalette.Night.card,
+        onSurface = KidPalette.Night.text,
+        onSurfaceVariant = KidPalette.Night.subtleText,
+        outline = KidPalette.Night.subtleText,
+        surfaceVariant = KidPalette.Night.chip,
     )
 
 private val typography =
@@ -43,12 +60,20 @@ private val typography =
 @Suppress("ComposeCompositionLocalUsage")
 internal val LocalCanBuzz = staticCompositionLocalOf { true }
 
+/**
+ * The menus' look: the light one, or the night one when the phone is set to
+ * dark ([night], from the system setting unless a test fixes it).
+ */
 @Composable
 fun SniddleTheme(
     canBuzz: Boolean = true,
+    night: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    CompositionLocalProvider(LocalCanBuzz provides canBuzz) {
-        MaterialTheme(colorScheme = colors, typography = typography, content = content)
+    CompositionLocalProvider(
+        LocalCanBuzz provides canBuzz,
+        LocalKidPalette provides if (night) KidPalette.Night else KidPalette.Light,
+    ) {
+        MaterialTheme(colorScheme = if (night) nightColors else lightColors, typography = typography, content = content)
     }
 }

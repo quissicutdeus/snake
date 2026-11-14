@@ -1,5 +1,7 @@
 package com.quissicutdeus.sniddle.game
 
+import com.quissicutdeus.sniddle.game.model.EyeColor
+import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.Holiday
 import com.quissicutdeus.sniddle.game.model.Pattern
@@ -22,7 +24,7 @@ class HolidayTest {
         assertEquals(setOf(Holiday.CHRISTMAS), Holiday.on(2026, 12, 25))
         assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 7, 4))
         assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 5, 26)) // Memorial Day
-        assertEquals(setOf(Holiday.FLAG_DAYS), Holiday.on(2026, 2, 16)) // Presidents' Day
+        assertEquals(setOf(Holiday.FLAG_DAYS, Holiday.VALENTINE), Holiday.on(2026, 2, 16)) // Presidents' Day, in February
         assertEquals(setOf(Holiday.ST_PATRICK), Holiday.on(2026, 3, 15))
         assertEquals(emptySet(), Holiday.on(2026, 9, 30))
     }
@@ -66,6 +68,10 @@ class HolidayTest {
         assertTrue(styles.none { it.hat == Hat.GHOST || it.hat == Hat.TURKEY || it.hat == Hat.STAR_HAT || it.pattern == Pattern.FLAG })
         val offSeason = List(400) { Holiday.dressUp(SnailStyle.random(rng), rng, emptySet()) }
         assertTrue(offSeason.none { Holiday.of(it.hat) != null || Holiday.of(it.pattern) != null })
+        // Every everyday hat and every pair of eyes turns up on someone, including the ones still to be earned.
+        assertEquals(Hat.entries.filter { Holiday.of(it) == null }.toSet(), offSeason.map { it.hat }.toSet())
+        assertEquals(Eyes.entries.toSet(), offSeason.map { it.eyes }.toSet())
+        assertEquals(EyeColor.entries.toSet(), offSeason.map { it.eyeColor }.toSet())
     }
 
     @Test fun theSpawnerDressesComputerSnailsUp() {

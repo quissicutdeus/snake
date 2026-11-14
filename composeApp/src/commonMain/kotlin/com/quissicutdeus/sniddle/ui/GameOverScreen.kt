@@ -73,7 +73,7 @@ fun GameOverScreen(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding()
             .imePadding(),
         contentAlignment = Alignment.Center,
@@ -193,7 +193,9 @@ internal fun UnlockBanner(
                 else -> s
             }
         }
-    val names = unlocked.joinToString(" and ") { (it.item as? Labelled)?.label ?: it.item.name }
+    // "Top hat and Stars", or "Top hat, Stars and Propeller cap" for more.
+    val labels = unlocked.map { (it.item as? Labelled)?.label ?: it.item.name }
+    val names = if (labels.size <= 2) labels.joinToString(" and ") else labels.dropLast(1).joinToString(", ") + " and " + labels.last()
     Surface(modifier, shape = RoundedCornerShape(24.dp), color = KidColors.Sunny) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             SnailPicture(wearing, Modifier.size(64.dp))
@@ -242,7 +244,7 @@ private fun WhoPlayedPanel(
             Text(
                 "New high score! Who played?",
                 style = MaterialTheme.typography.titleLarge,
-                color = KidColors.Ink,
+                color = KidColors.Text,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(12.dp))

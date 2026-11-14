@@ -79,6 +79,8 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.VERSION_NAME, for the version on the title screen.
+        buildConfig = true
     }
 
     // Android Lint (+ Slack's Compose rules): sniddle.quality switches every

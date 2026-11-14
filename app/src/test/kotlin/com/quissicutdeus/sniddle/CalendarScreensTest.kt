@@ -26,13 +26,14 @@ import java.time.LocalDate
 class CalendarScreensTest : ScreenTest() {
     private fun launchOn(date: LocalDate) {
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, { date.toDay() }, NoSound, NoBuzz) }
+        // With a version, so the seasonal title screenshots show it on grass, leaves and snow.
+        compose.setContent { SniddleApp(storage, { date.toDay() }, NoSound, NoBuzz, version = "0.2.8") }
         advance(800)
     }
 
     @Test fun aKidSetsTheirBirthdayInMySnail() {
         launchOn(LocalDate.of(2026, 9, 1))
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         scrollMySnailToBottom()
         compose.onNodeWithText("🎂 Add my birthday").performClick()
@@ -69,7 +70,7 @@ class CalendarScreensTest : ScreenTest() {
         snap("birthday_title")
         advance(4000)
         snap("birthday_title_after")
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         scrollMySnailToBottom()
         compose.onNodeWithContentDescription("Birthday cake, locked: On your birthday!", substring = true).assertExists()
@@ -136,10 +137,19 @@ class CalendarScreensTest : ScreenTest() {
         assertNull(me.birthday)
     }
 
+    /** The title shows the season's floor (wrapping paper in December); a game sometimes gets dirt or space instead. */
     @Test fun theArenaFollowsTheSeasons() {
-        assertEquals(ArenaSeason.SNOW, Profile(storage) { Day(2026, 12, 20) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.SNOW, Profile(storage) { Day(2027, 1, 10) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.WRAPPING_PAPER, Profile(storage) { Day(2026, 12, 1) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.WRAPPING_PAPER, Profile(storage) { Day(2026, 12, 20) }.todaysOptions().arena)
         assertEquals(ArenaSeason.AUTUMN, Profile(storage) { Day(2026, 10, 20) }.todaysOptions().arena)
-        assertEquals(ArenaSeason.GRASS, Profile(storage) { Day(2026, 5, 20) }.todaysOptions().arena)
+        val may = Profile(storage) { Day(2026, 5, 20) }
+        assertEquals(ArenaSeason.GRASS, may.todaysOptions().arena)
+        val rng = kotlin.random.Random(4)
+        val games = List(100) { may.gameArena(rng) }.toSet()
+        assertEquals(setOf(ArenaSeason.GRASS, ArenaSeason.DIRT, ArenaSeason.SPACE), games)
+        val christmas = Profile(storage) { Day(2026, 12, 25) }
+        assertEquals(setOf(ArenaSeason.WRAPPING_PAPER), List(20) { christmas.gameArena(rng) }.toSet())
     }
 
     @Test fun theTitleAndTheGameShowTheSnow() {

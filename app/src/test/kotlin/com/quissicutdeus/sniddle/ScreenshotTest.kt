@@ -71,9 +71,16 @@ class ScreenshotTest : ScreenTest() {
         name: String,
         settings: Settings = Settings(),
     ) {
-        show { TitleScreen(style, {}, {}, {}, settings, {}, today.arena, today.season) }
+        show { TitleScreen(style, {}, {}, {}, settings, {}, today.arena, today.season, version = "0.2.8") }
         advance(1500)
         snap(name)
+    }
+
+    /** The installed version sits small at the bottom of the title screen, for a grown-up to read. */
+    @Test fun theTitleScreenShowsTheVersion() {
+        show { TitleScreen(style, {}, {}, {}, Settings(), {}, today.arena, today.season, version = "0.2.8") }
+        advance(100)
+        compose.onNodeWithText("v0.2.8").assertExists()
     }
 
     private fun playScene(name: String) {
@@ -154,7 +161,7 @@ class ScreenshotTest : ScreenTest() {
         val launch = launchApp()
         compose.onNodeWithText(alreadyEarned).assertExists()
         snap(name)
-        assertEquals(setOf("Hat.TOP_HAT", "Pattern.STARS"), storage.player(0).loadAnnounced())
+        assertEquals(setOf("Hat.TOP_HAT", "Pattern.STARS", "Hat.PROPELLER"), storage.player(0).loadAnnounced())
         compose.onNodeWithText(alreadyEarned).performClick()
         advance(100)
         compose.onNodeWithText(alreadyEarned).assertDoesNotExist()
@@ -312,7 +319,8 @@ class ScreenshotTest : ScreenTest() {
 
     private fun highScoresScene(name: String) {
         val styles = listOf(style) + (1..3).map { SnailStyle.random(kotlin.random.Random(it)) }
-        listOf("Caleb" to 212, "Mya" to 180, "Dad" to 150, "Caleb" to 99, "Mya" to 64).forEachIndexed { i, (n, s) ->
+        val scores = listOf("Caleb" to 212, "Mya" to 180, "Lily" to 165, "Dad" to 150, "Silly" to 120, "Caleb" to 99, "Mya" to 64)
+        scores.forEachIndexed { i, (n, s) ->
             storage.addScore(ScoreEntry(n, s, i, styles[i % styles.size], 1000L + i))
         }
         show { HighScoresScreen(storage, highlight = 1001L, onPlay = {}, onBack = {}) }
@@ -361,7 +369,39 @@ class ScreenshotTest : ScreenTest() {
     @Test
     fun highScoresPortrait() = highScoresScene("high_scores_portrait")
 
-    // ---- Tablet (Pixel Tablet size), landscape ----
+    // ---- Night: the phone set to dark, so the menus use their night look ----
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun mySnailNight() = mySnailScene("my_snail_night")
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun highScoresNight() = highScoresScene("high_scores_night")
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun gameOverNight() = gameOverScene("game_over_night")
+
+    /** The title with the kids' tiles, then the grown-ups question over it. */
+    @Config(qualifiers = "+night")
+    @Test
+    fun titleAndGrownUpsNight() {
+        storage.newsSeen = WhatsNew.last().number
+        storage.player(0).apply {
+            saveStyle(style)
+            saveSnailName("Caleb")
+        }
+        storage.addPlayer(sirNoodles)
+        storage.player(1).saveSnailName("Mya")
+        launchApp()
+        snap("title_night")
+        compose.onNodeWithContentDescription("Grown-ups: bedtime timer").performClick()
+        advance(300)
+        snap("grown_ups_night")
+    }
+
+    // ---- Tablet (10-inch), landscape ----
 
     @Config(qualifiers = TABLET)
     @Test
@@ -375,13 +415,13 @@ class ScreenshotTest : ScreenTest() {
     @Test
     fun mySnailTablet() = mySnailScene("my_snail_tablet")
 
-    // ---- Oldest supported Android (minSdk), Galaxy Note 20 size ----
+    // ---- Oldest supported Android (minSdk), on a long, narrow phone ----
 
-    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Config(sdk = [26], qualifiers = WIDE_PHONE)
     @Test
-    fun titleOldestAndroid() = titleScene("title_android11")
+    fun titleOldestAndroid() = titleScene("title_oldest_android")
 
-    @Config(sdk = [30], qualifiers = NOTE_20)
+    @Config(sdk = [26], qualifiers = WIDE_PHONE)
     @Test
-    fun playingOldestAndroid() = playScene("game_android11")
+    fun playingOldestAndroid() = playScene("game_oldest_android")
 }

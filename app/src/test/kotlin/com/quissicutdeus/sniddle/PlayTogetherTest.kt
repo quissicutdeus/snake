@@ -44,6 +44,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.random.Random
 
 /** Two kids on one screen: the button, picking who plays, both halves steering, comebacks and the end screen. */
 @Config(qualifiers = TABLET)
@@ -72,13 +73,13 @@ class PlayTogetherTest : ScreenTest() {
         snap("together_title_tablet")
     }
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
     fun titleOffersPlayTogetherOnABigPhoneSideways() {
         seedKids()
         launchApp()
         compose.onNodeWithText("Play together").assertExists()
-        snap("together_title_note20")
+        snap("together_title_wide_phone")
     }
 
     @Config(qualifiers = "w800dp-h360dp-land-xxhdpi")
@@ -219,9 +220,9 @@ class PlayTogetherTest : ScreenTest() {
 
     @Test fun bothHalvesSteerTablet() = bothHalvesSteer("together_playing_tablet")
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
-    fun bothHalvesSteerNote20() = bothHalvesSteer("together_playing_note20")
+    fun bothHalvesSteerWidePhone() = bothHalvesSteer("together_playing_wide_phone")
 
     /** A big snail gobbles Mya: "Oops!" in her half, and three seconds later she's back, small and blinking. */
     @Test fun aGobbledKidComesBack() {
@@ -314,7 +315,7 @@ class PlayTogetherTest : ScreenTest() {
         assertEquals(listOf(emptyList(), emptyList<Any>()), recordTogether(me, storage, guest, season = emptySet()))
     }
 
-    /** Gentle only when both kids have little kid mode on (a guest isn't little); both kids' holidays and the season's arena. */
+    /** Gentle only when both kids have little kid mode on (a guest isn't little); both kids' holidays; a floor like a one-player game's. */
     @Test fun twoPlayerOptionsFollowBothKids() {
         seedKids(three = false)
         val june2 = Day(2026, 6, 2)
@@ -326,10 +327,11 @@ class PlayTogetherTest : ScreenTest() {
         assertEquals("a guest isn't little", Difficulty.NORMAL, me.togetherOptions(GUEST_ID).difficulty)
         storage.player(1).saveLittleKid(true)
         assertEquals(Difficulty.LITTLE, me.togetherOptions(1).difficulty)
-        // Mya's birthday dresses up the computer snails, on the season's arena, like a one-player game on her birthday.
+        // Mya's birthday dresses up the computer snails, like a one-player game on her birthday.
         assertTrue(Holiday.BIRTHDAY in me.togetherOptions(1).season)
         assertFalse(Holiday.BIRTHDAY in me.togetherOptions(GUEST_ID).season)
-        assertEquals(me.todaysOptions().arena, me.togetherOptions(1).arena)
+        // The floor is picked like a one-player game's: the same pick for the same throw of the dice.
+        assertEquals(me.gameArena(Random(7)), me.togetherOptions(1, Random(7)).arena)
     }
 
     /** Bedtime counts a two-player game too, stops it at a calm moment, counts it for both kids and shows the rest screen. */
@@ -375,7 +377,7 @@ class PlayTogetherTest : ScreenTest() {
 
     @Test fun endScreenTablet() = endScreen("together_over_tablet")
 
-    @Config(qualifiers = NOTE_20)
+    @Config(qualifiers = WIDE_PHONE)
     @Test
-    fun endScreenNote20() = endScreen("together_over_note20")
+    fun endScreenWidePhone() = endScreen("together_over_wide_phone")
 }

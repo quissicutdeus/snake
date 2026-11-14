@@ -410,7 +410,7 @@ jobs:
           label=""
           case $VERSION_NAME in 0.*) label=" (beta)" ;; esac
           cat > notes.md <<NOTES
-          Sniddle $VERSION_NAME$label for Android 11 and newer, and iPhone and iPad on iOS 16 and newer.
+          Sniddle $VERSION_NAME$label for Android 8 and newer, and iPhone and iPad on iOS 16 and newer.
 
           **Android:** open this page on the phone, tap **sniddle.apk**, then open
           the download and allow installing apps from that source when Android asks.

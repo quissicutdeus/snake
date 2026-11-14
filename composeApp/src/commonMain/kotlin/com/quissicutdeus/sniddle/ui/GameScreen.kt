@@ -50,6 +50,7 @@ import com.quissicutdeus.sniddle.ComposeCanvas2D
 import com.quissicutdeus.sniddle.game.Difficulty
 import com.quissicutdeus.sniddle.game.audio.Sound
 import com.quissicutdeus.sniddle.game.audio.SoundCues
+import com.quissicutdeus.sniddle.game.model.ArenaSeason
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.render.Buzz
 import com.quissicutdeus.sniddle.game.render.Camera
@@ -107,9 +108,15 @@ fun GameScreen(
     playerName: String,
     onGameOver: (GameResult) -> Unit,
     onQuit: () -> Unit,
-    /** Today's holidays (and birthday) and arena season, see [Profile.todaysOptions]. */
+    /**
+     * Today's holidays (and birthday) and the season's floor, see
+     * [Profile.todaysOptions]. A game saved by an older version, which didn't
+     * keep its floor, carries on on this floor.
+     */
     options: SimOptions,
     modifier: Modifier = Modifier,
+    /** A new game's floor, see [Profile.gameArena]; a saved game carries on on its own. */
+    newGameArena: ArenaSeason = options.arena,
     settings: Settings = Settings(),
     onSettingsChange: (Settings) -> Unit = {},
     onSound: (Sound) -> Unit = {},
@@ -124,7 +131,7 @@ fun GameScreen(
     /** This kid plays in little kid mode (a saved game carries on as it was saved, though). */
     littleKid: Boolean = false,
 ) {
-    val game = rememberGame(key, style, playerName, options.copy(difficulty = difficultyFor(littleKid)))
+    val game = rememberGame(key, style, playerName, options.copy(difficulty = difficultyFor(littleKid)), newGameArena)
     var paused by rememberSaveable(key) { mutableStateOf(false) }
     val tips = rememberFirstGameTips(key, showTips)
     val nap = rememberBedtimeInGame(key, bedtime)
@@ -164,7 +171,8 @@ fun GameScreen(
 /**
  * A new game for [key], or the one saved with the screen: if Android closes
  * the app in the background, the player's snail is saved with the screen and
- * comes back (paused, as hard as it was) in a fresh world. See SavedRun.
+ * comes back (paused, as hard as it was, on the same floor) in a fresh
+ * world. See SavedRun. A new game is played on [newGameArena].
  */
 @Composable
 private fun rememberGame(
@@ -172,6 +180,7 @@ private fun rememberGame(
     style: SnailStyle,
     playerName: String,
     options: SimOptions,
+    newGameArena: ArenaSeason,
 ): GameHolder {
     val density = LocalDensity.current
     val newStick = { with(density) { Thumbstick(deadZone = StickDeadZone.toPx(), leash = StickLeash.toPx()) } }
@@ -180,7 +189,9 @@ private fun rememberGame(
             save = { it.sim.snapshot()?.encode() },
             restore = { text -> SavedRun.decode(text)?.let { GameHolder(style, newStick(), it, options = options) } },
         )
-    return rememberSaveable(key, saver = saver) { GameHolder(style, newStick(), playerName = playerName, options = options) }
+    return rememberSaveable(key, saver = saver) {
+        GameHolder(style, newStick(), playerName = playerName, options = options.copy(arena = newGameArena))
+    }
 }
 
 /** After being gobbled, the world keeps going this long (the GULP! effect) before the game-over screen. */

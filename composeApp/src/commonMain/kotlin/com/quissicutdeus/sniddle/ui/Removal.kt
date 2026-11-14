@@ -25,7 +25,7 @@ import androidx.compose.ui.window.Dialog
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.render.Mood
 
-/** Taking the kid on My Snail off the phone: who they are (for the question) and what to do once they're sure. */
+/** Taking the kid on My Snails off the phone: who they are (for the question) and what to do once they're sure. */
 class Removal(
     /** Their snail's name, or "Player 2". */
     val name: String,
@@ -67,13 +67,13 @@ private fun RemoveDialog(
                 Text(
                     "Remove ${removal.name}'s snail?",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
                 Text(
                     "Its looks and unlocks go away for good.",
                     style = MaterialTheme.typography.titleMedium,
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
                 KidButton("Keep", onKeep, color = KidColors.DeepGreen)

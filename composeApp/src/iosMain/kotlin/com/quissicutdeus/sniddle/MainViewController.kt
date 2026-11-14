@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.ui.window.ComposeUIViewController
 import com.quissicutdeus.sniddle.ui.SniddleApp
+import platform.Foundation.NSBundle
 import platform.UIKit.UIViewController
 
 /**
@@ -17,9 +18,11 @@ fun MainViewController(): UIViewController {
     val storage = Storage(UserDefaultsStore())
     val sound = IosSound()
     val uiState = PersistedUiState()
+    // The release number CI builds in (MARKETING_VERSION in iosApp/project.yml).
+    val version = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: ""
     return ComposeUIViewController {
         CompositionLocalProvider(LocalSaveableStateRegistry provides uiState.registry) {
-            SniddleApp(storage, IosCalendar, sound, remember { IosBuzzer() })
+            SniddleApp(storage, IosCalendar, sound, remember { IosBuzzer() }, version)
         }
     }
 }

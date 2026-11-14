@@ -1,11 +1,13 @@
 package com.quissicutdeus.sniddle.game
 
+import com.quissicutdeus.sniddle.game.model.ArenaSeason
 import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.PowerType
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.sim.GameSim
 import com.quissicutdeus.sniddle.game.sim.SavedRun
+import com.quissicutdeus.sniddle.game.sim.SimOptions
 import com.quissicutdeus.sniddle.game.sim.SteerInput
 import kotlin.math.abs
 import kotlin.random.Random
@@ -73,6 +75,29 @@ class SavedRunTest {
         assertEquals(2, run.hearts)
         assertEquals("Me; too", run.name)
         assertEquals(0f, run.biggestSeconds)
+    }
+
+    /** A game on a picked floor comes back on that floor, not on the one the new world would have had. */
+    @Test fun aSavedGameComesBackOnTheSameFloor() {
+        val before = GameSim(seed = 5, playerStyle = style, options = SimOptions(arena = ArenaSeason.SPACE))
+        val text = before.snapshot()!!.encode()
+        val after = GameSim(seed = 99, options = SimOptions(arena = ArenaSeason.GRASS), resume = SavedRun.decode(text))
+        assertEquals(ArenaSeason.SPACE, after.arena)
+        assertEquals(ArenaSeason.SPACE, after.snapshot()!!.arena, "and keeps it if saved again")
+    }
+
+    /** A game saved before floors were picked per game still comes back, on the floor the new game's options say. */
+    @Test fun aGameSavedWithoutAFloorComesBackOnTheSeasonsFloor() {
+        val run = assertNotNull(SavedRun.decode("run3;300.0;320.0;2;1;0.0,0.0,0.0;4.5;normal;1,2,STRIPES,GOOGLY,NONE;Me; too"))
+        assertNull(run.arena)
+        assertEquals(4.5f, run.biggestSeconds)
+        assertEquals("Me; too", run.name)
+        val season = ArenaSeason.forTitle(month = 10, day = 20)
+        val sim = GameSim(seed = 1, options = SimOptions(arena = season), resume = run)
+        assertEquals(ArenaSeason.AUTUMN, sim.arena)
+        // A floor from a newer version comes back on today's floor too, rather than losing the game.
+        val newer = assertNotNull(SavedRun.decode(run.copy(arena = ArenaSeason.DIRT).encode().replace(";dirt;", ";lava;")))
+        assertNull(newer.arena)
     }
 
     @Test fun aVeryLongSnailComesBackInsideTheFenceAndPlaysOn() {

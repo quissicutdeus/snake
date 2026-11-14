@@ -61,7 +61,7 @@ fun HighScoresScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter,
     ) {
@@ -122,7 +122,7 @@ private fun ScoreList(
                 Text(
                     "No scores yet.\nGo play and get big!",
                     style = MaterialTheme.typography.titleLarge,
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -145,8 +145,10 @@ private fun ScoreRow(
             1 -> Color(0xFFFFC928)
             2 -> Color(0xFFC0C8D0)
             3 -> Color(0xFFE0A060)
-            else -> Color(0xFFE8F5E0)
+            else -> KidColors.Chip
         }
+    // The kid's new score sits on yellow, which keeps dark text day and night.
+    val onRow = if (highlighted) KidColors.Ink else KidColors.Text
     Row(
         Modifier
             .fillMaxWidth()
@@ -163,7 +165,7 @@ private fun ScoreRow(
                 .background(medal),
             contentAlignment = Alignment.Center,
         ) {
-            Text("$rank", style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
+            Text("$rank", style = MaterialTheme.typography.titleLarge, color = if (rank <= 3) KidColors.Ink else onRow)
         }
         SnailPicture(e.style, Modifier.padding(horizontal = 8.dp).size(56.dp))
         Column(Modifier.weight(1f)) {
@@ -172,7 +174,7 @@ private fun ScoreRow(
                     e.name,
                     Modifier.weight(1f, fill = false),
                     style = MaterialTheme.typography.titleLarge,
-                    color = KidColors.Ink,
+                    color = onRow,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -185,10 +187,10 @@ private fun ScoreRow(
                     else -> "ate ${e.snailsEaten} snails"
                 },
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFF55606A),
+                color = if (highlighted) Color(0xFF55606A) else KidColors.SubtleText,
             )
         }
-        Text("${e.score}", style = MaterialTheme.typography.headlineMedium, color = KidColors.Ink)
+        Text("${e.score}", style = MaterialTheme.typography.headlineMedium, color = onRow)
     }
 }
 
@@ -236,7 +238,7 @@ private fun HoldToReset(
             if (holding) "Keep holding…" else "Hold to reset",
             Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.titleMedium,
-            color = KidColors.Ink,
+            color = KidColors.Text,
             textAlign = TextAlign.Center,
         )
     }

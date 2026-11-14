@@ -78,6 +78,10 @@ class Snail(
     var age = 0f
         internal set
 
+    /** Whether any of this snail has been on a kid's screen. Such a snail is never quietly removed (see Spawner). */
+    var seenByKid = false
+        internal set
+
     private val trail = Trail()
 
     // Body circles sampled from the head (index 0) towards the tail.

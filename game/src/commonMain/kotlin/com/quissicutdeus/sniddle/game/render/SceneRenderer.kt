@@ -110,14 +110,14 @@ object SceneRenderer {
         me: Snail? = sim.player,
     ) {
         val ui = uiUnit(c)
-        c.fillRect(0f, 0f, c.width, c.height, ArenaArt.outside(sim.options.arena))
+        c.fillRect(0f, 0f, c.width, c.height, ArenaArt.outside(sim.arena))
         c.save()
         c.translate(c.width / 2f + fx.shakeX, c.height / 2f + fx.shakeY)
         c.scale(cam.scale)
         c.translate(-cam.x, -cam.y)
         View.set(cam, c.width, c.height)
 
-        ArenaArt.drawFloor(c, sim.options.arena, sim.world.width, sim.world.height)
+        ArenaArt.drawFloor(c, sim.arena, sim.world.width, sim.world.height)
         drawFood(c, sim, time)
         drawSnails(c, sim, me, time)
         // Name tags only in play, not behind the menus.

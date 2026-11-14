@@ -38,7 +38,7 @@ fun difficultyFor(on: Boolean): Difficulty = if (on) Difficulty.LITTLE else Diff
 const val LITTLE_KID_EMOJI = "🐣"
 
 /**
- * My Snail's big "Little kid mode" switch: the whole row flips it, and a
+ * My Snails' big "Little kid mode" switch: the whole row flips it, and a
  * line under it says what it does, so a grown-up knows what they're turning on.
  */
 @Composable
@@ -51,7 +51,7 @@ internal fun LittleKidSwitch(
             .widthIn(max = 420.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(if (mode.on) Color(0xFFFFF1B8) else Color(0xFFE8F5E0))
+            .background(if (mode.on) KidColors.ChipOn else KidColors.Chip)
             .toggleable(value = mode.on, role = Role.Switch, onValueChange = mode.onChange)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -62,8 +62,8 @@ internal fun LittleKidSwitch(
                 .weight(1f)
                 .padding(horizontal = 12.dp),
         ) {
-            Text("Little kid mode", style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
-            Text("Gentler snails and more food", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF55606A))
+            Text("Little kid mode", style = MaterialTheme.typography.titleLarge, color = KidColors.Text)
+            Text("Gentler snails and more food", style = MaterialTheme.typography.bodyMedium, color = KidColors.SubtleText)
         }
         Switch(
             checked = mode.on,

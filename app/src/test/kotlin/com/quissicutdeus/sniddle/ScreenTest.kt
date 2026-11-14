@@ -61,10 +61,10 @@ import java.io.File
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Screen shapes: a phone held upright, a tablet, and a Galaxy Note 20 sized phone. */
+/** Screen shapes: a phone held upright, a tablet, and a long, narrow phone held sideways. */
 internal const val PORTRAIT = "w360dp-h780dp-port-xxhdpi"
 internal const val TABLET = "w1280dp-h800dp-land-xhdpi"
-internal const val NOTE_20 = "w915dp-h412dp-land-xxhdpi"
+internal const val WIDE_PHONE = "w915dp-h412dp-land-xxhdpi"
 
 /**
  * What every screenshot test shares: Robolectric's native graphics, a phone in
@@ -100,7 +100,7 @@ abstract class ScreenTest {
     /** Today's holidays and arena, as the app picks them for a game (so the screenshots follow the time of year). */
     protected val today get() = todaysOptions(null, SystemCalendar.today())
 
-    protected val alreadyEarned = "You've already earned: Top hat and Stars!"
+    protected val alreadyEarned = "You've already earned: Top hat, Stars and Propeller cap!"
 
     /**
      * Ten old high scores, one past length 100: enough for the top hat and stars, never cheered.
@@ -127,7 +127,7 @@ abstract class ScreenTest {
     /** The saved data straight from the phone, as the version before players wrote it. */
     protected fun rawPrefs(): SharedPreferences = RuntimeEnvironment.getApplication().getSharedPreferences("sniddle", Context.MODE_PRIVATE)
 
-    /** Scrolls My Snail's choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
+    /** Scrolls My Snails' choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
     protected fun scrollMySnailToBottom() {
         repeat(4) {
             compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }

@@ -232,7 +232,7 @@ private fun PickPartnerScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding(),
         contentAlignment = Alignment.Center,
     ) {
@@ -272,8 +272,8 @@ private fun KidCard(
         Modifier
             .width(CardSize)
             .clip(RoundedCornerShape(24.dp))
-            .background(if (isPicked) Color.White else Color(0x99FFFFFF))
-            .border(if (isPicked) 5.dp else 2.dp, if (isPicked) KidColors.Sunny else Color(0x552B2B3A), RoundedCornerShape(24.dp))
+            .background(if (isPicked) KidColors.Card else KidColors.CardFaint)
+            .border(if (isPicked) 5.dp else 2.dp, if (isPicked) KidColors.Sunny else KidColors.OutlineFaint, RoundedCornerShape(24.dp))
             .semantics {
                 selected = isPicked
                 contentDescription = "Play with ${kid.label}"
@@ -282,7 +282,13 @@ private fun KidCard(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         SnailPicture(kid.style, Modifier.size(CardSize - 30.dp))
-        Text(kid.label, style = MaterialTheme.typography.titleMedium, color = KidColors.Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            kid.label,
+            style = MaterialTheme.typography.titleMedium,
+            color = KidColors.Text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

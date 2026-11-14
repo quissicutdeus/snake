@@ -33,7 +33,7 @@ data class SimOptions(
     val season: Set<Holiday> = emptySet(),
     /** How hard the game is (a saved game comes back as it was saved, whatever this says). */
     val difficulty: Difficulty = Difficulty.NORMAL,
-    /** What the arena floor looks like: grass, autumn leaves or snow. */
+    /** What the arena floor looks like (a saved game comes back on its own floor, if it kept one). */
     val arena: ArenaSeason = ArenaSeason.GRASS,
 )
 
@@ -55,6 +55,9 @@ class GameSim(
 
     /** How hard this game is: as saved when carrying on a game, else from [options]. */
     val difficulty: Difficulty = resume?.difficulty ?: options.difficulty
+
+    /** The floor: as saved when carrying on a game (if the save kept one), else from [options]. */
+    val arena: ArenaSeason = resume?.arena ?: options.arena
     val world = World(options.width, options.height)
     internal val grid = SpatialGrid(options.width, options.height)
 
@@ -81,6 +84,9 @@ class GameSim(
 
     /** Effects queue: filled by steps, cleared at the start of each [update]. */
     val events = ArrayList<GameEvent>()
+
+    // Each kid's screen (see View); declared before the arena is filled below.
+    private val views = HashMap<Snail, View>()
 
     /** The player (the first kid, in a two-player game). */
     var player: Snail? = null
@@ -143,7 +149,18 @@ class GameSim(
         val p = player ?: return null
         // A two-player game isn't carried on: after Android closes the app, the kids start afresh.
         if (gameOver || !p.alive || together != null) return null
-        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snailsEaten, p.powerTime.toList(), biggestSeconds, difficulty)
+        return SavedRun(
+            p.name,
+            p.style,
+            p.length,
+            p.bestLength,
+            p.hearts,
+            p.snailsEaten,
+            p.powerTime.toList(),
+            biggestSeconds,
+            difficulty,
+            arena,
+        )
     }
 
     /**
@@ -272,6 +289,37 @@ class GameSim(
     }
 
     private val board = ArrayList<Snail>()
+
+    /**
+     * What each kid's screen shows right now, as the game screen reports it
+     * every frame ([setView]): the camera's centre and how far it sees to
+     * each side. The spawner keeps new snails out of exactly that. Before
+     * the first frame (and in tests) there is none, and it assumes the widest
+     * screen any phone could have instead.
+     */
+    class View(
+        var x: Float,
+        var y: Float,
+        var halfWidth: Float,
+        var halfHeight: Float,
+    )
+
+    /** [kid]'s screen is centred on ([x], [y]) and sees [halfWidth] and [halfHeight] to each side, in world units. */
+    fun setView(
+        kid: Snail,
+        x: Float,
+        y: Float,
+        halfWidth: Float,
+        halfHeight: Float,
+    ) {
+        val v = views.getOrPut(kid) { View(x, y, halfWidth, halfHeight) }
+        v.x = x
+        v.y = y
+        v.halfWidth = halfWidth
+        v.halfHeight = halfHeight
+    }
+
+    internal fun viewOf(kid: Snail): View? = views[kid]
 
     /** The longest an AI snail may grow right now. */
     fun aiMaxLength(): Float {
