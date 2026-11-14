@@ -20,9 +20,9 @@ class AiTest {
         val sim = emptySim(aiEnabled = true)
         val small = sim.ai(2000f, 2000f, EAST, 100f, name = "Small")
         val big = sim.ai(2250f, 2000f, NORTH, 800f, name = "Big")
-        big.brain = null // just drives straight
+        sim.brains.remove(big) // just drives straight
         sim.steps(30)
-        assertEquals(AiMode.FLEE, small.brain!!.mode)
+        assertEquals(AiMode.FLEE, sim.brains.getValue(small).mode)
         sim.steps(150)
         assertTrue(small.alive)
         assertTrue(dist(small.x, small.y, big.x, big.y) > 250f)
@@ -32,11 +32,11 @@ class AiTest {
         val sim = emptySim(aiEnabled = true)
         val hunter = sim.ai(2000f, 2000f, NORTH, 600f, name = "Hunter")
         val prey = sim.ai(2300f, 2000f, SOUTH, 150f, name = "Prey")
-        prey.brain = null
+        sim.brains.remove(prey)
         var chased = false
         repeat(180) {
             sim.step()
-            if (hunter.brain!!.mode == AiMode.CHASE) chased = true
+            if (sim.brains.getValue(hunter).mode == AiMode.CHASE) chased = true
         }
         assertTrue(chased)
     }

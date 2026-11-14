@@ -123,7 +123,7 @@ internal fun GameSim.damage(
     bounce(victim, fromX, fromY, by)
     victim.invulnerable = GameConfig.HURT_INVULNERABLE_SECONDS
     emit(GameEvent.Hurt(victim.id, victim.x, victim.y))
-    victim.brain?.startFleeing(by)
+    brains[victim]?.startFleeing(by)
 }
 
 /** [eater] swallows [victim] whole and grows. */
@@ -192,7 +192,7 @@ internal fun GameSim.sever(
     victim.updateSegments()
     victim.invulnerable = max(victim.invulnerable, GameConfig.CUT_PROTECT_SECONDS)
     emit(GameEvent.TailCut(by.id, victim.id, victim.segX[victim.segCount - 1], victim.segY[victim.segCount - 1], victim.style.bodyColor))
-    victim.brain?.startFleeing(by)
+    brains[victim]?.startFleeing(by)
     return dropped
 }
 

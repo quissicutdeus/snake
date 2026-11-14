@@ -60,6 +60,16 @@ class GameSim(
 
     /** Where the snails' heads are, rebuilt each step for eating (see [eatFood]). */
     internal val heads = HeadGrid(options.width, options.height)
+
+    /** The AI's scratch space for thinking (see [AiScan]). */
+    internal val aiScan = AiScan()
+
+    /**
+     * Each computer snail's memory (players have none). Keyed by the snail
+     * itself, so looking one up every step allocates nothing.
+     */
+    internal val brains = HashMap<Snail, AiBrain>()
+
     private val spawner = Spawner(options.aiCount)
     private val contacts = ArrayList<Contact>()
     private val headPairs = HashSet<Long>()
@@ -222,6 +232,7 @@ class GameSim(
         for (c in contacts) resolveContact(c)
 
         // 4. Clean up and refill.
+        forgetBrainsOfTheGone()
         world.snails.removeAll { !it.alive && !it.isPlayer }
         spawner.update(this, dt)
         trackBiggest(dt)
@@ -242,7 +253,7 @@ class GameSim(
             playerList.add(s)
             if (player == null) player = s
         } else {
-            s.brain = AiBrain(rng)
+            brains[s] = AiBrain(rng)
         }
         s.layStraightBody()
         world.snails.add(s)

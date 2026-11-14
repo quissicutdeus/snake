@@ -28,6 +28,7 @@ class Snail(
     var y = y
         private set
     var heading = heading
+        internal set
     var length = length
         private set(value) {
             field = value
@@ -48,31 +49,36 @@ class Snail(
         internal set
 
     var hearts = if (isPlayer) GameConfig.PLAYER_HEARTS else GameConfig.AI_HEARTS
+        internal set
     var alive = true
+        internal set
     var snailsEaten = 0
+        internal set
 
     /** Seconds of protection left (blinking after being hurt, or after losing the tail). */
     var invulnerable = 0f
+        internal set
 
     /** Seconds left during which steering is ignored (after a bounce or a wall). */
     var steerLock = 0f
+        internal set
 
     /** Seconds left of extra knock-back speed after a bounce. */
     var knockback = 0f
+        internal set
 
     /** Seconds since the snail last ate something (used for the "squash" effect). */
     var sinceAte = 10f
+        internal set
 
     /** Seconds left of each power (indexed by [PowerType.ordinal]). */
     internal val powerTime = FloatArray(PowerType.entries.size)
 
     /** Seconds since spawned. */
     var age = 0f
+        internal set
 
     private val trail = Trail()
-
-    /** AI state; null for the player. */
-    var brain: com.quissicutdeus.sniddle.game.sim.AiBrain? = null
 
     // Body circles sampled from the head (index 0) towards the tail.
     var segCount = 0

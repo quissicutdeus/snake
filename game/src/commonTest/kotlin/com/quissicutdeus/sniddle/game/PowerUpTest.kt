@@ -106,7 +106,7 @@ class PowerUpTest {
         kid.givePower(PowerType.STRENGTH)
         assertEquals(Mood.SCARED, SceneRenderer.moodFor(big, kid))
         sim.steps(20)
-        assertEquals(AiMode.FLEE, big.brain!!.mode)
+        assertEquals(AiMode.FLEE, sim.brains.getValue(big).mode)
     }
 
     @Test fun powerUpsAppearOverTimeUpToTheMaximumAndVanishLater() {

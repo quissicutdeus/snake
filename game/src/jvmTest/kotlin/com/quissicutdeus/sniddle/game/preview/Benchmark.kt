@@ -95,7 +95,7 @@ private fun playTogether(
 ): Pair<Double, Long> {
     val sim = if (twoKids) GameSim(seed = seed, secondPlayer = SecondPlayer("Bot 2", SnailStyle.DEFAULT)) else GameSim(seed = seed)
     val kids = sim.players
-    kids.forEachIndexed { i, kid -> kid.brain = AiBrain(Random(seed + i)) }
+    kids.forEachIndexed { i, kid -> sim.brains[kid] = AiBrain(Random(seed + i)) }
     val inputs = kids.map { SteerInput() }
     val canvas = CountingCanvas(if (twoKids) TABLET_W / 2f else TABLET_W, TABLET_H)
     val cameras = kids.map { Camera() }
@@ -141,7 +141,7 @@ private fun playGame(
 ): Result {
     val sim = GameSim(seed = seed, options = SimOptions(arena = arena))
     val p = sim.player!!
-    p.brain = AiBrain(Random(seed))
+    sim.brains[p] = AiBrain(Random(seed))
     val input = SteerInput()
     val canvas = CountingCanvas(1080f, 2340f)
     val camera = Camera()

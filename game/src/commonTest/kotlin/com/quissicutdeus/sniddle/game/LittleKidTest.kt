@@ -90,7 +90,7 @@ class LittleKidTest {
         t.seconds++
         val others = sim.world.snails.filter { it.alive && !it.isPlayer }
         t.biggerNear += others.count { compareSize(it.length, p.length) == SizeRelation.BIGGER && dist(it.x, it.y, p.x, p.y) < NEAR }
-        if (others.any { it.brain?.mode == AiMode.CHASE && it.brain?.targetSnailId == p.id }) t.chasedSeconds++
+        if (others.any { sim.brains[it]?.let { b -> b.mode == AiMode.CHASE && b.targetSnailId == p.id } == true }) t.chasedSeconds++
     }
 
     /**

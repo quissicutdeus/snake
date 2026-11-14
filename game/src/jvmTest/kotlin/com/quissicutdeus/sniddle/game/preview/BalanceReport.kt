@@ -48,7 +48,7 @@ private class Tally {
 private fun playOneGame(seed: Long) {
     val sim = GameSim(seed = seed)
     val p = sim.player!!
-    p.brain = AiBrain(Random(seed))
+    sim.brains[p] = AiBrain(Random(seed))
     val input = SteerInput()
     val tally = Tally()
     val log = StringBuilder()

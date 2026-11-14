@@ -83,7 +83,7 @@ private fun nearby(
     heading: Float,
 ) {
     val s = sim.addSnail(name, SnailStyle.random(kotlin.random.Random(name.hashCode())), false, x, y, heading, length)
-    s.brain = null // hold still-ish for the picture
+    sim.brains.remove(s) // hold still-ish for the picture
 }
 
 /** Bigger snails coming at the player from off-screen get red warning arrows; one heading away doesn't. */
@@ -98,8 +98,7 @@ private fun dangerArrows(out: File) {
         y: Float,
         heading: Float,
     ) = sim.addSnail(name, SnailStyle(color1 = color, color2 = 10, pattern = Pattern.DOTS), false, x, y, heading, 1200f).also {
-        it.brain =
-            null
+        sim.brains.remove(it)
     }
     bigOne("From the left", 0, 1100f, 2100f, 0.1f)
     bigOne("From above", 8, 2300f, 1250f, 1.9f)
@@ -350,7 +349,7 @@ private fun powerUps(out: File) {
                 3.1f,
                 1400f,
             )
-        big.brain = null
+        sim.brains.remove(big)
     }
     scene("power_ups_armor_speed.png", listOf(PowerType.ARMOR, PowerType.SPEED)) { sim, p ->
         val big =
@@ -363,6 +362,6 @@ private fun powerUps(out: File) {
                 2.3f,
                 1500f,
             )
-        big.brain = null
+        sim.brains.remove(big)
     }
 }
