@@ -3,9 +3,8 @@ package com.quissicutdeus.sniddle.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -57,7 +56,6 @@ val WhatsNew: List<News> =
  * [AlreadyEarnedBanner]: [onShown] runs once it's on screen (so it's never
  * shown again) and a tap makes it go away.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WhatsNewCard(
     news: List<News>,
@@ -67,8 +65,7 @@ fun WhatsNewCard(
 ) {
     if (news.isEmpty()) return
     LaunchedEffect(news) { onShown() }
-    // Side by side when there's room; "New!" goes on top on a narrow phone.
-    FlowRow(
+    BoxWithConstraints(
         modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
             .widthIn(max = 400.dp)
@@ -76,32 +73,51 @@ fun WhatsNewCard(
             .background(KidColors.Sunny)
             .clickable(onClickLabel = "Close", onClick = onDismiss)
             .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            "New!",
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.White,
-            modifier =
-                Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(KidColors.Berry)
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-        )
-        NewestThatFit(2.dp) {
-            news.forEach { item ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(item.emoji, fontSize = 24.sp)
-                    Text(
-                        item.line,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = KidColors.Ink,
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
+        // Side by side when there's room, the lines wrapping beside "New!" (so even a
+        // cramped title has a line to show); "New!" goes on top on a narrow phone.
+        if (maxWidth >= SIDE_BY_SIDE_WIDTH) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                NewPill()
+                NewestThatFit(2.dp, Modifier.weight(1f)) { NewsLines(news) }
             }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                NewPill()
+                NewestThatFit(2.dp) { NewsLines(news) }
+            }
+        }
+    }
+}
+
+/** Below this width the "New!" pill goes above the lines instead of beside them. */
+private val SIDE_BY_SIDE_WIDTH = 300.dp
+
+@Composable
+private fun NewPill() {
+    Text(
+        "New!",
+        style = MaterialTheme.typography.titleLarge,
+        color = Color.White,
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(50))
+                .background(KidColors.Berry)
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+    )
+}
+
+@Composable
+private fun NewsLines(news: List<News>) {
+    news.forEach { item ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(item.emoji, fontSize = 24.sp)
+            Text(
+                item.line,
+                style = MaterialTheme.typography.titleMedium,
+                color = KidColors.Ink,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
     }
 }
@@ -114,9 +130,10 @@ fun WhatsNewCard(
 @Composable
 private fun NewestThatFit(
     gap: Dp,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Layout(content) { measurables, constraints ->
+    Layout(content, modifier) { measurables, constraints ->
         val gapPx = gap.roundToPx()
         val lines = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0, maxHeight = Constraints.Infinity)) }
         var first = lines.size
