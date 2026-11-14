@@ -82,6 +82,9 @@ class GameSim(
     /** Effects queue: filled by steps, cleared at the start of each [update]. */
     val events = ArrayList<GameEvent>()
 
+    // Each kid's screen (see View); declared before the arena is filled below.
+    private val views = HashMap<Snail, View>()
+
     /** The player (the first kid, in a two-player game). */
     var player: Snail? = null
         private set
@@ -272,6 +275,37 @@ class GameSim(
     }
 
     private val board = ArrayList<Snail>()
+
+    /**
+     * What each kid's screen shows right now, as the game screen reports it
+     * every frame ([setView]): the camera's centre and how far it sees to
+     * each side. The spawner keeps new snails out of exactly that. Before
+     * the first frame (and in tests) there is none, and it assumes the widest
+     * screen any phone could have instead.
+     */
+    class View(
+        var x: Float,
+        var y: Float,
+        var halfWidth: Float,
+        var halfHeight: Float,
+    )
+
+    /** [kid]'s screen is centred on ([x], [y]) and sees [halfWidth] and [halfHeight] to each side, in world units. */
+    fun setView(
+        kid: Snail,
+        x: Float,
+        y: Float,
+        halfWidth: Float,
+        halfHeight: Float,
+    ) {
+        val v = views.getOrPut(kid) { View(x, y, halfWidth, halfHeight) }
+        v.x = x
+        v.y = y
+        v.halfWidth = halfWidth
+        v.halfHeight = halfHeight
+    }
+
+    internal fun viewOf(kid: Snail): View? = views[kid]
 
     /** The longest an AI snail may grow right now. */
     fun aiMaxLength(): Float {
