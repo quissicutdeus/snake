@@ -19,8 +19,8 @@ import kotlin.test.assertEquals
  * differs says roughly when the games went apart.
  *
  * Only what can be seen is hashed: the snails in world order, the food, the
- * power-ups, the players' powers, game over and every event. Not world.time,
- * the AI brains or anything else internal, so those can change freely.
+ * power-ups, the players' powers, game over and every event. Not the AI
+ * brains or anything else internal, so those can change freely.
  *
  * JVM only: kotlin.math sin/cos are not guaranteed to round the same on iOS.
  *

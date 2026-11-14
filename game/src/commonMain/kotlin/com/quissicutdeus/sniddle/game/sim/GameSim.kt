@@ -194,7 +194,6 @@ class GameSim(
     /** One fixed 1/60 s step, with one [SteerInput] per player (in [players] order). */
     fun step(inputs: List<SteerInput?>) {
         val dt = GameConfig.STEP
-        world.time += dt
         if (events.size > MAX_QUEUED_EVENTS) events.subList(0, MAX_QUEUED_EVENTS / 2).clear()
         for (s in world.snails) s.rememberPrevious()
 
