@@ -1,10 +1,7 @@
 package com.quissicutdeus.sniddle.game
 
-import com.quissicutdeus.sniddle.game.model.PowerType
-import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.model.dist
 import com.quissicutdeus.sniddle.game.sim.GameSim
-import com.quissicutdeus.sniddle.game.sim.SavedRun
 import com.quissicutdeus.sniddle.game.sim.SizeRelation
 import com.quissicutdeus.sniddle.game.sim.Spawner
 import com.quissicutdeus.sniddle.game.sim.compareSize
@@ -54,8 +51,7 @@ class SpawnerTest {
      * fence, from a head that was off-screen. Now they arrive coiled.
      */
     @Test fun bigSnailsArriveCoiledUpOutOfSightAndInsideTheFence() {
-        val run = SavedRun("Kid", SnailStyle.DEFAULT, 2150f, 2150f, 3, 0, List(PowerType.entries.size) { 0f })
-        val sim = GameSim(seed = 5, resume = run)
+        val sim = gameWithKid(2150f, seed = 5)
         val p = sim.player!!
         var checked = 0
 
@@ -134,8 +130,7 @@ class SpawnerTest {
      * not most of the snail.
      */
     @Test fun aNewSnailsHeadIsInTheMiddleOfItsCoil() {
-        val run = SavedRun("Kid", SnailStyle.DEFAULT, 1500f, 1500f, 3, 0, List(PowerType.entries.size) { 0f })
-        val sim = GameSim(seed = 9, resume = run)
+        val sim = gameWithKid(1500f, seed = 9)
         val s =
             sim.world.snails
                 .filter { !it.isPlayer }
