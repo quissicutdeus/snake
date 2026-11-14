@@ -42,7 +42,7 @@ jobs:
     outputs:
       name: ${{ steps.version.outputs.name }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Pick the release version (appVersion + next unused patch)
         id: version
@@ -68,9 +68,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: 21
@@ -78,7 +78,7 @@ jobs:
       # v6 caches through gradle-actions-caching, a proprietary component:
       # using it accepts https://gradle.com/legal/terms-of-use/ (agreed
       # 2026-11-10). cache-provider: basic switches to the open-source cache.
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Install Android SDK packages
         run: &sdk |
@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload reports (lint, detekt)
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lint-reports
           path: |
@@ -106,15 +106,15 @@ jobs:
     env:
       VERSION_NAME: ${{ needs.version.outputs.name }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: 21
 
       # Same Gradle cache (and terms) as the lint job.
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Install Android SDK packages
         run: *sdk
@@ -126,7 +126,7 @@ jobs:
       # asks for another Android version (@Config(sdk = ...)) downloads that
       # jar every run until the key next changes.
       - name: Cache Robolectric's Android jars
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.m2/repository/org/robolectric
           key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
@@ -134,27 +134,28 @@ jobs:
       # The Kotlin/Native compiler (several hundred MB), which Gradle downloads
       # into ~/.konan the first time it compiles the game for iOS below.
       - name: Cache the Kotlin/Native compiler
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
 
       # One Gradle run, so the game tests, the Robolectric screenshot tests and
       # the release build (R8) can overlap. Only the release APK is built: it's
-      # the one that gets installed. The game's iOS code and tests, and the
-      # shared UI's iOS code, are compiled too (Linux can compile them but not
-      # link or run them), so a change that breaks the iPhone build fails here,
-      # minutes before the macOS jobs below would.
+      # the one that gets installed. The iOS code and tests of the game and of
+      # the shared UI are compiled too (Linux can compile them but not link or
+      # run them), so a change that breaks the iPhone build fails here, minutes
+      # before the macOS jobs below would.
       - name: Tests and release APK (version ${{ env.VERSION_NAME }})
         run: >-
           ./gradlew :game:test :composeApp:testAndroidHostTest :app:testDebugUnitTest :app:assembleRelease
           :game:compileTestKotlinIosArm64 :game:compileTestKotlinIosSimulatorArm64
-          :composeApp:compileKotlinIosArm64 :composeApp:compileKotlinIosSimulatorArm64 --console=plain
+          :composeApp:compileKotlinIosArm64 :composeApp:compileKotlinIosSimulatorArm64
+          :composeApp:compileTestKotlinIosArm64 :composeApp:compileTestKotlinIosSimulatorArm64 --console=plain
           -PversionCode=${{ github.run_number }} -PversionName=${{ env.VERSION_NAME }}
 
       - name: Upload test reports
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-reports
           path: |
@@ -163,21 +164,22 @@ jobs:
             app/build/reports
 
       - name: Upload APK (optimized, install this one)
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sniddle-apk
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload screenshots
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: screenshots
           path: app/build/screenshots
 
-  # The game's rules compiled with Kotlin/Native and run on an iOS simulator,
-  # which catches what the JVM tests can't (number formatting, missing JVM
-  # APIs, the memory model). Pinned to an OS version, not macos-latest, so the
+  # The game's rules and the shared UI's own tests (among them the saved-screen
+  # encoding iOS relies on to bring a game back) compiled with Kotlin/Native and
+  # run on an iOS simulator, which catches what the JVM tests can't (number
+  # formatting, missing JVM APIs, the memory model). Pinned to an OS version, not macos-latest, so the
   # image (and its Xcode versions) only change when this file does. Apple
   # Silicon: the simulator target is iosSimulatorArm64.
   ios-tests:
@@ -194,7 +196,7 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
       XCODE_VERSION: 26.4.1
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - &xcode
         name: Xcode version
@@ -203,21 +205,21 @@ jobs:
           xcodebuild -version | grep -qx "Xcode $XCODE_VERSION"
 
       - &java
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: 21
 
       # Same Gradle cache terms as the jobs above.
       - &gradle
-        uses: gradle/actions/setup-gradle@v6.4.1
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       # Kotlin/Native's compiler and Apple toolchain bits (~1 GB), downloaded
       # by the first build into ~/.konan. Caching them is most of the time
       # (and macOS minutes) saved. The Kotlin version lives in libs.versions.toml.
       - &konan
         name: Cache Kotlin/Native toolchain
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
@@ -225,15 +227,19 @@ jobs:
       # Kotlin picks the simulator Xcode lists as its default test device, so
       # no device name is hard-coded here. linkDebugTestIosArm64 also links the
       # tests for a real (arm64) device, which the simulator run doesn't prove.
-      - name: Game tests (iosSimulatorArm64) and device test link (iosArm64)
-        run: ./gradlew :game:iosSimulatorArm64Test :game:linkDebugTestIosArm64 --console=plain
+      - name: Game and shared UI tests (iosSimulatorArm64) and device test link (iosArm64)
+        run: >-
+          ./gradlew :game:iosSimulatorArm64Test :game:linkDebugTestIosArm64
+          :composeApp:iosSimulatorArm64Test --console=plain
 
       - name: Upload test reports
         if: failure()
-        uses: actions/upload-artifact@v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ios-test-reports
-          path: game/build/reports
+          path: |
+            game/build/reports
+            composeApp/build/reports
 
   # The iPhone and iPad app, unsigned: a free Apple ID has no certificate CI
   # could hold, so the family's sideload tool signs it when it installs it
@@ -250,7 +256,7 @@ jobs:
       VERSION_NAME: ${{ needs.version.outputs.name }}
       VERSION_CODE: ${{ github.run_number }}
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - *xcode
       - *java
@@ -318,7 +324,7 @@ jobs:
           ls -l sniddle.ipa
 
       - name: Upload sniddle.ipa (unsigned, the sideload tool signs it)
-        uses: actions/upload-artifact@v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sniddle-ipa
           path: sniddle.ipa
@@ -331,7 +337,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: actionlint (workflows, including shellcheck on run steps)
         uses: docker://rhysd/actionlint:1.7.12
@@ -358,7 +364,7 @@ jobs:
     env:
       VERSION_NAME: ${{ needs.version.outputs.name }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # every tag, to compare with the last release
 
@@ -376,7 +382,7 @@ jobs:
             exit 0
           fi
           app_files=$(git diff --name-only "$last" HEAD |
-            grep -Ev '^(README\.md|PLAN\.md|docs/|\.github/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
+            grep -Ev '^(README\.md|PLAN\.md|CLAUDE\.md|LICENSE|docs/|\.github/|\.githooks/|config/|scripts/|\.markdownlint-cli2\.yaml|\.gitignore|\.editorconfig)' || true)
           if [ -n "$app_files" ]; then
             echo "app=true" >> "$GITHUB_OUTPUT"
           else
@@ -384,12 +390,12 @@ jobs:
             echo "Only docs, lint rules or CI changed since $last, so no release." | tee -a "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         if: steps.changed.outputs.app == 'true'
         with:
           name: sniddle-apk
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         if: steps.changed.outputs.app == 'true'
         with:
           name: sniddle-ipa
@@ -418,6 +424,13 @@ jobs:
           again every week, or Sniddle stops opening.
 
           Built from $GITHUB_SHA.
+
+          SHA-256, to check a download (\`sha256sum sniddle.apk\` on Linux,
+          \`shasum -a 256 sniddle.ipa\` on a Mac):
+
+          \`\`\`text
+          $(sha256sum sniddle.apk sniddle.ipa)
+          \`\`\`
           NOTES
           gh release create "v$VERSION_NAME" sniddle.apk sniddle.ipa \
             --repo "$GITHUB_REPOSITORY" \
