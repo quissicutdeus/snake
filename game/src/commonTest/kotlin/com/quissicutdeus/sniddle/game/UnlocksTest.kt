@@ -20,8 +20,21 @@ class UnlocksTest {
         for (e in listOf(Eyes.GOOGLY, Eyes.SLEEPY, Eyes.SUNGLASSES)) assertTrue(Unlocks.isUnlocked(e, fresh))
         for (p in Pattern.entries - Pattern.STARS - Pattern.FLAG - Pattern.HEARTS) assertTrue(Unlocks.isUnlocked(p, fresh))
         val rules = (Hat.entries + Eyes.entries + Pattern.entries).mapNotNull { Unlocks.ruleFor(it) }
-        assertEquals(14, rules.size)
+        assertEquals(18, rules.size)
         assertFalse(rules.any { Unlocks.isUnlocked(it.item, fresh) })
+    }
+
+    @Test fun someNewLooksAreFreeAndSomeAreEarned() {
+        val fresh = Stats()
+        for (free in listOf(Hat.COWBOY, Hat.FLOWERS, Eyes.GLASSES)) assertTrue(Unlocks.isUnlocked(free, fresh), "$free")
+        assertEquals("Play 5 games", Unlocks.ruleFor(Hat.PROPELLER)?.goal)
+        assertEquals("Reach length 150", Unlocks.ruleFor(Eyes.STARS)?.goal)
+        assertEquals("Eat 25 snails", Unlocks.ruleFor(Hat.PIRATE)?.goal)
+        assertEquals("Play 25 games", Unlocks.ruleFor(Eyes.SPARKLY)?.goal)
+        val kid = Stats(bestScore = 160, snailsEaten = 30, gamesPlayed = 30)
+        for (look in listOf(Hat.PROPELLER, Eyes.STARS, Hat.PIRATE, Eyes.SPARKLY)) assertTrue(Unlocks.isUnlocked(look, kid), "$look")
+        assertEquals("Hat.PROPELLER", Unlocks.ruleFor(Hat.PROPELLER)?.key)
+        assertEquals("Eyes.SPARKLY", Unlocks.ruleFor(Eyes.SPARKLY)?.key)
     }
 
     @Test fun goalsUnlockAndAreReportedOnce() {
@@ -39,7 +52,7 @@ class UnlocksTest {
         assertEquals(emptyList(), Unlocks.reachedBy(Stats()))
         // High scores from before unlocks existed can already reach some goals.
         val old = Stats(bestScore = 120, snailsEaten = 0, gamesPlayed = 10)
-        assertEquals(listOf(Hat.TOP_HAT, Pattern.STARS), Unlocks.reachedBy(old).map { it.item })
+        assertEquals(listOf(Hat.TOP_HAT, Pattern.STARS, Hat.PROPELLER), Unlocks.reachedBy(old).map { it.item })
         val after = old.after(score = 30, eaten = 12)
         assertEquals(Unlocks.reachedBy(after) - Unlocks.reachedBy(old).toSet(), Unlocks.newlyUnlocked(old, after))
     }
@@ -82,7 +95,7 @@ class UnlocksTest {
         // Building the unlock list already fails for a look type without a saved name.
         val looks = (Hat.entries + Eyes.entries + Pattern.entries + Holiday.entries.flatMap { it.looks }).distinct()
         val keys = looks.mapNotNull { Unlocks.ruleFor(it)?.key }
-        assertEquals(14, keys.size)
+        assertEquals(18, keys.size)
         assertEquals(keys.size, keys.toSet().size, "$keys")
         // These get saved on phones, so they must never change.
         assertEquals("Hat.TOP_HAT", Unlocks.ruleFor(Hat.TOP_HAT)?.key)

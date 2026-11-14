@@ -46,6 +46,7 @@ val WhatsNew: List<News> =
         News(4, "🎂", "Birthday hats and bunny ears!"),
         News(5, "👫", "Play together on one screen!"),
         News(6, "🐌", "The snakes are snails now, with slime trails!"),
+        News(7, "🤠", "New hats and eyes, and eyes in your snail's colors!"),
     )
 
 /**

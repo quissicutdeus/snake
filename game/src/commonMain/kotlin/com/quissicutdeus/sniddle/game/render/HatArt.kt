@@ -7,7 +7,7 @@ import kotlin.math.max
 
 /**
  * Hats drawn on top of a snail's head: crown, party hat, bow, top hat, wizard
- * hat or Viking horns, and the [HolidayHatArt] and [CalendarArt] ones.
+ * hat or Viking horns, and the [CostumeHatArt], [HolidayHatArt] and [CalendarArt] ones.
  */
 object HatArt {
     private val path = Path2D()
@@ -48,6 +48,10 @@ object HatArt {
 
             Hat.HORNS -> {
                 drawHorns(c, x, y, hr, wash)
+            }
+
+            Hat.COWBOY, Hat.FLOWERS, Hat.PROPELLER, Hat.PIRATE -> {
+                CostumeHatArt.drawHat(c, x, y, hr, hat, style, wash)
             }
 
             Hat.SANTA -> {

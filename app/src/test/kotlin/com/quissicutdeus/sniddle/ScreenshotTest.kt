@@ -161,7 +161,7 @@ class ScreenshotTest : ScreenTest() {
         val launch = launchApp()
         compose.onNodeWithText(alreadyEarned).assertExists()
         snap(name)
-        assertEquals(setOf("Hat.TOP_HAT", "Pattern.STARS"), storage.player(0).loadAnnounced())
+        assertEquals(setOf("Hat.TOP_HAT", "Pattern.STARS", "Hat.PROPELLER"), storage.player(0).loadAnnounced())
         compose.onNodeWithText(alreadyEarned).performClick()
         advance(100)
         compose.onNodeWithText(alreadyEarned).assertDoesNotExist()

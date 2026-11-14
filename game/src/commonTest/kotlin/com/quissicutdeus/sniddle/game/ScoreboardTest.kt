@@ -1,5 +1,6 @@
 package com.quissicutdeus.sniddle.game
 
+import com.quissicutdeus.sniddle.game.model.EyeColor
 import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.Pattern
@@ -156,6 +157,21 @@ class ScoreboardTest {
         assertEquals(style, SnailStyle.decode(style.encode()))
         assertEquals(SnailStyle.DEFAULT, SnailStyle.decode("garbage"))
         assertEquals(SnailStyle.DEFAULT.copy(color1 = 2), SnailStyle.decode("2,99,NOPE"))
+    }
+
+    @Test fun eyeColourIsSavedLastAndOldSnailsKeepClassicEyes() {
+        val blueEyes =
+            SnailStyle(color1 = 7, color2 = 2, pattern = Pattern.DOTS, eyes = Eyes.SPARKLY, hat = Hat.PIRATE, eyeColor = EyeColor.BODY)
+        assertEquals("7,2,DOTS,SPARKLY,PIRATE,BODY", blueEyes.encode())
+        assertEquals(blueEyes, SnailStyle.decode(blueEyes.encode()))
+        assertEquals(SnailStyle.PALETTE[7], blueEyes.irisColor)
+        assertEquals(SnailStyle.PALETTE[2], blueEyes.copy(eyeColor = EyeColor.SHELL).irisColor)
+        // Saved before eye colours existed: five fields, and the eyes stay classic dark.
+        val old = SnailStyle.decode("11,0,CHECKER,SLEEPY,BOW")
+        assertEquals(SnailStyle(color1 = 11, color2 = 0, pattern = Pattern.CHECKER, eyes = Eyes.SLEEPY, hat = Hat.BOW), old)
+        assertEquals(EyeColor.CLASSIC, old.eyeColor)
+        assertEquals(null, old.irisColor)
+        assertEquals(EyeColor.CLASSIC, SnailStyle.decode("11,0,CHECKER,SLEEPY,BOW,PURPLE").eyeColor)
     }
 
     /** Every surrogate is half of a pair. */
