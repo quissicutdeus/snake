@@ -11,11 +11,13 @@ import com.quissicutdeus.sniddle.game.render.Canvas2D
 import com.quissicutdeus.sniddle.game.render.Path2D
 import com.quissicutdeus.sniddle.game.render.TextAlign
 
+actual fun ComposeCanvas2D(): ComposeCanvas2D = AndroidCanvas2D()
+
 /**
  * The game's [Canvas2D] drawn onto a Compose [DrawScope] (through its Android
  * canvas). Paints and the path are reused, so drawing a frame allocates nothing.
  */
-class ComposeCanvas2D : Canvas2D {
+private class AndroidCanvas2D : ComposeCanvas2D {
     private var canvas: android.graphics.Canvas? = null
 
     override var width = 0f
@@ -41,8 +43,7 @@ class ComposeCanvas2D : Canvas2D {
     private val path = Path()
     private val rect = RectF()
 
-    /** Runs [block] with this canvas bound to the scope's drawing surface. */
-    fun draw(
+    override fun draw(
         scope: DrawScope,
         block: (Canvas2D) -> Unit,
     ) {

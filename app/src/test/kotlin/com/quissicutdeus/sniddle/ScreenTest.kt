@@ -87,7 +87,7 @@ abstract class ScreenTest {
     }
 
     protected fun show(content: @androidx.compose.runtime.Composable () -> Unit) {
-        compose.setContent { SniddleTheme(content) }
+        compose.setContent { SniddleTheme(content = content) }
     }
 
     protected fun advance(ms: Long) {

@@ -11,3 +11,8 @@ SnailArt :: private final void strokeRuns(
 # One-player stepping with a single input: the app steps through update(), but
 # the rule tests, previews and the benchmark step the world one tick at a time.
 GameSim :: public final void step(com.quissicutdeus.sniddle.game.sim.SteerInput)
+
+# Used only by the iPhone app (PersistedUiState in composeApp's iosMain): Android
+# keeps the screens' saved state itself. It lives in common code so its tests run
+# on the JVM (composeApp/src/commonTest).
+com.quissicutdeus.sniddle.SavedUiState

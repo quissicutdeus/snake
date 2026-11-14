@@ -164,12 +164,22 @@ class PlayTogetherTest : ScreenTest() {
     /** Two fingers, one in each half, each steering its own kid's snail. */
     private fun bothHalvesSteer(name: String) {
         var sim: GameSim? = null
-        // No computer snails nearby to bump into, so each kid goes where their finger says.
+        // No computer snails to bump into, so each kid goes where their finger says: none at the start,
+        // and none spawned later (the world is random, so a new one could turn up in a kid's path).
         val quietArena: (GameSim) -> Unit = { s ->
             sim = s
             s.world.snails.removeAll { !it.isPlayer }
         }
-        show { TwoPlayerScreen(key = 1, kids = listOf(caleb, myaCard), onGameOver = {}, onQuit = {}, prepare = quietArena) }
+        show {
+            TwoPlayerScreen(
+                key = 1,
+                kids = listOf(caleb, myaCard),
+                onGameOver = {},
+                onQuit = {},
+                options = SimOptions(aiCount = 0, powerUps = false),
+                prepare = quietArena,
+            )
+        }
         advance(300)
         val game = sim!!
         // Caleb drags left (west) in the left half; Mya drags up (north) in the right half.

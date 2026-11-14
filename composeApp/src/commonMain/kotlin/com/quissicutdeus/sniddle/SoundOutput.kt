@@ -19,4 +19,11 @@ interface SoundOutput {
  */
 fun interface Buzzer {
     fun buzz(buzz: Buzz)
+
+    /**
+     * False on a device that has no haptics at all (iPads have no Taptic
+     * Engine): the game then hides its buzz switch rather than show one that
+     * does nothing.
+     */
+    val canBuzz: Boolean get() = true
 }

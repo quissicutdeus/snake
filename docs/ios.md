@@ -344,6 +344,21 @@ and macOS is included. Rough estimates, to be replaced with real timings after t
 
 ## Phase 2: iOS platform services
 
+**Status (2026-11-14):** built on the `ios-phase2` branch, not yet tried on a device.
+
+- The shared UI is the `composeApp` module (Compose Multiplatform 1.12.2, material3 1.9.0). Android
+  keeps the same androidx libraries and pixels; its own services stay in `app/`.
+- iOS has all four services below, plus `SkiaCanvas2D` for the game's drawing, and
+  `PersistedUiState`, which keeps what the screens save with `rememberSaveable` in the user defaults
+  when the app goes to the background, so a game comes back paused after iOS closes the app. A save
+  older than 12 hours is ignored: the next day starts at the title screen.
+- Defaults taken from the open questions: iOS 16 minimum, and the `.ambient` audio session (the
+  Silent switch silences the game).
+- iPads, which have no Taptic Engine, get no buzz switch.
+- Every screen already has a visible way back, so iOS's `SystemBack` does nothing.
+- The macOS workflow builds the IPA with the Kotlin UI linked in. Next: install it on a device, then
+  phase 3 (release it with the APK).
+
 Everything the shared Compose Multiplatform UI needs from iOS that `app/` gets from Android today. Each of
 these can be a small `expect`/`actual` in Kotlin: Kotlin/Native calls UIKit and AVFAudio directly, so none
 of them needs Swift.

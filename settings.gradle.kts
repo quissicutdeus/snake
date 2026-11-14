@@ -28,4 +28,5 @@ dependencyResolutionManagement {
 rootProject.name = "Sniddle"
 
 include(":game")
+include(":composeApp")
 include(":app")

@@ -40,17 +40,21 @@ fun SettingsButtons(
     // Sound off silences the music too, so the music button shows off then, and
     // turning music on brings the sound back with it.
     val musicPlays = settings.soundOn && settings.musicOn
+    val canBuzz = LocalCanBuzz.current
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         SwitchButton(
             on = musicPlays,
             name = "Music",
             onToggle = { onChange(if (musicPlays) settings.copy(musicOn = false) else settings.copy(musicOn = true, soundOn = true)) },
         ) { drawMusic(musicPlays) }
-        SwitchButton(
-            on = settings.buzzOn,
-            name = "Buzz",
-            onToggle = { onChange(settings.copy(buzzOn = !settings.buzzOn)) },
-        ) { drawBuzz(settings.buzzOn) }
+        // No buzz switch on a device that can't buzz (an iPad).
+        if (canBuzz) {
+            SwitchButton(
+                on = settings.buzzOn,
+                name = "Buzz",
+                onToggle = { onChange(settings.copy(buzzOn = !settings.buzzOn)) },
+            ) { drawBuzz(settings.buzzOn) }
+        }
         SwitchButton(
             on = settings.soundOn,
             name = "Sound",
