@@ -4,6 +4,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +35,20 @@ private val typography =
         )
     }
 
+/**
+ * Whether this device can buzz at all (see [com.quissicutdeus.sniddle.Buzzer.canBuzz]); false hides the buzz switch.
+ * A fixed fact about the device, set once with the theme, like Compose's own LocalHapticFeedback: passing it
+ * down through every screen to the one switch that needs it would be the bigger hidden dependency.
+ */
+@Suppress("ComposeCompositionLocalUsage")
+internal val LocalCanBuzz = staticCompositionLocalOf { true }
+
 @Composable
-fun SniddleTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = colors, typography = typography, content = content)
+fun SniddleTheme(
+    canBuzz: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(LocalCanBuzz provides canBuzz) {
+        MaterialTheme(colorScheme = colors, typography = typography, content = content)
+    }
 }

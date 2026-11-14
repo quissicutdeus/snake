@@ -13,6 +13,8 @@ kotlin {
         namespace = "com.quissicutdeus.sniddle.shared"
         compileSdk = 37
         minSdk = 30
+        // The shared code's own tests run on the JVM: ./gradlew :composeApp:testAndroidHostTest
+        withHostTestBuilder {}
     }
 
     listOf(iosArm64(), iosSimulatorArm64()).forEach {
@@ -35,6 +37,9 @@ kotlin {
             implementation(libs.cmp.ui)
             implementation(libs.cmp.material3)
             implementation(libs.cmp.lifecycle.runtime.compose)
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)

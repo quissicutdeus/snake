@@ -130,7 +130,7 @@ jobs:
       # rather than in the by-hand iOS run.
       - name: Tests and release APK (version ${{ env.VERSION_NAME }})
         run: >-
-          ./gradlew :game:test :app:testDebugUnitTest :app:assembleRelease
+          ./gradlew :game:test :composeApp:testAndroidHostTest :app:testDebugUnitTest :app:assembleRelease
           :game:compileTestKotlinIosArm64 :game:compileTestKotlinIosSimulatorArm64
           :composeApp:compileKotlinIosArm64 :composeApp:compileKotlinIosSimulatorArm64 --console=plain
           -PversionCode=${{ github.run_number }} -PversionName=${{ env.VERSION_NAME }}

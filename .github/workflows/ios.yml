@@ -11,12 +11,10 @@ name: iOS
 #               sideload tool signs it with their free Apple ID when it installs
 #               it, which CI can't do: a free Apple ID has no certificate to export.
 #
-# PHASE 1/2 UNKNOWNS, marked "PHASE" below:
-#   - :game:iosSimulatorArm64Test and :game:linkDebugTestIosArm64 exist once game/ is Kotlin Multiplatform with
-#     iosArm64 and iosSimulatorArm64 targets (phase 1, names confirmed). Until then game-tests fails.
-#   - The shared UI module (:composeApp, framework "ComposeApp") is configured in
-#     iosApp/project.yml (phase 2). Until then ipa builds a placeholder app,
-#     which is enough to try the install path on a real device.
+# Phases 1 and 2 are in: game/ is Kotlin Multiplatform, and the shared UI is
+# :composeApp (framework "ComposeApp", as iosApp/project.yml expects). The ipa
+# job fails if the app doesn't contain the Kotlin UI, so the old placeholder
+# app can't come back by mistake.
 #
 # When iOS ships: move both jobs into build.yml, make the release job need
 # them, attach sniddle.ipa to the same release as sniddle.apk, and count

@@ -1,6 +1,7 @@
 package com.quissicutdeus.sniddle
 
 import com.quissicutdeus.sniddle.game.render.Buzz
+import platform.CoreHaptics.CHHapticEngine
 import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 import platform.UIKit.UINotificationFeedbackGenerator
@@ -11,9 +12,12 @@ import platform.UIKit.UISelectionFeedbackGenerator
  * iOS's [Buzzer]: the Taptic Engine through UIKit's feedback generators, the
  * counterpart of Android's system haptics. No permission needed, and they
  * follow the phone's own Sounds & Haptics setting. iPads have no Taptic
- * Engine, so there these do nothing. Called on the main thread (from the UI).
+ * Engine: there [canBuzz] is false and the game hides its buzz switch.
+ * Called on the main thread (from the UI).
  */
 class IosBuzzer : Buzzer {
+    override val canBuzz: Boolean = CHHapticEngine.capabilitiesForHardware().supportsHaptics
+
     private val tap = UISelectionFeedbackGenerator()
     private val thud = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium)
     private val ouch = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy)

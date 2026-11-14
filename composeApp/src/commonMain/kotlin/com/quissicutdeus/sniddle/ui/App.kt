@@ -165,7 +165,7 @@ fun SniddleApp(
         screen = if (bedtime.refresh()) Screen.Title else Screen.Play(round)
     }
 
-    SniddleTheme {
+    SniddleTheme(canBuzz = buzzer.canBuzz) {
         when (val s = screen) {
             Screen.Title -> {
                 TitleRoute(
