@@ -24,6 +24,15 @@ object GameConfig {
     /** After hitting a wall, steering is ignored this long so you slide off it gently. */
     const val WALL_BOUNCE_SECONDS = 0.2f
 
+    /**
+     * How a new game picks its floor outside Christmas week (see
+     * ArenaSeason.forGame): the season's floor, dirt or space, in these
+     * shares. 2:1:1 is the season half the time, dirt and space a quarter each.
+     */
+    const val ARENA_SEASON_WEIGHT = 2
+    const val ARENA_DIRT_WEIGHT = 1
+    const val ARENA_SPACE_WEIGHT = 1
+
     // ---- Size --------------------------------------------------------------
 
     /** No snail is ever shorter than this. */

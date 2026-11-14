@@ -1,6 +1,7 @@
 package com.quissicutdeus.sniddle.game.preview
 
 import com.quissicutdeus.sniddle.game.GameConfig
+import com.quissicutdeus.sniddle.game.model.ArenaSeason
 import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.Pattern
@@ -37,6 +38,7 @@ fun main(args: Array<String>) {
     curls(out)
     powerUps(out)
     dangerArrows(out)
+    dangerArrows(out, ArenaSeason.SPACE)
     biggestSnail(out)
     portraitHud(out)
     calendarPreviews(out)
@@ -88,8 +90,11 @@ private fun nearby(
 }
 
 /** Bigger snails coming at the player from off-screen get red warning arrows; one heading away doesn't. */
-private fun dangerArrows(out: File) {
-    val sim = GameSim(seed = 4, options = SimOptions(aiCount = 0, pelletCount = 160, spawnPlayer = false, powerUps = false))
+private fun dangerArrows(
+    out: File,
+    arena: ArenaSeason = ArenaSeason.GRASS,
+) {
+    val sim = GameSim(seed = 4, options = SimOptions(aiCount = 0, pelletCount = 160, spawnPlayer = false, powerUps = false, arena = arena))
     val p = sim.addSnail("You", SnailStyle(color1 = 6, color2 = 2, pattern = Pattern.STRIPES), true, 2000f, 2000f, 0.3f, 300f)
 
     fun bigOne(
@@ -109,7 +114,8 @@ private fun dangerArrows(out: File) {
     cam.snapTo(p.x, p.y, p.radius, W.toFloat(), H.toFloat())
     val c = Java2DCanvas(W, H)
     SceneRenderer.draw(c, sim, cam, Fx(), 0.2f)
-    c.writePng(File(out, "danger_arrows.png"))
+    // The grass one is the usual; space, the one dark floor, to check the arrows still read there.
+    c.writePng(File(out, if (arena == ArenaSeason.GRASS) "danger_arrows.png" else "danger_arrows_${arena.name.lowercase()}.png"))
 }
 
 /** The player has just become the biggest snail: confetti, a cheer, and a crown by the length. */

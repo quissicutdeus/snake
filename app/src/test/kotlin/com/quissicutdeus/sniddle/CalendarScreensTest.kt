@@ -137,10 +137,18 @@ class CalendarScreensTest : ScreenTest() {
         assertNull(me.birthday)
     }
 
+    /** The title shows the season's floor (wrapping paper in Christmas week); a game sometimes gets dirt or space instead. */
     @Test fun theArenaFollowsTheSeasons() {
-        assertEquals(ArenaSeason.SNOW, Profile(storage) { Day(2026, 12, 20) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.SNOW, Profile(storage) { Day(2026, 12, 10) }.todaysOptions().arena)
+        assertEquals(ArenaSeason.WRAPPING_PAPER, Profile(storage) { Day(2026, 12, 20) }.todaysOptions().arena)
         assertEquals(ArenaSeason.AUTUMN, Profile(storage) { Day(2026, 10, 20) }.todaysOptions().arena)
-        assertEquals(ArenaSeason.GRASS, Profile(storage) { Day(2026, 5, 20) }.todaysOptions().arena)
+        val may = Profile(storage) { Day(2026, 5, 20) }
+        assertEquals(ArenaSeason.GRASS, may.todaysOptions().arena)
+        val rng = kotlin.random.Random(4)
+        val games = List(100) { may.gameArena(rng) }.toSet()
+        assertEquals(setOf(ArenaSeason.GRASS, ArenaSeason.DIRT, ArenaSeason.SPACE), games)
+        val christmas = Profile(storage) { Day(2026, 12, 25) }
+        assertEquals(setOf(ArenaSeason.WRAPPING_PAPER), List(20) { christmas.gameArena(rng) }.toSet())
     }
 
     @Test fun theTitleAndTheGameShowTheSnow() {

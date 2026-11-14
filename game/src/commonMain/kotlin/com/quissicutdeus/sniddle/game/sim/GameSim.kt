@@ -33,7 +33,7 @@ data class SimOptions(
     val season: Set<Holiday> = emptySet(),
     /** How hard the game is (a saved game comes back as it was saved, whatever this says). */
     val difficulty: Difficulty = Difficulty.NORMAL,
-    /** What the arena floor looks like: grass, autumn leaves or snow. */
+    /** What the arena floor looks like (a saved game comes back on its own floor, if it kept one). */
     val arena: ArenaSeason = ArenaSeason.GRASS,
 )
 
@@ -55,6 +55,9 @@ class GameSim(
 
     /** How hard this game is: as saved when carrying on a game, else from [options]. */
     val difficulty: Difficulty = resume?.difficulty ?: options.difficulty
+
+    /** The floor: as saved when carrying on a game (if the save kept one), else from [options]. */
+    val arena: ArenaSeason = resume?.arena ?: options.arena
     val world = World(options.width, options.height)
     internal val grid = SpatialGrid(options.width, options.height)
 
@@ -146,7 +149,18 @@ class GameSim(
         val p = player ?: return null
         // A two-player game isn't carried on: after Android closes the app, the kids start afresh.
         if (gameOver || !p.alive || together != null) return null
-        return SavedRun(p.name, p.style, p.length, p.bestLength, p.hearts, p.snailsEaten, p.powerTime.toList(), biggestSeconds, difficulty)
+        return SavedRun(
+            p.name,
+            p.style,
+            p.length,
+            p.bestLength,
+            p.hearts,
+            p.snailsEaten,
+            p.powerTime.toList(),
+            biggestSeconds,
+            difficulty,
+            arena,
+        )
     }
 
     /**

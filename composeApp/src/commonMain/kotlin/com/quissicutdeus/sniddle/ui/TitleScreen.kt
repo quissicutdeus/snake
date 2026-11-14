@@ -108,7 +108,7 @@ fun TitleScreen(
     onHighScores: () -> Unit,
     settings: Settings,
     onSettingsChange: (Settings) -> Unit,
-    /** The arena behind the menu: grass, autumn leaves or snow, as at this time of year. */
+    /** The arena behind the menu: the season's floor, or wrapping paper in Christmas week. */
     arena: ArenaSeason,
     /** Today's holidays, which the snails behind the menu dress up for. */
     holidays: Set<Holiday>,
