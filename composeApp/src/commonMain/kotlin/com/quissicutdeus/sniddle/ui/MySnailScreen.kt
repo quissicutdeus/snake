@@ -262,7 +262,8 @@ private fun EyeColorSwatches(
                         .size(44.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Text else KidColors.OutlineFaint, CircleShape),
+                        // The swatch is a white eye, day and night, so its ring stays dark.
+                        .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Ink else Color(0x552B2B3A), CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (iris != null) {

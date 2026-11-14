@@ -79,7 +79,7 @@ fun WhatsNewCard(
         if (maxWidth >= SIDE_BY_SIDE_WIDTH) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 NewPill()
-                NewestThatFit(2.dp, Modifier.weight(1f)) { NewsLines(news) }
+                NewestThatFit(2.dp, Modifier.weight(1f, fill = false)) { NewsLines(news) }
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -90,8 +90,12 @@ fun WhatsNewCard(
     }
 }
 
-/** Below this width the "New!" pill goes above the lines instead of beside them. */
-private val SIDE_BY_SIDE_WIDTH = 300.dp
+/**
+ * Below this width inside the card the "New!" pill goes above the lines instead
+ * of beside them. A 360dp portrait phone leaves the card 300dp inside its
+ * paddings, so portrait phones get the pill on top; landscape titles get it beside.
+ */
+private val SIDE_BY_SIDE_WIDTH = 340.dp
 
 @Composable
 private fun NewPill() {
