@@ -170,7 +170,7 @@ private fun TogetherPlayRoute(
  * the shared high-score list if they made it, under their name: there's no
  * "Who played?" to ask, the game knows. Returns each kid's new looks.
  */
-internal fun recordTogether(
+fun recordTogether(
     me: Profile,
     storage: Storage,
     result: TogetherResult,

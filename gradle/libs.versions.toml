@@ -5,6 +5,11 @@ composeBom = "2026.09.00"
 activityCompose = "1.13.0"
 coreKtx = "1.19.1"
 lifecycle = "2.11.0"
+# Compose Multiplatform (the shared UI in composeApp). 1.12.2 pairs with material3 1.9.0,
+# which is Android's material3 1.4.0; its lifecycle is JetBrains' build of 2.11.0.
+composeMultiplatform = "1.12.2"
+composeMultiplatformMaterial3 = "1.9.0"
+jetbrainsLifecycle = "2.11.0"
 profileinstaller = "1.4.1"
 junit = "4.13.2"
 robolectric = "4.17"
@@ -29,7 +34,14 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 compose-lint-checks = { group = "com.slack.lint.compose", name = "compose-lint-checks", version.ref = "composeLintChecks" }
 
+cmp-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+cmp-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
+cmp-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composeMultiplatform" }
+cmp-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMultiplatformMaterial3" }
+cmp-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
+
 [plugins]
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

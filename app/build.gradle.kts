@@ -104,6 +104,7 @@ detekt {
 
 dependencies {
     implementation(project(":game"))
+    implementation(project(":composeApp"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

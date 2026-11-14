@@ -4,6 +4,7 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.lint) apply false
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.compose) apply false
@@ -64,5 +65,14 @@ spotless {
 tasks.register("lintAll") {
     group = "verification"
     description = "Runs every linter: ktlint (Spotless), detekt, Android Lint and the dead-code report."
-    dependsOn("spotlessCheck", ":game:detekt", ":app:detekt", ":game:lint", ":app:lintDebug", ":app:deadCode")
+    dependsOn(
+        "spotlessCheck",
+        ":game:detekt",
+        ":composeApp:detekt",
+        ":app:detekt",
+        ":game:lint",
+        ":composeApp:lint",
+        ":app:lintDebug",
+        ":app:deadCode",
+    )
 }

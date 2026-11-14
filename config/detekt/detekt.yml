@@ -30,7 +30,7 @@ style:
       - '**/render/**'
       - '**/audio/**'
       - '**/ui/**'
-      - '**/ComposeCanvas2D.kt'
+      - '**/*Canvas2D.kt' # the platform drawing adapters (Android, Skia on iOS)
   MaxLineLength:
     maxLineLength: 140 # same as ktlint (.editorconfig)
   ReturnCount:
