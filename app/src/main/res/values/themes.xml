@@ -2,5 +2,10 @@
 <resources>
     <style name="Theme.Sniddle" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/arena_grass</item>
+        <!-- Sniddle draws its own night look (SniddleTheme follows the phone's dark
+             setting). Without this, a light theme lets Android darken the app by
+             itself on top of that ("force dark"), guessing at every colour: the
+             menus clashed and the snails' eyes went grey. -->
+        <item name="android:forceDarkAllowed">false</item>
     </style>
 </resources>

@@ -84,8 +84,8 @@ private fun PlayerChip(
             Modifier
                 .size(face)
                 .clip(CircleShape)
-                .background(if (isCurrent) Color.White else Color(0x99FFFFFF))
-                .border(if (isCurrent) 4.dp else 2.dp, if (isCurrent) KidColors.Sunny else Color(0x552B2B3A), CircleShape),
+                .background(if (isCurrent) KidColors.Card else KidColors.CardFaint)
+                .border(if (isCurrent) 4.dp else 2.dp, if (isCurrent) KidColors.Sunny else KidColors.OutlineFaint, CircleShape),
         )
     }
 }
@@ -101,7 +101,7 @@ private fun AddChip(
                 .size(face)
                 .clip(CircleShape)
                 .background(KidColors.Sky)
-                .border(2.dp, Color(0x552B2B3A), CircleShape),
+                .border(2.dp, KidColors.OutlineFaint, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text("+", style = MaterialTheme.typography.headlineLarge, color = Color.White)

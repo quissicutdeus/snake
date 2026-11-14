@@ -98,7 +98,7 @@ private fun BirthdayDialog(
                 Text(
                     if (month == 0) "When's your birthday?" else "${MONTH_NAMES[month - 1]}: which day?",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
                 if (month == 0) {
@@ -130,13 +130,13 @@ private fun MonthGrid(
             Box(
                 Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(if (isSelected) KidColors.Sky else Color(0xFFE8F5E0))
+                    .background(if (isSelected) KidColors.Sky else KidColors.Chip)
                     .semantics { this.selected = isSelected }
                     .clickable(role = Role.Button) { onPick(i + 1) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(name, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
+                Text(name, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Text)
             }
         }
     }

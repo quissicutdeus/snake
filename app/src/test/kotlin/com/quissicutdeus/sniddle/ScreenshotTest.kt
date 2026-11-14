@@ -368,6 +368,38 @@ class ScreenshotTest : ScreenTest() {
     @Test
     fun highScoresPortrait() = highScoresScene("high_scores_portrait")
 
+    // ---- Night: the phone set to dark, so the menus use their night look ----
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun mySnailNight() = mySnailScene("my_snail_night")
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun highScoresNight() = highScoresScene("high_scores_night")
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun gameOverNight() = gameOverScene("game_over_night")
+
+    /** The title with the kids' tiles, then the grown-ups question over it. */
+    @Config(qualifiers = "+night")
+    @Test
+    fun titleAndGrownUpsNight() {
+        storage.newsSeen = WhatsNew.last().number
+        storage.player(0).apply {
+            saveStyle(style)
+            saveSnailName("Caleb")
+        }
+        storage.addPlayer(sirNoodles)
+        storage.player(1).saveSnailName("Mya")
+        launchApp()
+        snap("title_night")
+        compose.onNodeWithContentDescription("Grown-ups: bedtime timer").performClick()
+        advance(300)
+        snap("grown_ups_night")
+    }
+
     // ---- Tablet (10-inch), landscape ----
 
     @Config(qualifiers = TABLET)

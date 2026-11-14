@@ -103,7 +103,7 @@ fun MySnailScreen(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding(),
     ) {
         if (maxWidth > maxHeight) {
@@ -226,7 +226,7 @@ private fun Section(
     content: @Composable () -> Unit,
 ) {
     Column(modifier.padding(bottom = 14.dp)) {
-        Text(title, style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
+        Text(title, style = MaterialTheme.typography.titleLarge, color = KidColors.Text)
         Spacer(Modifier.height(6.dp))
         content()
     }
@@ -247,7 +247,7 @@ private fun Swatches(
                     .size(44.dp)
                     .clip(CircleShape)
                     .background(Color(argb))
-                    .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Ink else Color(0x332B2B3A), CircleShape)
+                    .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Text else KidColors.OutlineFaint, CircleShape)
                     .semantics {
                         contentDescription = COLOR_NAMES[i]
                         this.selected = isSelected
@@ -338,13 +338,13 @@ private fun Pill(
     Box(
         modifier
             .clip(RoundedCornerShape(50))
-            .background(if (isSelected) KidColors.Sky else Color(0xFFE8F5E0))
+            .background(if (isSelected) KidColors.Sky else KidColors.Chip)
             .semantics { this.selected = isSelected }
             .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Ink)
+        Text(label, style = MaterialTheme.typography.titleMedium, color = if (isSelected) Color.White else KidColors.Text)
     }
 }
 
@@ -381,12 +381,12 @@ private fun LockedPill(
         delay(HINT_MS - WIGGLE_MS)
         hinting = false
     }
-    val grey = Color(0xFF8A8A8A)
+    val grey = KidColors.SubtleText
     Box(
         modifier
             .graphicsLayer { translationX = wiggle.value.dp.toPx() }
             .clip(RoundedCornerShape(50))
-            .background(if (isSelected) KidColors.Sky else Color(0xFFEDEDED))
+            .background(if (isSelected) KidColors.Sky else KidColors.Locked)
             .semantics {
                 selected = isSelected
                 contentDescription = "$label, locked: ${lock.goal}. ${lock.hint}"
@@ -422,7 +422,7 @@ private fun ProgressBar(
             Modifier
                 .size(width = 64.dp, height = 8.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFD6D6D6)),
+                .background(KidColors.Track),
         ) {
             Box(
                 Modifier
@@ -431,6 +431,6 @@ private fun ProgressBar(
                     .background(KidColors.Sunny),
             )
         }
-        Text("$have/$need", Modifier.padding(start = 6.dp), style = MaterialTheme.typography.labelSmall, color = Color(0xFF8A8A8A))
+        Text("$have/$need", Modifier.padding(start = 6.dp), style = MaterialTheme.typography.labelSmall, color = KidColors.SubtleText)
     }
 }

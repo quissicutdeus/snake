@@ -49,7 +49,7 @@ fun TogetherOverScreen(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding(),
         contentAlignment = Alignment.Center,
     ) {
@@ -97,6 +97,8 @@ private fun KidPanel(
         shape = RoundedCornerShape(24.dp),
         color = if (isBiggest) KidColors.Sunny else KidColors.Panel,
     ) {
+        // The biggest kid's card is yellow, which keeps dark text day and night.
+        val onCard = if (isBiggest) KidColors.Ink else KidColors.Text
         Column(Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             val picture: Dp = if (compact) 64.dp else 110.dp
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -105,12 +107,12 @@ private fun KidPanel(
                     Text(
                         (if (isBiggest) "👑 " else "") + kid.name,
                         style = MaterialTheme.typography.headlineSmall,
-                        color = KidColors.Ink,
+                        color = onCard,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text("Length ${kid.score}", style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
-                    Text(eatenLine(kid.snailsEaten), style = MaterialTheme.typography.titleSmall, color = KidColors.Ink)
+                    Text("Length ${kid.score}", style = MaterialTheme.typography.titleLarge, color = onCard)
+                    Text(eatenLine(kid.snailsEaten), style = MaterialTheme.typography.titleSmall, color = onCard)
                 }
             }
             if (unlocked.isNotEmpty()) {

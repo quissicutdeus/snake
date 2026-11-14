@@ -67,13 +67,13 @@ private fun RemoveDialog(
                 Text(
                     "Remove ${removal.name}'s snail?",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
                 Text(
                     "Its looks and unlocks go away for good.",
                     style = MaterialTheme.typography.titleMedium,
-                    color = KidColors.Ink,
+                    color = KidColors.Text,
                     textAlign = TextAlign.Center,
                 )
                 KidButton("Keep", onKeep, color = KidColors.DeepGreen)

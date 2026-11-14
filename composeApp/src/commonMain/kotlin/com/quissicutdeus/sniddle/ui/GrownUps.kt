@@ -109,7 +109,7 @@ internal fun GrownUpGate(
         Text(
             "What is ${question.first} × ${question.second}?",
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = KidColors.Ink,
+            color = KidColors.Text,
         )
         if (wrong) Text("Not quite. Try this one.", style = MaterialTheme.typography.titleMedium, color = KidColors.Berry)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -141,7 +141,7 @@ private fun BedtimePanel(
         Text(
             "Play time a day, for the whole phone. Only a running game counts; it starts again at midnight.",
             style = MaterialTheme.typography.bodyLarge,
-            color = KidColors.Ink,
+            color = KidColors.Text,
             textAlign = TextAlign.Center,
         )
         FlowRow(
@@ -152,7 +152,7 @@ private fun BedtimePanel(
                 LimitChip(minutes, picked = minutes == bedtime.limitMinutes) { bedtime.setLimit(minutes) }
             }
         }
-        Text(todayLine(bedtime.clock), style = MaterialTheme.typography.titleMedium, color = KidColors.Ink, textAlign = TextAlign.Center)
+        Text(todayLine(bedtime.clock), style = MaterialTheme.typography.titleMedium, color = KidColors.Text, textAlign = TextAlign.Center)
         KidButton("Done", onDone, color = KidColors.Sky, big = false)
     }
 }
@@ -167,8 +167,8 @@ private fun LimitChip(
     Surface(
         onClick = onPick,
         shape = RoundedCornerShape(50),
-        color = if (picked) KidColors.DeepGreen else Color(0xFFDADAE0),
-        contentColor = if (picked) Color.White else KidColors.Ink,
+        color = if (picked) KidColors.DeepGreen else KidColors.Chip,
+        contentColor = if (picked) Color.White else KidColors.Text,
     ) {
         Text(
             if (minutes == 0) "Off" else "$minutes min",
@@ -190,7 +190,7 @@ private fun PanelTitle(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
-        color = KidColors.Ink,
+        color = KidColors.Text,
     )
 }
 

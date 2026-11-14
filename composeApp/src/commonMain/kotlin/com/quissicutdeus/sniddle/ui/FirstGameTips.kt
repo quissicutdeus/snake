@@ -180,7 +180,7 @@ private fun TipText(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    Text(text, modifier, style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
+    Text(text, modifier, style = MaterialTheme.typography.titleLarge, color = KidColors.Text)
 }
 
 @Composable

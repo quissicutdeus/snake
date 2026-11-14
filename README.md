@@ -189,6 +189,10 @@ biggest snail.
 
 ## For grown-ups
 
+**Night look.** When the phone is set to dark mode, the menus turn a deep
+garden green with light text; the arena and the snails look the same as by
+day.
+
 **Bedtime timer** (off unless you turn it on). Tap the small gear in the
 title screen's top corner and answer a times-table question (like
 "What is 14 × 4?", typed on the number pad; a wrong answer brings a new

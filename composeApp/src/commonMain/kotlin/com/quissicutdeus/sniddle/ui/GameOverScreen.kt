@@ -73,7 +73,7 @@ fun GameOverScreen(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(KidColors.Grass)
+            .background(KidColors.MenuBackground)
             .safeDrawingPadding()
             .imePadding(),
         contentAlignment = Alignment.Center,
@@ -242,7 +242,7 @@ private fun WhoPlayedPanel(
             Text(
                 "New high score! Who played?",
                 style = MaterialTheme.typography.titleLarge,
-                color = KidColors.Ink,
+                color = KidColors.Text,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(12.dp))
