@@ -16,7 +16,7 @@ data class ChaseRules(
 )
 
 /**
- * How hard a game is, chosen per kid (My Snail's "Little kid mode"). Every
+ * How hard a game is, chosen per kid (My Snails' "Little kid mode"). Every
  * number that differs between the modes lives here; everything else comes
  * from [GameConfig] whatever the mode.
  */

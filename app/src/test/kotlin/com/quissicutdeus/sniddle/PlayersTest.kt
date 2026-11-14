@@ -80,7 +80,7 @@ class PlayersTest : ScreenTest() {
         compose.onNodeWithText("+ Add player").assertExists()
         compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
         snap("players_upgraded")
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         compose.onNode(hasSetTextAction() and hasText("Caleb")).assertExists()
         compose.onNodeWithContentDescription("Top hat, locked", substring = true).assertDoesNotExist()
@@ -161,7 +161,7 @@ class PlayersTest : ScreenTest() {
         snap("players_full_news_landscape")
     }
 
-    /** "+ Add player" makes a new kid with a fresh snail, opens My Snail to name it, then shows everyone. */
+    /** "+ Add player" makes a new kid with a fresh snail, opens My Snails to name it, then shows everyone. */
     @Test fun addingAPlayer() {
         storage.player(0).saveSnailName("Caleb")
         val launch = launchApp()
@@ -191,7 +191,7 @@ class PlayersTest : ScreenTest() {
         compose.onNodeWithContentDescription("Mya is playing").assertExists()
         assertEquals(1, storage.loadCurrentPlayer())
         snap("players_switched")
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         compose.onNode(hasSetTextAction() and hasText("Mya")).assertExists()
         // Caleb's top hat is his: Mya hasn't reached length 100 yet.
@@ -219,13 +219,13 @@ class PlayersTest : ScreenTest() {
         compose.onNodeWithContentDescription("Switch to Mya").assertDoesNotExist()
     }
 
-    /** The kid playing removes themselves from My Snail: asked first, "Keep" backs out, then home with someone else playing. */
+    /** The kid playing removes themselves from My Snails: asked first, "Keep" backs out, then home with someone else playing. */
     @Test fun removingThePlayerWhoIsPlaying() {
         seedThreePlayers()
         launchApp()
         compose.onNodeWithContentDescription("Switch to Mya").performClick()
         advance(300)
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         scrollMySnailToBottom()
         compose.onNodeWithText("Remove player").performClick()
@@ -277,7 +277,7 @@ class PlayersTest : ScreenTest() {
         launchApp()
         compose.onNodeWithText("+ Add player").assertExists()
         compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         compose.onNodeWithText("Remove player").assertDoesNotExist()
     }

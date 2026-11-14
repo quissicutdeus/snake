@@ -13,7 +13,7 @@ ones. Steer with your thumb, anywhere on the screen.
 | --- | --- |
 | ![Title screen with a snail for each kid](docs/screenshots/title.png) | ![A game in progress, with the biggest-snails list](docs/screenshots/playing.png) |
 | **Dress up your snail** | **Game over** |
-| ![My Snail: colours, patterns, eyes and hats](docs/screenshots/my_snail.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
+| ![My Snails: colours, patterns, eyes and hats](docs/screenshots/my_snail.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
 
 ![Every hat, including the holiday ones](docs/screenshots/hats.png)
 
@@ -100,10 +100,10 @@ that the title screen shows a little picture of everyone's snail: tap yours
 before you play. Each kid has their own name, look and unlocked looks (up to
 four kids per phone); the sound switches and the "Biggest snails" list are
 shared. The phone remembers who played last. To take a kid off the phone, pick
-them, open My Snail and tap **Remove player** at the bottom (it asks first;
+them, open My Snails and tap **Remove player** at the bottom (it asks first;
 their high scores stay, and the last kid can't be removed).
 
-**Little kid mode 🐣** is a switch in each kid's My Snail, off until a grown-up
+**Little kid mode 🐣** is a switch in each kid's My Snails, off until a grown-up
 (or the kid) turns it on. It's the same game, just gentler, for the youngest:
 4 hearts instead of 3, half again as much food, more of the other snails
 smaller than you (about 3 in 4 instead of 3 in 5), and bigger snails that
@@ -144,7 +144,7 @@ own snail with its own hearts, length and warning arrows.
 | --- | --- |
 | ![Two halves, each following its own kid's snail](docs/screenshots/play_together.png) | ![End of a two-player game: both snails and lengths](docs/screenshots/play_together_over.png) |
 
-**My Snail** lets you name your snail (the name shows in the "Biggest snails"
+**My Snails** lets you name your snail (the name shows in the "Biggest snails"
 list, and is the first one offered when you get a high score) and pick
 colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
 hat, and set their birthday (just the month and day; tap it again to change
@@ -176,7 +176,7 @@ is on, lots of the computer snails dress up for it too:
 | Hearts pattern | Valentine's Day (7–14 Feb) |
 | Shamrock hat | St Patrick's Day (10–17 Mar) |
 | Bunny ears | Easter: the Sunday before Easter through Easter Monday (worked out for each year) |
-| Birthday cake hat | The kid's own birthday, if they've set it in My Snail |
+| Birthday cake hat | The kid's own birthday, if they've set it in My Snails |
 
 **Birthdays.** On a kid's birthday, picking them on the title screen sets
 off confetti and a "Happy birthday!" with their snail's name, the computer
@@ -191,7 +191,7 @@ biggest snail.
 
 **Bedtime timer** (off unless you turn it on). Tap the small gear in the
 title screen's top corner and answer a times-table question (like
-"What is 17 × 8?", typed on the number pad; a wrong answer brings a new
+"What is 14 × 4?", typed on the number pad; a wrong answer brings a new
 question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
 45, 60 or 90 minutes.
 
@@ -203,7 +203,7 @@ question, so guessing doesn't help). Then pick a daily limit: off, 15, 30,
   coming, not mid-bump; at most a minute later). It counts like any finished
   game, and a high score goes on the list under the snail's name. Then the kid's
   snail curls up asleep: "Time to rest, snail! 😴 See you tomorrow!" Play is
-  gone until tomorrow; My Snail and the high scores still work.
+  gone until tomorrow; My Snails and the high scores still work.
 - **Grown-ups: 10 more minutes** on that screen gives extra time today,
   after the same question.
 - Turning the phone's clock back doesn't give more time. (Setting it ahead to
@@ -231,6 +231,8 @@ it over a cable with [Impactor](https://github.com/khcrysalis/PlumeImpactor),
 signed with a free Apple ID, and it has to be installed again **every week** or
 it stops opening (the saved scores stay). [Sniddle on iPhone and iPad](docs/ios.md)
 has the step-by-step.
+
+The title screen shows which version is installed, small at the bottom (`v0.2.8`).
 
 Sniddle is still a **beta** (0.x): every push to `main` that passes
 [CI](.github/workflows/build.yml) and changes the app publishes a new
@@ -347,7 +349,7 @@ composeApp/  the app's screens, shared by Android and iOS (Compose Multiplatform
     ui/               Title, GameLoop (the frame loop every game runs on, and
                       a Seat per kid: camera, effects, thumbstick, sounds),
                       Game (one seat + pause),
-                      Game over ("Who played?"), High scores, My Snail,
+                      Game over ("Who played?"), High scores, My Snails,
                       WhoIsPlaying (pick a kid), Profile (the kid playing,
                       and today's holidays, birthday and arena season: the
                       only place the date is read), BirthdaySetting (the

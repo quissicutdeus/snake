@@ -77,7 +77,7 @@ private val Night = Color(0xFF243B6B)
 
 /**
  * "Time to rest, snail!": the kid's snail curled up asleep, instead of Play.
- * My Snail and the high scores still work. A grown-up can give
+ * My Snails and the high scores still work. A grown-up can give
  * [Bedtime.EXTRA_MINUTES] more, after the grown-up question.
  */
 @Composable
@@ -138,7 +138,7 @@ private fun RestWords(
             if (lastGame.unlocked.isNotEmpty()) UnlockBanner(lastGame.result.style, lastGame.unlocked, "Unlocked:")
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            KidButton("My Snail", onMySnail, color = KidColors.Sky, big = false)
+            KidButton("My Snails", onMySnail, color = KidColors.Sky, big = false)
             KidButton("High Scores", onHighScores, color = KidColors.Grape, big = false)
         }
         TextButton(onClick = onGrownUps) {

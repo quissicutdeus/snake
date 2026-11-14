@@ -45,7 +45,8 @@ import com.quissicutdeus.sniddle.PlayClock
 import kotlin.random.Random
 
 /**
- * A small grey gear in the title screen's corner: the grown-up check, then
+ * A grey gear in the title screen's corner, the same size as the sound,
+ * music and buzz switches in the other corner: the grown-up check, then
  * the bedtime timer's settings. Kids see a gear that does nothing they can use.
  */
 @Composable
@@ -57,12 +58,12 @@ internal fun GrownUpsCorner(
     var stage by rememberSaveable { mutableIntStateOf(0) }
     Surface(
         onClick = { stage = 1 },
-        modifier = modifier.size(44.dp).semantics { contentDescription = "Grown-ups: bedtime timer" },
+        modifier = modifier.size(56.dp).semantics { contentDescription = "Grown-ups: bedtime timer" },
         shape = CircleShape,
         color = Color(0x662B2B3A),
         contentColor = Color.White,
     ) {
-        Box(contentAlignment = Alignment.Center) { Text("⚙", fontSize = 24.sp) }
+        Box(contentAlignment = Alignment.Center) { Text("⚙", fontSize = 30.sp) }
     }
     when (stage) {
         1 -> GrownUpGate(onPass = { stage = 2 }, onCancel = { stage = 0 })
@@ -71,11 +72,11 @@ internal fun GrownUpsCorner(
 }
 
 /**
- * "What is 17 × 8?": a teen number times 6 to 9. Easy in a grown-up's head,
- * out of reach for a young child, and past the times tables a school kid
- * knows by heart.
+ * "What is 14 × 4?": 13 to 16 times 3 to 5. Quick in a grown-up's head (the
+ * answer is never above 80), out of reach for a young child, and past the
+ * times tables a school kid knows by heart.
  */
-internal fun grownUpQuestion(rng: Random): Pair<Int, Int> = rng.nextInt(13, 20) to rng.nextInt(6, 10)
+internal fun grownUpQuestion(rng: Random): Pair<Int, Int> = rng.nextInt(13, 17) to rng.nextInt(3, 6)
 
 /**
  * The grown-up check, over the whole screen: one times-table question with

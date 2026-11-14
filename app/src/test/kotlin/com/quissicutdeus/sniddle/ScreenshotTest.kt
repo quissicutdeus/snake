@@ -71,9 +71,16 @@ class ScreenshotTest : ScreenTest() {
         name: String,
         settings: Settings = Settings(),
     ) {
-        show { TitleScreen(style, {}, {}, {}, settings, {}, today.arena, today.season) }
+        show { TitleScreen(style, {}, {}, {}, settings, {}, today.arena, today.season, version = "0.2.8") }
         advance(1500)
         snap(name)
+    }
+
+    /** The installed version sits small at the bottom of the title screen, for a grown-up to read. */
+    @Test fun theTitleScreenShowsTheVersion() {
+        show { TitleScreen(style, {}, {}, {}, Settings(), {}, today.arena, today.season, version = "0.2.8") }
+        advance(100)
+        compose.onNodeWithText("v0.2.8").assertExists()
     }
 
     private fun playScene(name: String) {

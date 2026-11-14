@@ -26,13 +26,14 @@ import java.time.LocalDate
 class CalendarScreensTest : ScreenTest() {
     private fun launchOn(date: LocalDate) {
         storage.newsSeen = WhatsNew.last().number
-        compose.setContent { SniddleApp(storage, { date.toDay() }, NoSound, NoBuzz) }
+        // With a version, so the seasonal title screenshots show it on grass, leaves and snow.
+        compose.setContent { SniddleApp(storage, { date.toDay() }, NoSound, NoBuzz, version = "0.2.8") }
         advance(800)
     }
 
     @Test fun aKidSetsTheirBirthdayInMySnail() {
         launchOn(LocalDate.of(2026, 9, 1))
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         scrollMySnailToBottom()
         compose.onNodeWithText("🎂 Add my birthday").performClick()
@@ -69,7 +70,7 @@ class CalendarScreensTest : ScreenTest() {
         snap("birthday_title")
         advance(4000)
         snap("birthday_title_after")
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         scrollMySnailToBottom()
         compose.onNodeWithContentDescription("Birthday cake, locked: On your birthday!", substring = true).assertExists()

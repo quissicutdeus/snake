@@ -151,6 +151,8 @@ fun SniddleApp(
     calendar: PhoneCalendar,
     sound: SoundOutput,
     buzzer: Buzzer,
+    /** The app's version, shown small on the title screen ("0.2.8"); empty in tests. */
+    version: String = "",
 ) {
     var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Title) }
     val me = remember { Profile(storage, calendar) }
@@ -176,6 +178,7 @@ fun SniddleApp(
                     onMySnail = { screen = Screen.MySnail },
                     onAddPlayer = { if (me.addPlayer()) screen = Screen.MySnail },
                     go = { screen = it },
+                    version = version,
                 )
             }
 
@@ -274,6 +277,7 @@ private fun TitleRoute(
     onAddPlayer: () -> Unit,
     /** Opens another screen (High scores, Play together). */
     go: (Screen) -> Unit,
+    version: String,
 ) = BedtimeHome(bedtime, me.style, onMySnail, onHighScores = { go(Screen.HighScores()) }) {
     TitleScreen(
         style = me.style,
@@ -281,6 +285,7 @@ private fun TitleRoute(
         onPlayTogether = { go(if (bedtime.refresh()) Screen.Title else TogetherScreen.Pick) }.takeIf { roomForTwo() },
         onMySnail = onMySnail,
         onHighScores = { go(Screen.HighScores()) },
+        version = version,
         settings = me.settings,
         onSettingsChange = me::changeSettings,
         arena = remember { me.todaysOptions().arena },
@@ -301,7 +306,7 @@ private fun TitleRoute(
 }
 
 /**
- * My Snail, fed from the [Profile]: look, name (with names from the high
+ * My Snails, fed from the [Profile]: look, name (with names from the high
  * scores), unlocks, and removing this kid (back to the title after).
  */
 @Composable

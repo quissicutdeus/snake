@@ -134,7 +134,7 @@ private fun SnailPreview(
 ) {
     val rng = remember { Random(Random.nextLong()) }
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        ShadowText("My Snail", MaterialTheme.typography.headlineLarge)
+        ShadowText("My Snails", MaterialTheme.typography.headlineLarge)
         WigglingSnail(style, Modifier.fillMaxWidth().height(snailHeight))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             KidButton("Surprise me!", { onChange(Unlocks.randomStyle(rng, stats)) }, color = KidColors.Berry, big = false)

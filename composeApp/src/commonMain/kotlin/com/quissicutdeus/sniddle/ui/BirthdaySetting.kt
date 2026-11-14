@@ -37,7 +37,7 @@ import androidx.compose.ui.window.Dialog
 import com.quissicutdeus.sniddle.game.model.Birthday
 import com.quissicutdeus.sniddle.game.model.Dates
 
-/** A kid's birthday on My Snail, and how to change it (kept together to keep parameter lists short). */
+/** A kid's birthday on My Snails, and how to change it (kept together to keep parameter lists short). */
 class BirthdaySetting(
     val birthday: Birthday?,
     val onChange: (Birthday?) -> Unit,
@@ -50,7 +50,7 @@ private val MONTH_NAMES =
 internal fun Birthday.label() = "${MONTH_NAMES[month - 1]} $day"
 
 /**
- * My Snail's birthday button: shows the birthday (or asks for one) and opens
+ * My Snails' birthday button: shows the birthday (or asks for one) and opens
  * a big friendly picker. Only the month and day, never the year: it's for a
  * birthday hat, not for knowing anyone's age.
  */

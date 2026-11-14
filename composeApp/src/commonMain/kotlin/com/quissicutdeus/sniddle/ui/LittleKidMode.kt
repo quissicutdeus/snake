@@ -38,7 +38,7 @@ fun difficultyFor(on: Boolean): Difficulty = if (on) Difficulty.LITTLE else Diff
 const val LITTLE_KID_EMOJI = "🐣"
 
 /**
- * My Snail's big "Little kid mode" switch: the whole row flips it, and a
+ * My Snails' big "Little kid mode" switch: the whole row flips it, and a
  * line under it says what it does, so a grown-up knows what they're turning on.
  */
 @Composable

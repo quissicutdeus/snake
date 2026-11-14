@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
@@ -113,6 +115,8 @@ fun TitleScreen(
     modifier: Modifier = Modifier,
     /** Starts a two-player game; null hides the button (no room for two halves). */
     onPlayTogether: (() -> Unit)? = null,
+    /** The app's version ("0.2.8"), small and faded at the bottom so a grown-up can tell which one this is; empty shows nothing. */
+    version: String = "",
     /** Extra content shown under the snail, e.g. [AlreadyEarnedBanner]. */
     content: @Composable () -> Unit = {},
 ) {
@@ -126,6 +130,7 @@ fun TitleScreen(
                 .safeDrawingPadding()
                 .padding(12.dp),
         )
+        VersionLabel(version, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
             val landscape = maxWidth > maxHeight
             val title: @Composable () -> Unit = {
@@ -145,7 +150,7 @@ fun TitleScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     KidButton("Play!", onPlay)
                     onPlayTogether?.let { KidButton("Play together", it, color = KidColors.Berry, big = false) }
-                    KidButton("My Snail", onMySnail, color = KidColors.Sky)
+                    KidButton("My Snails", onMySnail, color = KidColors.Sky)
                     KidButton("High Scores", onHighScores, color = KidColors.Grape)
                 }
             }
@@ -164,6 +169,29 @@ fun TitleScreen(
             }
         }
     }
+}
+
+/**
+ * "v0.2.8", small and faded, for a grown-up checking which version is
+ * installed. White with a soft shadow, so it reads on grass and on snow.
+ * Nothing when [version] is empty.
+ */
+@Composable
+private fun VersionLabel(
+    version: String,
+    modifier: Modifier = Modifier,
+) {
+    if (version.isEmpty()) return
+    Text(
+        "v$version",
+        modifier.padding(bottom = 6.dp),
+        style =
+            MaterialTheme.typography.labelMedium.copy(
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 12.sp,
+                shadow = Shadow(Color.Black.copy(alpha = 0.45f), Offset(0f, 1f), blurRadius = 4f),
+            ),
+    )
 }
 
 /**

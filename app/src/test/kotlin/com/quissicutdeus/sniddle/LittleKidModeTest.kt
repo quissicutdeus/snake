@@ -26,7 +26,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.robolectric.annotation.Config
 
-/** Little kid mode: switched on per kid in My Snail, gentler games, and a 🐣 by their high scores. */
+/** Little kid mode: switched on per kid in My Snails, gentler games, and a 🐣 by their high scores. */
 class LittleKidModeTest : ScreenTest() {
     private val switch = "Little kid mode"
 
@@ -48,7 +48,7 @@ class LittleKidModeTest : ScreenTest() {
         seedTwoKids()
         storage.saveCurrentPlayer(1)
         launchApp()
-        compose.onNodeWithText("My Snail").performClick()
+        compose.onNodeWithText("My Snails").performClick()
         advance(500)
         compose.onNodeWithText(switch).assertIsOff()
         compose.onNodeWithText(switch).performClick()

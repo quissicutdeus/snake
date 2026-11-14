@@ -127,7 +127,7 @@ abstract class ScreenTest {
     /** The saved data straight from the phone, as the version before players wrote it. */
     protected fun rawPrefs(): SharedPreferences = RuntimeEnvironment.getApplication().getSharedPreferences("sniddle", Context.MODE_PRIVATE)
 
-    /** Scrolls My Snail's choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
+    /** Scrolls My Snails' choices to the bottom by hand (see [tappingALockedLookSaysWhatsLeft]). */
     protected fun scrollMySnailToBottom() {
         repeat(4) {
             compose.onRoot().performTouchInput { swipe(Offset(width * 0.75f, bottom - 20f), Offset(width * 0.75f, top + 20f), 300) }

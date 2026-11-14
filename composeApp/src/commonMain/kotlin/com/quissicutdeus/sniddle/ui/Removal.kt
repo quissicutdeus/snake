@@ -25,7 +25,7 @@ import androidx.compose.ui.window.Dialog
 import com.quissicutdeus.sniddle.game.model.SnailStyle
 import com.quissicutdeus.sniddle.game.render.Mood
 
-/** Taking the kid on My Snail off the phone: who they are (for the question) and what to do once they're sure. */
+/** Taking the kid on My Snails off the phone: who they are (for the question) and what to do once they're sure. */
 class Removal(
     /** Their snail's name, or "Player 2". */
     val name: String,
