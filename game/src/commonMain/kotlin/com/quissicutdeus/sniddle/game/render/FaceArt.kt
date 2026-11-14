@@ -5,12 +5,16 @@ import com.quissicutdeus.sniddle.game.model.PI_F
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** Cartoon faces: googly, sleepy, sunglasses or heart eyes, with eyebrows and a mouth that show the mood. */
+/** Cartoon faces (googly, sleepy, sunglasses, hearts, glasses, stars or sparkly eyes), with eyebrows and a mouth that show the mood. */
 object FaceArt {
     private val path = Path2D()
     private const val SUNGLASS = 0xFF1E1E28.toInt()
     private const val SWEAT = 0xFF7FD3FF.toInt()
     private const val HEART_PINK = 0xFFFF3B6B.toInt()
+    private const val GLASSES_FRAME = 0xFF7B2FBE.toInt()
+    private const val STAR_EDGE = 0xFFB8860B.toInt()
+    private const val IRIS = 0xFF2E86DE.toInt()
+    private const val IRIS_EDGE_DARKEN = 0.45f
 
     /**
      * Where a face sits and how it looks: centre ([fx], [fy]) for a head of
@@ -47,6 +51,12 @@ object FaceArt {
         var ink = 0
             private set
 
+        /** The coloured part of the eyes and its darker edge; [iris] is 0 for classic dark eyes. */
+        var iris = 0
+            private set
+        var irisEdge = 0
+            private set
+
         @Suppress("LongParameterList") // everything a face needs, in one go
         fun set(
             fx: Float,
@@ -57,6 +67,7 @@ object FaceArt {
             time: Float,
             headColor: Int,
             wash: Float,
+            iris: Int = 0,
         ): Face {
             this.fx = fx
             this.fy = fy
@@ -70,6 +81,8 @@ object FaceArt {
             lookX = cos(heading)
             lookY = sin(heading)
             ink = Colors.washed(Colors.INK, wash)
+            this.iris = if (iris == 0) 0 else Colors.washed(iris, wash)
+            irisEdge = if (iris == 0) 0 else Colors.washed(Colors.darken(iris, IRIS_EDGE_DARKEN), wash)
             return this
         }
     }
@@ -92,6 +105,9 @@ object FaceArt {
                 Eyes.SLEEPY -> drawSleepyEye(c, face, ex)
                 Eyes.SUNGLASSES -> drawSunglassLens(c, face, ex)
                 Eyes.HEARTS -> drawHeartEye(c, face, ex)
+                Eyes.GLASSES -> drawGlassesEye(c, face, ex, side, mood)
+                Eyes.STARS -> drawStarEye(c, face, ex, mood)
+                Eyes.SPARKLY -> drawSparklyEye(c, face, ex, side, mood)
             }
             drawBrow(c, face, ex, side, mood)
         }
@@ -125,11 +141,122 @@ object FaceArt {
         val pr = er * (if (mood == Mood.SCARED) 0.36f else 0.5f)
         val px = ex + face.lookX * er * 0.42f + wobble
         val py = ey + face.lookY * er * 0.42f
-        c.fillCircle(px, py, pr, face.ink)
+        drawPupil(c, face, px, py, pr)
         c.fillCircle(px - pr * 0.35f, py - pr * 0.35f, pr * 0.32f, Colors.washed(Colors.WHITE, face.wash))
     }
 
-    /** A white eye with a pink heart for a pupil, looking where the snail goes. */
+    /**
+     * A pupil of radius [r]: plain dark for classic eyes, or a coloured iris
+     * (a bit bigger, with a darker edge so white or yellow still shows on the
+     * eye white) around a small dark pupil.
+     */
+    private fun drawPupil(
+        c: Canvas2D,
+        face: Face,
+        x: Float,
+        y: Float,
+        r: Float,
+    ) {
+        if (face.iris == 0) {
+            c.fillCircle(x, y, r, face.ink)
+            return
+        }
+        val ir = r * 1.3f
+        c.fillCircle(x, y, ir, face.iris)
+        c.strokeCircle(x, y, ir, face.hr * 0.045f, face.irisEdge)
+        c.fillCircle(x, y, r * 0.6f, face.ink)
+    }
+
+    /** A googly eye behind a round frame, the two frames joined by a bridge over the nose. */
+    private fun drawGlassesEye(
+        c: Canvas2D,
+        face: Face,
+        ex: Float,
+        side: Int,
+        mood: Mood,
+    ) {
+        drawGooglyEye(c, face, ex, side, mood)
+        val fr = face.er + face.hr * 0.12f
+        val frame = Colors.washed(GLASSES_FRAME, face.wash)
+        val lw = face.hr * 0.1f
+        c.strokeCircle(ex, face.ey, fr, lw, frame)
+        if (side < 0) c.line(ex + fr, face.ey - fr * 0.2f, 2f * face.fx - ex - fr, face.ey - fr * 0.2f, lw, frame)
+        // The arm, back toward the ear.
+        c.line(ex + side * fr, face.ey - fr * 0.2f, ex + side * (fr + face.hr * 0.16f), face.ey - fr * 0.35f, lw, frame)
+    }
+
+    /** A white eye with a star for a pupil (gold, or the eye colour); the star shrinks when scared. */
+    private fun drawStarEye(
+        c: Canvas2D,
+        face: Face,
+        ex: Float,
+        mood: Mood,
+    ) {
+        val er = face.er
+        val ey = face.ey
+        c.fillCircle(ex, ey, er + face.hr * 0.05f, face.ink)
+        c.fillCircle(ex, ey, er, Colors.washed(Colors.WHITE, face.wash))
+        val sr = er * (if (mood == Mood.SCARED) 0.62f else 0.85f)
+        starPath(ex + face.lookX * er * 0.18f, ey + face.lookY * er * 0.18f, sr)
+        if (face.iris == 0) {
+            c.fillPath(path, Colors.washed(Colors.GOLD, face.wash))
+            c.strokePath(path, face.hr * 0.05f, Colors.washed(STAR_EDGE, face.wash))
+        } else {
+            c.fillPath(path, face.iris)
+            c.strokePath(path, face.hr * 0.05f, face.irisEdge)
+        }
+    }
+
+    /** Puts a five-pointed star of radius [r] at (cx, cy) in [path]. */
+    private fun starPath(
+        cx: Float,
+        cy: Float,
+        r: Float,
+    ) {
+        path.reset()
+        for (k in 0 until 10) {
+            val a = -PI_F / 2f + k * PI_F / 5f
+            val rr = if (k % 2 == 0) r else r * 0.48f
+            if (k == 0) path.moveTo(cx + cos(a) * rr, cy + sin(a) * rr) else path.lineTo(cx + cos(a) * rr, cy + sin(a) * rr)
+        }
+        path.close()
+    }
+
+    /**
+     * Big cartoon eyes: a large coloured iris with a dark pupil, two bright
+     * sparkles and lashes on the outside. Scared, the iris shrinks to a dot.
+     */
+    private fun drawSparklyEye(
+        c: Canvas2D,
+        face: Face,
+        ex: Float,
+        side: Int,
+        mood: Mood,
+    ) {
+        val er = face.er * 1.1f
+        val ey = face.ey
+        val white = Colors.washed(Colors.WHITE, face.wash)
+        // Lashes first, so the eye's outline tidies their roots.
+        for (k in 0..2) {
+            val a = -PI_F / 2f + side * (0.45f + k * 0.32f)
+            val x0 = ex + cos(a) * er
+            val y0 = ey + sin(a) * er
+            c.line(x0, y0, x0 + cos(a) * er * 0.5f, y0 + sin(a) * er * 0.5f, face.hr * 0.08f, face.ink)
+        }
+        c.fillCircle(ex, ey, er + face.hr * 0.05f, face.ink)
+        c.fillCircle(ex, ey, er, white)
+        val scared = mood == Mood.SCARED
+        val ir = er * (if (scared) 0.42f else 0.72f)
+        val ix = ex + face.lookX * (er - ir) * 0.6f
+        val iy = ey + face.lookY * (er - ir) * 0.6f
+        c.fillCircle(ix, iy, ir, if (face.iris == 0) Colors.washed(IRIS, face.wash) else face.iris)
+        if (face.iris != 0) c.strokeCircle(ix, iy, ir, face.hr * 0.045f, face.irisEdge)
+        c.fillCircle(ix, iy, ir * 0.55f, face.ink)
+        c.fillCircle(ix - ir * 0.38f, iy - ir * 0.38f, ir * 0.3f, white)
+        c.fillCircle(ix + ir * 0.35f, iy + ir * 0.35f, ir * 0.14f, white)
+    }
+
+    /** A white eye with a heart for a pupil (pink, or the eye colour), looking where the snail goes. */
     private fun drawHeartEye(
         c: Canvas2D,
         face: Face,
@@ -141,7 +268,13 @@ object FaceArt {
         c.fillCircle(ex, ey, er, Colors.washed(Colors.WHITE, face.wash))
         val px = ex + face.lookX * er * 0.25f
         val py = ey + face.lookY * er * 0.25f
-        c.fillPath(HudRenderer.heartPath(px, py, er * 1.25f), Colors.washed(HEART_PINK, face.wash))
+        val heart = HudRenderer.heartPath(px, py, er * 1.25f)
+        if (face.iris == 0) {
+            c.fillPath(heart, Colors.washed(HEART_PINK, face.wash))
+        } else {
+            c.fillPath(heart, face.iris)
+            c.strokePath(heart, face.hr * 0.045f, face.irisEdge)
+        }
     }
 
     private fun drawSleepyEye(
@@ -154,7 +287,7 @@ object FaceArt {
         val hr = face.hr
         c.fillCircle(ex, ey, er + hr * 0.05f, face.ink)
         c.fillCircle(ex, ey, er, Colors.washed(Colors.WHITE, face.wash))
-        c.fillCircle(ex + face.lookX * er * 0.3f, ey + er * 0.35f, er * 0.45f, face.ink)
+        drawPupil(c, face, ex + face.lookX * er * 0.3f, ey + er * 0.35f, er * 0.45f)
         // Heavy eyelid over the top half.
         path.reset()
         path.arc(ex, ey, er + hr * 0.06f, PI_F, 2f * PI_F, moveFirst = true)

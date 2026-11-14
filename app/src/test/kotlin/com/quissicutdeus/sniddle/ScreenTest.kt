@@ -100,7 +100,7 @@ abstract class ScreenTest {
     /** Today's holidays and arena, as the app picks them for a game (so the screenshots follow the time of year). */
     protected val today get() = todaysOptions(null, SystemCalendar.today())
 
-    protected val alreadyEarned = "You've already earned: Top hat and Stars!"
+    protected val alreadyEarned = "You've already earned: Top hat, Stars and Propeller cap!"
 
     /**
      * Ten old high scores, one past length 100: enough for the top hat and stars, never cheered.

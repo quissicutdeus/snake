@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.quissicutdeus.sniddle.game.model.EyeColor
 import com.quissicutdeus.sniddle.game.model.Eyes
 import com.quissicutdeus.sniddle.game.model.Hat
 import com.quissicutdeus.sniddle.game.model.Labelled
@@ -173,6 +174,7 @@ private fun StyleControls(
             }
             Section("Eyes") {
                 Choices(Eyes.entries, style.eyes, stats, { onChange(style.copy(eyes = it)) })
+                EyeColorSwatches(style, { onChange(style.copy(eyeColor = it)) }, Modifier.padding(top = 10.dp))
             }
             Section("Hat") {
                 Choices(Hat.entries, style.hat, stats, { onChange(style.copy(hat = it)) })
@@ -229,6 +231,59 @@ private fun Section(
         Text(title, style = MaterialTheme.typography.titleLarge, color = KidColors.Ink)
         Spacer(Modifier.height(6.dp))
         content()
+    }
+}
+
+/**
+ * The eye colour: classic dark, the body colour or the shell colour. Each
+ * swatch is a little eye (white, with the coloured part and a dark pupil), so
+ * it shows what the snail will look like.
+ */
+@Composable
+private fun EyeColorSwatches(
+    style: SnailStyle,
+    onPick: (EyeColor) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        EyeColor.entries.forEach { eyeColor ->
+            val isSelected = eyeColor == style.eyeColor
+            val iris = style.copy(eyeColor = eyeColor).irisColor
+            Column(
+                Modifier
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "Eyes: ${eyeColor.label}"
+                        this.selected = isSelected
+                    }.clickable(role = Role.RadioButton) { onPick(eyeColor) },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(if (isSelected) 4.dp else 2.dp, if (isSelected) KidColors.Ink else Color(0x552B2B3A), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (iris != null) {
+                        Box(
+                            Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(Color(iris))
+                                .border(2.dp, Color(0x802B2B3A), CircleShape),
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .size(if (iris == null) 20.dp else 11.dp)
+                            .clip(CircleShape)
+                            .background(KidColors.Ink),
+                    )
+                }
+                Text(eyeColor.label, style = MaterialTheme.typography.labelMedium, color = KidColors.Ink)
+            }
+        }
     }
 }
 

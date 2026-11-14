@@ -98,7 +98,7 @@ class SavedDataTest : ScreenTest() {
         val saved = rawPrefs().all
         assertEquals(
             mapOf<String, Any>(
-                "scores" to "120\t11\t1000\t8,2,DOTS,SUNGLASSES,PARTY\tCaleb",
+                "scores" to "120\t11\t1000\t8,2,DOTS,SUNGLASSES,PARTY,CLASSIC\tCaleb",
                 "names" to "Caleb",
                 "sound" to false,
                 "buzz" to true,
@@ -106,7 +106,7 @@ class SavedDataTest : ScreenTest() {
                 "bedtime_minutes" to 30,
                 "news_seen" to 3,
                 "play_day" to "20404,1,2",
-                "style" to "8,2,DOTS,SUNGLASSES,PARTY",
+                "style" to "8,2,DOTS,SUNGLASSES,PARTY,CLASSIC",
                 "snail_name" to "Caleb",
                 "stats" to "120,11,10",
                 "announced" to setOf("Hat.TOP_HAT"),
@@ -114,7 +114,7 @@ class SavedDataTest : ScreenTest() {
                 "birthday" to 912,
                 "players" to "0,1",
                 "player" to 1,
-                "p1.style" to "3,5,ZIGZAG,SLEEPY,BOW",
+                "p1.style" to "3,5,ZIGZAG,SLEEPY,BOW,CLASSIC",
                 "p1.snail_name" to "",
                 "p1.stats" to Stats().encode(),
                 "p1.announced" to emptySet<String>(),

@@ -128,6 +128,10 @@ object Unlocks {
             Unlock(Eyes.HEARTS, GoalKind.SNAILS, 10),
             Unlock(Hat.WIZARD, GoalKind.LENGTH, 200),
             Unlock(Hat.HORNS, GoalKind.SNAILS, 40),
+            Unlock(Hat.PROPELLER, GoalKind.GAMES, 5),
+            Unlock(Eyes.STARS, GoalKind.LENGTH, 150),
+            Unlock(Hat.PIRATE, GoalKind.SNAILS, 25),
+            Unlock(Eyes.SPARKLY, GoalKind.GAMES, 25),
         ) + Holiday.entries.flatMap { h -> h.looks.map { Unlock(it, GoalKind.HOLIDAY, 1) } }
 
     /** The unlock rule for [item], or null if it's always available. */

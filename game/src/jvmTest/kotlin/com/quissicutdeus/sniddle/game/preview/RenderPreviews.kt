@@ -40,6 +40,7 @@ fun main(args: Array<String>) {
     biggestSnail(out)
     portraitHud(out)
     calendarPreviews(out)
+    looksPreviews(out)
     println("Previews written to ${out.absolutePath}")
 }
 

@@ -171,7 +171,8 @@ internal object SnailBodyArt {
         // The face sits a little towards where the snail is going.
         val fx = hx + cos(s.heading) * hr * 0.15f
         val fy = hy + sin(s.heading) * hr * 0.15f
-        FaceArt.drawFace(c, face.set(fx, fy, hr, mood, s.heading, time + s.id * 1.7f, headColor, wash), style.eyes)
+        val iris = style.irisColor ?: 0
+        FaceArt.drawFace(c, face.set(fx, fy, hr, mood, s.heading, time + s.id * 1.7f, headColor, wash, iris), style.eyes)
         HatArt.drawHat(c, fx, fy - hr * 0.74f, hr, style.hat, style, wash)
     }
 }

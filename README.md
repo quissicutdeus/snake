@@ -15,7 +15,7 @@ ones. Steer with your thumb, anywhere on the screen.
 | **Dress up your snail** | **Game over** |
 | ![My Snails: colours, patterns, eyes and hats](docs/screenshots/my_snail.png) | ![Game over: who gobbled you, and a look unlocked](docs/screenshots/game_over.png) |
 
-![Every hat, including the holiday ones](docs/screenshots/hats.png)
+![Every hat, including the holiday ones, with every pair of eyes](docs/screenshots/hats.png)
 
 ![Every pattern](docs/screenshots/patterns.png)
 
@@ -146,19 +146,28 @@ own snail with its own hearts, length and warning arrows.
 
 **My Snails** lets you name your snail (the name shows in the "Biggest snails"
 list, and is the first one offered when you get a high score) and pick
-colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes and a
-hat, and set their birthday (just the month and day; tap it again to change
-it or take it away). A few extra looks are earned by playing: a locked
-one shows its goal and a bar filling up toward it, and the game-over screen
-cheers when you get one:
+colors, a pattern (stripes, polka dots, zigzag, rainbow, checker), eyes
+(googly, sleepy, sunglasses, glasses) and their color (classic dark, or the
+snail's body or shell color), and a hat (crown, party hat, bow, cowboy hat,
+flower crown), and set their birthday (just the month and day; tap it again
+to change it or take it away). A few extra looks are earned by
+playing: a locked one shows its goal and a bar filling up toward it, and the
+game-over screen cheers when you get one:
 
 | Look | How to get it |
 | --- | --- |
+| Propeller cap | Play 5 games |
 | Top hat | Reach length 100 |
 | Stars pattern | Play 10 games |
 | Heart eyes | Eat 10 snails (all games together) |
+| Star eyes | Reach length 150 |
 | Wizard hat | Reach length 200 |
+| Pirate hat | Eat 25 snails (all games together) |
+| Sparkly eyes | Play 25 games |
 | Viking horns | Eat 40 snails (all games together) |
+
+Whatever the eyes, a snail's face still shows who's who: scared when it's
+smaller than you, angry when it's bigger.
 
 Games played before this existed count too (from the high-score list), for the
 first kid on the phone. A new kid starts from zero.

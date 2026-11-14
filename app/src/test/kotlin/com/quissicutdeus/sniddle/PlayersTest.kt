@@ -75,10 +75,10 @@ class PlayersTest : ScreenTest() {
         assertEquals(sirNoodles, me.style)
         assertEquals("Caleb", me.snailName)
         assertEquals(Stats(120, 11, 10), me.stats)
-        assertEquals(emptyList<Any>(), me.alreadyEarned)
+        // Looks already cheered aren't cheered again; only the propeller cap, newer than that save, is.
+        assertEquals(listOf<Any>(Hat.PROPELLER), me.alreadyEarned.map { it.item })
         launchApp()
         compose.onNodeWithText("+ Add player").assertExists()
-        compose.onNodeWithText("already earned", substring = true).assertDoesNotExist()
         snap("players_upgraded")
         compose.onNodeWithText("My Snails").performClick()
         advance(500)
